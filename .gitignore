@@ -1,0 +1,44 @@
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+error_log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Upload directories (if implemented)
+uploads/
+documentos/
+
+# Environment files
+.env
+.env.local
+
+# Database backups
+*.sql.backup
+backup/
+
+# Composer (if used in future)
+vendor/
+composer.lock
+
+# NPM (if used in future)
+node_modules/
+package-lock.json
+
+# Build artifacts
+dist/
+build/
