@@ -70,25 +70,39 @@
 <!-- Charts Row -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
     <!-- Empleados por Departamento -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+    <div class="bg-white rounded-lg shadow-md p-6 fade-in">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
             <i class="fas fa-chart-pie text-purple-600 mr-2"></i>
             Distribución por Departamento
         </h3>
-        <div class="relative" style="height: 300px;">
+        <div class="relative flex items-center justify-center" style="height: 300px;">
             <canvas id="departmentChart"></canvas>
+            <div id="deptChartLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90">
+                <div class="text-center">
+                    <i class="fas fa-spinner fa-spin text-3xl text-purple-600 mb-2"></i>
+                    <p class="text-sm text-gray-500">Cargando gráfica...</p>
+                </div>
+            </div>
         </div>
+        <p class="text-xs text-gray-500 text-center mt-3">Total de empleados por área</p>
     </div>
     
     <!-- Asistencia Semanal -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+    <div class="bg-white rounded-lg shadow-md p-6 fade-in">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
             <i class="fas fa-chart-line text-blue-600 mr-2"></i>
-            Asistencia Semanal
+            Asistencia Semanal (Proyección)
         </h3>
         <div class="relative" style="height: 300px;">
             <canvas id="attendanceChart"></canvas>
+            <div id="attChartLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90">
+                <div class="text-center">
+                    <i class="fas fa-spinner fa-spin text-3xl text-blue-600 mb-2"></i>
+                    <p class="text-sm text-gray-500">Cargando gráfica...</p>
+                </div>
+            </div>
         </div>
+        <p class="text-xs text-gray-500 text-center mt-3">Datos estimados de la semana actual</p>
     </div>
 </div>
 
@@ -158,78 +172,243 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Iniciando dashboard...');
+    
+    // Verificar que Chart.js esté cargado
+    if (typeof Chart === 'undefined') {
+        console.error('❌ Chart.js no está cargado');
+        const deptLoading = document.getElementById('deptChartLoading');
+        const attLoading = document.getElementById('attChartLoading');
+        if (deptLoading) deptLoading.innerHTML = '<p class="text-red-500 text-sm">Error: Chart.js no cargó</p>';
+        if (attLoading) attLoading.innerHTML = '<p class="text-red-500 text-sm">Error: Chart.js no cargó</p>';
+        return;
+    }
+    
+    console.log('✅ Chart.js cargado correctamente');
+    
     // Chart: Empleados por Departamento
-    const deptCtx = document.getElementById('departmentChart').getContext('2d');
-    new Chart(deptCtx, {
-        type: 'doughnut',
-        data: {
-            labels: <?php echo $departmentLabels; ?>,
-            datasets: [{
-                data: <?php echo $departmentData; ?>,
-                backgroundColor: [
-                    '#667eea', '#764ba2', '#f093fb', '#4facfe',
-                    '#43e97b', '#fa709a', '#fee140', '#30cfd0'
-                ],
-                borderWidth: 2,
-                borderColor: '#fff'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 15,
-                        font: {
-                            size: 12
+    let deptLabels = <?php echo json_encode($departmentLabels); ?>;
+    let deptData = <?php echo json_encode($departmentData); ?>;
+    
+    console.log('📊 Datos de departamentos:', deptLabels, deptData);
+    
+    const deptCtx = document.getElementById('departmentChart');
+    const deptLoading = document.getElementById('deptChartLoading');
+    
+    if (deptCtx) {
+        const ctx = deptCtx.getContext('2d');
+        // Si no hay datos, mostrar mensaje o datos de ejemplo
+        const hasData = deptData && deptData.length > 0 && deptData.some(val => val > 0);
+        
+        try {
+            if (!hasData) {
+                console.log('No hay datos de departamentos, mostrando placeholder');
+                // Mostrar datos de ejemplo cuando no hay datos reales
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Sin datos aún'],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: ['#e5e7eb'],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    font: { size: 12 },
+                                    color: '#9ca3af'
+                                }
+                            },
+                            tooltip: {
+                                enabled: false
+                            }
+                        }
+                    }
+                });
+                
+                // Agregar mensaje sobre el canvas
+                const parentDiv = deptCtx.parentElement;
+                const message = document.createElement('div');
+                message.className = 'absolute inset-0 flex items-center justify-center pointer-events-none z-10';
+                message.innerHTML = '<p class="text-gray-400 text-sm font-medium">Agrega empleados para ver estadísticas</p>';
+                parentDiv.appendChild(message);
+            } else {
+                console.log('Creando gráfica de departamentos con datos reales');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: deptLabels,
+                        datasets: [{
+                            data: deptData,
+                            backgroundColor: [
+                                '#667eea', '#764ba2', '#f093fb', '#4facfe',
+                                '#43e97b', '#fa709a', '#fee140', '#30cfd0'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    font: { size: 12 }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return label + ': ' + value + ' (' + percentage + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Ocultar loading
+            if (deptLoading) deptLoading.style.display = 'none';
+            console.log('✅ Gráfica de departamentos creada');
+        } catch (error) {
+            console.error('❌ Error al crear gráfica de departamentos:', error);
+            if (deptLoading) deptLoading.innerHTML = '<p class="text-red-500 text-sm">Error: ' + error.message + '</p>';
+        }
+    }
+    
+    // Chart: Asistencia Semanal
+    const attCtx = document.getElementById('attendanceChart');
+    const attLoading = document.getElementById('attChartLoading');
+    
+    if (attCtx) {
+        const ctx = attCtx.getContext('2d');
+        const empleadosActivos = <?php echo (int)$empleadosActivos; ?>;
+        
+        console.log('Empleados activos:', empleadosActivos);
+        
+        // Generar datos de ejemplo basados en empleados activos
+        const presenteData = [
+            Math.round(empleadosActivos * 0.95),
+            Math.round(empleadosActivos * 0.92),
+            Math.round(empleadosActivos * 0.97),
+            Math.round(empleadosActivos * 0.90),
+            Math.round(empleadosActivos * 0.93),
+            Math.round(empleadosActivos * 0.88)
+        ];
+        
+        const ausenteData = [
+            Math.round(empleadosActivos * 0.05),
+            Math.round(empleadosActivos * 0.08),
+            Math.round(empleadosActivos * 0.03),
+            Math.round(empleadosActivos * 0.10),
+            Math.round(empleadosActivos * 0.07),
+            Math.round(empleadosActivos * 0.12)
+        ];
+        
+        console.log('Datos de asistencia:', presenteData, ausenteData);
+        
+        try {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+                    datasets: [{
+                        label: 'Presente',
+                        data: presenteData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }, {
+                        label: 'Ausente',
+                        data: ausenteData,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: '#ef4444',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                font: { size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 13 }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                stepSize: 1
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
                         }
                     }
                 }
-            }
+            });
+            
+            // Ocultar loading
+            if (attLoading) attLoading.style.display = 'none';
+            console.log('✅ Gráfica de asistencia creada');
+        } catch (error) {
+            console.error('❌ Error al crear gráfica de asistencia:', error);
+            if (attLoading) attLoading.innerHTML = '<p class="text-red-500 text-sm">Error: ' + error.message + '</p>';
         }
-    });
+    }
     
-    // Chart: Asistencia Semanal (datos de ejemplo)
-    const attCtx = document.getElementById('attendanceChart').getContext('2d');
-    new Chart(attCtx, {
-        type: 'line',
-        data: {
-            labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-            datasets: [{
-                label: 'Presente',
-                data: [<?php echo $empleadosActivos * 0.95; ?>, <?php echo $empleadosActivos * 0.92; ?>, <?php echo $empleadosActivos * 0.97; ?>, <?php echo $empleadosActivos * 0.90; ?>, <?php echo $empleadosActivos * 0.93; ?>, <?php echo $empleadosActivos * 0.88; ?>],
-                borderColor: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                tension: 0.4,
-                fill: true
-            }, {
-                label: 'Ausente',
-                data: [<?php echo $empleadosActivos * 0.05; ?>, <?php echo $empleadosActivos * 0.08; ?>, <?php echo $empleadosActivos * 0.03; ?>, <?php echo $empleadosActivos * 0.10; ?>, <?php echo $empleadosActivos * 0.07; ?>, <?php echo $empleadosActivos * 0.12; ?>],
-                borderColor: '#ef4444',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                tension: 0.4,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        precision: 0
-                    }
-                }
-            }
-        }
-    });
+    console.log('✅ Dashboard inicializado correctamente');
 });
 </script>

@@ -9,9 +9,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $title ?? 'Dashboard'; ?> - <?php echo APP_NAME; ?></title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         .bg-gradient-sinforosa {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -22,6 +29,22 @@
         .sidebar-item.active {
             background-color: rgba(255, 255, 255, 0.15);
             border-left: 4px solid white;
+        }
+        
+        /* Asegurar que los canvas de Chart.js se muestren correctamente */
+        canvas {
+            max-width: 100%;
+            height: auto !important;
+        }
+        
+        /* Animaciones suaves */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
