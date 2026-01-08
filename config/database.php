@@ -4,9 +4,9 @@
  */
 
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'rrhh_sinforosa');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_NAME', 'recursos_humanos');
+define('DB_USER', 'recursos_humanos');
+define('DB_PASS', 'Danjohn007!');
 define('DB_CHARSET', 'utf8mb4');
 
 /**
