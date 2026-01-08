@@ -50,7 +50,7 @@ $request = trim($request, '/');
 
 // Rutas del sistema
 $routes = [
-    '' => ['controller' => 'DashboardController', 'method' => 'index'],
+    '' => ['controller' => 'AuthController', 'method' => 'login'],  // Root redirects to login
     'login' => ['controller' => 'AuthController', 'method' => 'login'],
     'logout' => ['controller' => 'AuthController', 'method' => 'logout'],
     'dashboard' => ['controller' => 'DashboardController', 'method' => 'index'],
@@ -118,6 +118,42 @@ if (!$matched) {
         $controller->$method();
     } else {
         http_response_code(404);
-        echo "404 - Página no encontrada";
+        ?>
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>404 - Página no encontrada</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+        </head>
+        <body class="bg-gray-100">
+            <div class="min-h-screen flex items-center justify-center px-4">
+                <div class="max-w-md w-full text-center">
+                    <div class="mb-8">
+                        <h1 class="text-6xl font-bold text-purple-600">404</h1>
+                        <p class="text-2xl font-semibold text-gray-800 mt-4">Página no encontrada</p>
+                        <p class="text-gray-600 mt-2">La ruta "<?php echo htmlspecialchars($request); ?>" no existe en el sistema.</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <p class="text-sm text-gray-600 mb-4">¿Necesitas ayuda? Intenta con estas páginas:</p>
+                        <div class="space-y-2">
+                            <a href="<?php echo BASE_URL; ?>login" class="block w-full bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
+                                Ir al Login
+                            </a>
+                            <a href="<?php echo BASE_URL; ?>dashboard" class="block w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                                Ir al Dashboard
+                            </a>
+                        </div>
+                    </div>
+                    <div class="mt-6 text-xs text-gray-500">
+                        <p>BASE_URL: <?php echo htmlspecialchars(BASE_URL); ?></p>
+                        <p>Request: <?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?></p>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+        <?php
     }
 }
