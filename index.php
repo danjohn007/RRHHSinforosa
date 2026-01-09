@@ -166,6 +166,9 @@ if ($request === '' || $request === 'login') {
         http_response_code(404);
         die('Página no encontrada');
     }
+} elseif ($request === 'notificaciones') {
+    $controller = new NotificacionesController();
+    $controller->index();
 } else {
     http_response_code(404);
     die('Página no encontrada');

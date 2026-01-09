@@ -186,10 +186,32 @@
                     
                     <div class="flex items-center space-x-4">
                         <!-- Notifications -->
-                        <button class="relative text-gray-600 hover:text-gray-800">
-                            <i class="fas fa-bell text-xl"></i>
-                            <span class="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">3</span>
-                        </button>
+                        <div class="relative">
+                            <button id="notificaciones-btn" class="relative text-gray-600 hover:text-gray-800 transition">
+                                <i class="fas fa-bell text-xl"></i>
+                                <span id="badge-notificaciones" class="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center font-bold">0</span>
+                            </button>
+                            
+                            <!-- Dropdown de notificaciones -->
+                            <div id="dropdown-notificaciones" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                                <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                                    <h3 class="font-semibold text-gray-900">Notificaciones</h3>
+                                    <button onclick="marcarTodasLeidas()" class="text-xs text-blue-600 hover:text-blue-800">
+                                        Marcar todas como leídas
+                                    </button>
+                                </div>
+                                
+                                <div id="lista-notificaciones" class="max-h-96 overflow-y-auto">
+                                    <!-- Se llenará con JavaScript -->
+                                </div>
+                                
+                                <div class="p-3 border-t border-gray-200 text-center">
+                                    <a href="<?php echo BASE_URL; ?>notificaciones" class="text-sm text-blue-600 hover:text-blue-800">
+                                        Ver todas las notificaciones
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- User menu -->
                         <div class="relative">
@@ -210,6 +232,162 @@
     </div>
 
     <script>
+        // Sistema de notificaciones con localStorage
+        let notificaciones = [];
+        
+        function cargarNotificaciones() {
+            // Intentar cargar desde localStorage
+            const stored = localStorage.getItem('notificaciones_sistema');
+            
+            if (stored) {
+                notificaciones = JSON.parse(stored);
+            } else {
+                // Notificaciones iniciales
+                notificaciones = [
+                    {
+                        id: 1,
+                        tipo: 'solicitud',
+                        titulo: 'Nueva solicitud de vacaciones',
+                        mensaje: 'Juan Pérez ha solicitado vacaciones del 15 al 20 de enero',
+                        fecha: '2026-01-09 10:30:00',
+                        leida: false,
+                        icono: 'fa-umbrella-beach',
+                        color: 'text-blue-600'
+                    },
+                    {
+                        id: 2,
+                        tipo: 'nomina',
+                        titulo: 'Nómina procesada',
+                        mensaje: 'La nómina quincenal ha sido procesada correctamente',
+                        fecha: '2026-01-09 09:15:00',
+                        leida: false,
+                        icono: 'fa-money-bill-wave',
+                        color: 'text-green-600'
+                    },
+                    {
+                        id: 3,
+                        tipo: 'empleado',
+                        titulo: 'Nuevo empleado registrado',
+                        mensaje: 'María González ha sido agregada al sistema',
+                        fecha: '2026-01-08 16:45:00',
+                        leida: false,
+                        icono: 'fa-user-plus',
+                        color: 'text-purple-600'
+                    }
+                ];
+                guardarNotificaciones();
+            }
+            
+            actualizarNotificaciones();
+        }
+        
+        function guardarNotificaciones() {
+            localStorage.setItem('notificaciones_sistema', JSON.stringify(notificaciones));
+        }
+        
+        function actualizarNotificaciones() {
+            const noLeidas = notificaciones.filter(n => !n.leida).length;
+            const badge = document.getElementById('badge-notificaciones');
+            const lista = document.getElementById('lista-notificaciones');
+            
+            // Actualizar badge
+            badge.textContent = noLeidas;
+            badge.classList.toggle('hidden', noLeidas === 0);
+            
+            // Renderizar lista
+            if (notificaciones.length === 0) {
+                lista.innerHTML = `
+                    <div class="p-8 text-center text-gray-500">
+                        <i class="fas fa-bell-slash text-4xl mb-3 text-gray-400"></i>
+                        <p>No tienes notificaciones</p>
+                    </div>
+                `;
+            } else {
+                lista.innerHTML = notificaciones.map(n => {
+                    const fecha = new Date(n.fecha);
+                    const ahora = new Date();
+                    const diff = Math.floor((ahora - fecha) / 1000 / 60); // minutos
+                    
+                    let tiempoTexto;
+                    if (diff < 1) tiempoTexto = 'Hace un momento';
+                    else if (diff < 60) tiempoTexto = `Hace ${diff} min`;
+                    else if (diff < 1440) tiempoTexto = `Hace ${Math.floor(diff / 60)} h`;
+                    else tiempoTexto = `Hace ${Math.floor(diff / 1440)} días`;
+                    
+                    return `
+                        <div class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition ${!n.leida ? 'bg-blue-50' : ''}"
+                             onclick="marcarLeida(${n.id})">
+                            <div class="flex items-start gap-3">
+                                <div class="flex-shrink-0">
+                                    <div class="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                        <i class="fas ${n.icono} ${n.color}"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 ${!n.leida ? 'font-semibold' : ''}">
+                                        ${n.titulo}
+                                        ${!n.leida ? '<span class="ml-2 inline-block h-2 w-2 bg-blue-600 rounded-full"></span>' : ''}
+                                    </p>
+                                    <p class="text-xs text-gray-600 mt-1">${n.mensaje}</p>
+                                    <p class="text-xs text-gray-400 mt-1">${tiempoTexto}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+        
+        function marcarLeida(id) {
+            const notif = notificaciones.find(n => n.id === id);
+            if (notif) {
+                notif.leida = true;
+                guardarNotificaciones();
+                actualizarNotificaciones();
+                // Disparar evento para sincronizar con otras vistas
+                window.dispatchEvent(new CustomEvent('notificacionesActualizadas'));
+            }
+        }
+        
+        function marcarTodasLeidas() {
+            notificaciones.forEach(n => n.leida = true);
+            guardarNotificaciones();
+            actualizarNotificaciones();
+            // Disparar evento para sincronizar con otras vistas
+            window.dispatchEvent(new CustomEvent('notificacionesActualizadas'));
+        }
+        
+        // Toggle dropdown de notificaciones
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnNotificaciones = document.getElementById('notificaciones-btn');
+            const dropdown = document.getElementById('dropdown-notificaciones');
+            
+            if (btnNotificaciones && dropdown) {
+                btnNotificaciones.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdown.classList.toggle('hidden');
+                });
+                
+                // Cerrar al hacer click fuera
+                document.addEventListener('click', function(e) {
+                    if (!dropdown.contains(e.target) && !btnNotificaciones.contains(e.target)) {
+                        dropdown.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // Cargar notificaciones al iniciar
+            cargarNotificaciones();
+            
+            // Actualizar cada 60 segundos
+            setInterval(cargarNotificaciones, 60000);
+            
+            // Escuchar cambios desde otras vistas
+            window.addEventListener('notificacionesActualizadas', function() {
+                cargarNotificaciones();
+            });
+        });
+        
         // Marcar elemento activo en el menú
         document.addEventListener('DOMContentLoaded', function() {
             const currentPath = window.location.pathname;
