@@ -23,19 +23,19 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Antigüedad Laboral')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Antigüedad Laboral</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Por Departamento')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Por Departamento</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Bajas y Finiquitos')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Bajas y Finiquitos</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
@@ -59,19 +59,19 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Costos Laborales')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Costos Laborales</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Percepciones y Deducciones')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Percepciones y Deducciones</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Dispersión Bancaria')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Dispersión Bancaria</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
@@ -89,19 +89,19 @@
         <div class="p-4">
             <ul class="space-y-2">
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Asistencia Diaria')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Asistencia Diaria</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Retardos y Faltas')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Retardos y Faltas</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Horas Extra')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Horas Extra</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
@@ -125,25 +125,25 @@
         <div class="p-4">
             <ul class="space-y-2">
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Candidatos por Estatus')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Candidatos por Estatus</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Vacantes Activas')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Vacantes Activas</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Fuentes de Reclutamiento')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Fuentes de Reclutamiento</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Tiempo de Contratación')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Tiempo de Contratación</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
@@ -161,25 +161,25 @@
         <div class="p-4">
             <ul class="space-y-2">
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Préstamos Activos')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Préstamos Activos</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Bonos Otorgados')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Bonos Otorgados</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Descuentos Aplicados')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Descuentos Aplicados</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Apoyos Especiales')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Apoyos Especiales</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
@@ -197,25 +197,25 @@
         <div class="p-4">
             <ul class="space-y-2">
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Dashboard Ejecutivo')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Dashboard Ejecutivo</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Indicadores KPI')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Indicadores KPI</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Rotación de Personal')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Rotación de Personal</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                    <a href="javascript:void(0)" onclick="generarReporte('Análisis de Costos')" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
                         <span class="text-gray-700">Análisis de Costos</span>
                         <i class="fas fa-chevron-right text-gray-400"></i>
                     </a>
@@ -234,14 +234,28 @@
     </h3>
     <p class="text-gray-600 mb-4">Descarga reportes en diferentes formatos</p>
     <div class="flex flex-wrap gap-3">
-        <button class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+        <button onclick="exportarReporteFormato('PDF')" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
             <i class="fas fa-file-pdf mr-2"></i>PDF
         </button>
-        <button class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+        <button onclick="exportarReporteFormato('Excel')" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
             <i class="fas fa-file-excel mr-2"></i>Excel
         </button>
-        <button class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+        <button onclick="exportarReporteFormato('CSV')" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
             <i class="fas fa-file-csv mr-2"></i>CSV
         </button>
     </div>
 </div>
+
+<script>
+function generarReporte(nombreReporte) {
+    alert('Generando reporte: ' + nombreReporte + '\n\nEn una implementación completa, aquí se mostraría el reporte con los datos correspondientes.');
+    // En una implementación real, redirigir a la página del reporte o mostrar modal con filtros
+    // window.location.href = '<?php echo BASE_URL; ?>reportes/generar?tipo=' + encodeURIComponent(nombreReporte);
+}
+
+function exportarReporteFormato(formato) {
+    alert('Exportando reportes en formato ' + formato + '...\n\nEn una implementación completa, aquí se generaría y descargaría el archivo en el formato seleccionado.');
+    // En una implementación real, iniciar descarga del reporte
+    // window.location.href = '<?php echo BASE_URL; ?>reportes/exportar?formato=' + formato;
+}
+</script>

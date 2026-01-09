@@ -11,7 +11,7 @@
                 <p class="text-gray-600 mt-1">Administra solicitudes y días de vacaciones</p>
             </div>
         </div>
-        <button class="bg-gradient-sinforosa text-white px-4 py-2 rounded-lg hover:opacity-90">
+        <button onclick="openVacacionModal()" class="bg-gradient-sinforosa text-white px-4 py-2 rounded-lg hover:opacity-90">
             <i class="fas fa-plus mr-2"></i>Nueva Solicitud
         </button>
     </div>
@@ -96,14 +96,14 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                         <?php if ($solicitud['estatus'] === 'Pendiente'): ?>
-                        <button class="text-green-600 hover:text-green-900 mr-2" title="Aprobar">
+                        <button class="text-green-600 hover:text-green-900 mr-2" title="Aprobar" onclick="aprobarSolicitud('<?php echo $solicitud['id'] ?? ''; ?>')">
                             <i class="fas fa-check"></i>
                         </button>
-                        <button class="text-red-600 hover:text-red-900" title="Rechazar">
+                        <button class="text-red-600 hover:text-red-900" title="Rechazar" onclick="rechazarSolicitud('<?php echo $solicitud['id'] ?? ''; ?>')">
                             <i class="fas fa-times"></i>
                         </button>
                         <?php else: ?>
-                        <button class="text-blue-600 hover:text-blue-900" title="Ver detalles">
+                        <button class="text-blue-600 hover:text-blue-900" title="Ver detalles" onclick="verDetalles('<?php echo $solicitud['id'] ?? ''; ?>')">
                             <i class="fas fa-eye"></i>
                         </button>
                         <?php endif; ?>
@@ -115,3 +115,120 @@
         </table>
     </div>
 </div>
+
+<!-- Modal para Nueva Solicitud de Vacaciones -->
+<div id="vacacionModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl font-semibold text-gray-800">Nueva Solicitud de Vacaciones</h3>
+                <button onclick="closeVacacionModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <form id="vacacionForm" class="p-6">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Empleado</label>
+                    <select id="vacacionEmpleado" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
+                        <option value="">Seleccione un empleado...</option>
+                        <!-- Aquí se cargarían los empleados dinámicamente -->
+                    </select>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Fecha de Inicio</label>
+                        <input type="date" id="vacacionFechaInicio" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Fecha de Fin</label>
+                        <input type="date" id="vacacionFechaFin" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Días Solicitados</label>
+                    <input type="number" id="vacacionDias" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" min="1" readonly>
+                    <p class="text-xs text-gray-500 mt-1">Se calculará automáticamente según las fechas</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Motivo/Comentarios</label>
+                    <textarea id="vacacionMotivo" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" placeholder="Comentarios adicionales..."></textarea>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="closeVacacionModal()" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    Cancelar
+                </button>
+                <button type="submit" class="bg-gradient-sinforosa text-white px-6 py-3 rounded-lg hover:opacity-90">
+                    <i class="fas fa-paper-plane mr-2"></i>Enviar Solicitud
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openVacacionModal() {
+    document.getElementById('vacacionModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeVacacionModal() {
+    document.getElementById('vacacionModal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function aprobarSolicitud(id) {
+    if (confirm('¿Está seguro de que desea aprobar esta solicitud de vacaciones?')) {
+        alert('Solicitud aprobada correctamente.\n\nEn una implementación completa, aquí se actualizaría el estado en la base de datos.');
+    }
+}
+
+function rechazarSolicitud(id) {
+    const motivo = prompt('Ingrese el motivo del rechazo:');
+    if (motivo) {
+        alert('Solicitud rechazada.\nMotivo: ' + motivo + '\n\nEn una implementación completa, aquí se actualizaría el estado en la base de datos.');
+    }
+}
+
+function verDetalles(id) {
+    alert('Ver detalles de la solicitud ID: ' + id + '\n\nEn una implementación completa, aquí se mostraría un modal con todos los detalles de la solicitud.');
+}
+
+// Calcular días automáticamente
+document.getElementById('vacacionFechaInicio')?.addEventListener('change', calcularDias);
+document.getElementById('vacacionFechaFin')?.addEventListener('change', calcularDias);
+
+function calcularDias() {
+    const inicio = document.getElementById('vacacionFechaInicio').value;
+    const fin = document.getElementById('vacacionFechaFin').value;
+    
+    if (inicio && fin) {
+        const fechaInicio = new Date(inicio);
+        const fechaFin = new Date(fin);
+        const dias = Math.ceil((fechaFin - fechaInicio) / (1000 * 60 * 60 * 24)) + 1;
+        
+        if (dias > 0) {
+            document.getElementById('vacacionDias').value = dias;
+        } else {
+            document.getElementById('vacacionDias').value = '';
+            alert('La fecha de fin debe ser posterior a la fecha de inicio');
+        }
+    }
+}
+
+// Manejar envío del formulario
+document.getElementById('vacacionForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Solicitud de vacaciones enviada correctamente.\n\nEn una implementación completa, aquí se enviarían los datos al servidor.');
+    closeVacacionModal();
+});
+
+// Cerrar modal al presionar ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeVacacionModal();
+    }
+});
+</script>

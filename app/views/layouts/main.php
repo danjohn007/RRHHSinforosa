@@ -50,8 +50,11 @@
 </head>
 <body class="bg-gray-50">
     <div class="flex h-screen overflow-hidden">
+        <!-- Mobile Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden"></div>
+        
         <!-- Sidebar -->
-        <aside class="w-64 bg-gradient-sinforosa text-white flex-shrink-0 hidden md:flex flex-col">
+        <aside id="sidebar" class="w-64 bg-gradient-sinforosa text-white flex-shrink-0 fixed md:static inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out md:flex flex-col">
             <!-- Logo -->
             <div class="p-6 border-b border-white border-opacity-20">
                 <div class="flex items-center space-x-3">
@@ -163,7 +166,7 @@
             <header class="bg-white shadow-sm z-10">
                 <div class="px-6 py-4 flex items-center justify-between">
                     <div class="flex items-center space-x-4">
-                        <button class="md:hidden text-gray-600">
+                        <button id="mobile-menu-button" class="md:hidden text-gray-600 hover:text-gray-900 focus:outline-none">
                             <i class="fas fa-bars text-xl"></i>
                         </button>
                         <h2 class="text-xl font-semibold text-gray-800"><?php echo $title ?? 'Dashboard'; ?></h2>
@@ -206,6 +209,38 @@
                     item.classList.add('active');
                 }
             });
+            
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            if (mobileMenuButton && sidebar && overlay) {
+                // Open sidebar
+                mobileMenuButton.addEventListener('click', function() {
+                    sidebar.classList.remove('-translate-x-full');
+                    overlay.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                });
+                
+                // Close sidebar when clicking overlay
+                overlay.addEventListener('click', function() {
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                    document.body.style.overflow = '';
+                });
+                
+                // Close sidebar when clicking on a menu item (mobile only)
+                menuItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        if (window.innerWidth < 768) {
+                            sidebar.classList.add('-translate-x-full');
+                            overlay.classList.add('hidden');
+                            document.body.style.overflow = '';
+                        }
+                    });
+                });
+            }
         });
     </script>
 </body>

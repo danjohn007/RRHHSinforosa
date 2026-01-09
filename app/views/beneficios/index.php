@@ -45,7 +45,7 @@
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h2 class="text-lg font-semibold text-gray-800">Préstamos Activos</h2>
-            <button class="bg-gradient-sinforosa text-white px-4 py-2 rounded-lg hover:opacity-90">
+            <button onclick="openPrestamoModal()" class="bg-gradient-sinforosa text-white px-4 py-2 rounded-lg hover:opacity-90">
                 <i class="fas fa-plus mr-2"></i>Nuevo Préstamo
             </button>
         </div>
@@ -139,7 +139,7 @@
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h2 class="text-lg font-semibold text-gray-800">Bonos y Apoyos Recientes</h2>
-            <button class="bg-gradient-sinforosa text-white px-4 py-2 rounded-lg hover:opacity-90">
+            <button onclick="openBonoModal()" class="bg-gradient-sinforosa text-white px-4 py-2 rounded-lg hover:opacity-90">
                 <i class="fas fa-plus mr-2"></i>Nuevo Bono
             </button>
         </div>
@@ -209,4 +209,162 @@ function showTab(tab) {
     btn.classList.add('active', 'border-purple-500', 'text-purple-600');
     btn.classList.remove('border-transparent', 'text-gray-500');
 }
+</script>
+
+<!-- Modal para Nuevo Préstamo -->
+<div id="prestamoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl font-semibold text-gray-800">Nuevo Préstamo</h3>
+                <button onclick="closePrestamoModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <form id="prestamoForm" class="p-6">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Empleado</label>
+                    <select id="prestamoEmpleado" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
+                        <option value="">Seleccione un empleado...</option>
+                        <!-- Aquí se cargarían los empleados dinámicamente -->
+                    </select>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Monto del Préstamo</label>
+                        <input type="number" id="prestamoMonto" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" step="0.01" min="0" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Número de Pagos</label>
+                        <input type="number" id="prestamoPagos" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" min="1" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tasa de Interés (%)</label>
+                    <input type="number" id="prestamoTasa" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" step="0.01" min="0" value="0">
+                    <p class="text-xs text-gray-500 mt-1">Dejar en 0 para préstamo sin intereses</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha de Otorgamiento</label>
+                    <input type="date" id="prestamoFecha" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Motivo/Descripción</label>
+                    <textarea id="prestamoDescripcion" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" placeholder="Motivo del préstamo..."></textarea>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="closePrestamoModal()" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    Cancelar
+                </button>
+                <button type="submit" class="bg-gradient-sinforosa text-white px-6 py-3 rounded-lg hover:opacity-90">
+                    <i class="fas fa-hand-holding-usd mr-2"></i>Otorgar Préstamo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para Nuevo Bono -->
+<div id="bonoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl font-semibold text-gray-800">Nuevo Bono</h3>
+                <button onclick="closeBonoModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <form id="bonoForm" class="p-6">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Empleado</label>
+                    <select id="bonoEmpleado" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
+                        <option value="">Seleccione un empleado...</option>
+                        <!-- Aquí se cargarían los empleados dinámicamente -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Bono</label>
+                    <select id="bonoTipo" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Productividad">Productividad</option>
+                        <option value="Puntualidad">Puntualidad</option>
+                        <option value="Desempeño">Desempeño</option>
+                        <option value="Aguinaldo">Aguinaldo</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Monto</label>
+                    <input type="number" id="bonoMonto" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" step="0.01" min="0" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha de Otorgamiento</label>
+                    <input type="date" id="bonoFecha" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                    <textarea id="bonoDescripcion" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" placeholder="Descripción del bono..."></textarea>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="closeBonoModal()" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    Cancelar
+                </button>
+                <button type="submit" class="bg-gradient-sinforosa text-white px-6 py-3 rounded-lg hover:opacity-90">
+                    <i class="fas fa-gift mr-2"></i>Otorgar Bono
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openPrestamoModal() {
+    document.getElementById('prestamoModal').classList.remove('hidden');
+    document.getElementById('prestamoFecha').valueAsDate = new Date();
+    document.body.style.overflow = 'hidden';
+}
+
+function closePrestamoModal() {
+    document.getElementById('prestamoModal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function openBonoModal() {
+    document.getElementById('bonoModal').classList.remove('hidden');
+    document.getElementById('bonoFecha').valueAsDate = new Date();
+    document.body.style.overflow = 'hidden';
+}
+
+function closeBonoModal() {
+    document.getElementById('bonoModal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+// Manejar envío del formulario de préstamo
+document.getElementById('prestamoForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Préstamo otorgado correctamente.\n\nEn una implementación completa, aquí se enviarían los datos al servidor y se generaría el calendario de pagos.');
+    closePrestamoModal();
+});
+
+// Manejar envío del formulario de bono
+document.getElementById('bonoForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Bono otorgado correctamente.\n\nEn una implementación completa, aquí se enviarían los datos al servidor.');
+    closeBonoModal();
+});
+
+// Cerrar modales al presionar ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closePrestamoModal();
+        closeBonoModal();
+    }
+});
 </script>

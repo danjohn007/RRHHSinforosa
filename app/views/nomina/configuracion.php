@@ -11,7 +11,7 @@
                 <p class="text-gray-600 mt-1">Administra percepciones y deducciones</p>
             </div>
         </div>
-        <button class="bg-gradient-sinforosa text-white px-4 py-2 rounded-lg hover:opacity-90">
+        <button onclick="openConceptModal()" class="bg-gradient-sinforosa text-white px-4 py-2 rounded-lg hover:opacity-90">
             <i class="fas fa-plus mr-2"></i>Nuevo Concepto
         </button>
     </div>
@@ -75,10 +75,10 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <button class="text-blue-600 hover:text-blue-900 mr-2">
+                        <button class="text-blue-600 hover:text-blue-900 mr-2" onclick="editConcept('<?php echo $concepto['clave']; ?>')">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="text-red-600 hover:text-red-900">
+                        <button class="text-red-600 hover:text-red-900" onclick="deleteConcept('<?php echo $concepto['clave']; ?>')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -133,10 +133,10 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <button class="text-blue-600 hover:text-blue-900 mr-2">
+                        <button class="text-blue-600 hover:text-blue-900 mr-2" onclick="editConcept('<?php echo $concepto['clave']; ?>')">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="text-red-600 hover:text-red-900">
+                        <button class="text-red-600 hover:text-red-900" onclick="deleteConcept('<?php echo $concepto['clave']; ?>')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -144,6 +144,72 @@
                 <?php endforeach; ?>
             </tbody>
         </table>
+    </div>
+</div>
+
+<!-- Modal para Nuevo/Editar Concepto -->
+<div id="conceptModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl font-semibold text-gray-800" id="conceptModalTitle">Nuevo Concepto</h3>
+                <button onclick="closeConceptModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <form id="conceptForm" class="p-6">
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
+                        <select id="conceptTipo" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
+                            <option value="">Seleccione...</option>
+                            <option value="Percepción">Percepción</option>
+                            <option value="Deducción">Deducción</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Clave</label>
+                        <input type="text" id="conceptClave" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" placeholder="Ej: P001" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                    <input type="text" id="conceptNombre" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" placeholder="Nombre del concepto" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                    <select id="conceptCategoria" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Fijo">Fijo</option>
+                        <option value="Variable">Variable</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="conceptAfectaIMSS" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                        <label for="conceptAfectaIMSS" class="ml-2 block text-sm text-gray-700">Afecta IMSS</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="conceptAfectaISR" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                        <label for="conceptAfectaISR" class="ml-2 block text-sm text-gray-700">Afecta ISR</label>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="conceptActivo" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded" checked>
+                    <label for="conceptActivo" class="ml-2 block text-sm text-gray-700">Activo</label>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="closeConceptModal()" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    Cancelar
+                </button>
+                <button type="submit" class="bg-gradient-sinforosa text-white px-6 py-3 rounded-lg hover:opacity-90">
+                    <i class="fas fa-save mr-2"></i>Guardar
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -160,4 +226,45 @@ function showTab(tab) {
     btn.classList.add('active', 'border-purple-500', 'text-purple-600');
     btn.classList.remove('border-transparent', 'text-gray-500');
 }
+
+function openConceptModal() {
+    document.getElementById('conceptModal').classList.remove('hidden');
+    document.getElementById('conceptModalTitle').textContent = 'Nuevo Concepto';
+    document.getElementById('conceptForm').reset();
+    document.body.style.overflow = 'hidden';
+}
+
+function closeConceptModal() {
+    document.getElementById('conceptModal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function editConcept(clave) {
+    document.getElementById('conceptModal').classList.remove('hidden');
+    document.getElementById('conceptModalTitle').textContent = 'Editar Concepto';
+    // En una implementación real, cargarías los datos del concepto aquí
+    alert('Función de edición para concepto: ' + clave + '\n\nEn una implementación completa, aquí se cargarían los datos del concepto para editarlos.');
+    document.body.style.overflow = 'hidden';
+}
+
+function deleteConcept(clave) {
+    if (confirm('¿Está seguro de que desea eliminar el concepto ' + clave + '?')) {
+        alert('Concepto eliminado: ' + clave + '\n\nEn una implementación completa, aquí se eliminaría el concepto de la base de datos.');
+        // En una implementación real, harías la petición AJAX para eliminar
+    }
+}
+
+// Manejar envío del formulario
+document.getElementById('conceptForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Concepto guardado correctamente\n\nEn una implementación completa, aquí se enviarían los datos al servidor.');
+    closeConceptModal();
+});
+
+// Cerrar modal al presionar ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeConceptModal();
+    }
+});
 </script>
