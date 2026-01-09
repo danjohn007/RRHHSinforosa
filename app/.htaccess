@@ -1,0 +1,3 @@
+# Bloquear acceso directo desde internet
+Order Deny,Allow
+Deny from all

@@ -19,9 +19,11 @@ tmp/
 temp/
 *.tmp
 
-# Upload directories (if implemented)
-uploads/
-documentos/
+# Storage - Archivos privados y uploads
+storage/uploads/*
+storage/logs/*
+!storage/uploads/.gitkeep
+!storage/logs/.gitkeep
 
 # Environment files
 .env

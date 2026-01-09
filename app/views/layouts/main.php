@@ -150,6 +150,10 @@
                             <i class="fas fa-chart-bar w-5"></i>
                             <span class="ml-3">Análisis</span>
                         </a>
+                        <a href="<?php echo BASE_URL; ?>errores" class="sidebar-item flex items-center px-4 py-3 rounded-lg transition">
+                            <i class="fas fa-bug w-5"></i>
+                            <span class="ml-3">Errores del Sistema</span>
+                        </a>
                     </div>
                 </div>
             </nav>
