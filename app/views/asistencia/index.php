@@ -71,7 +71,7 @@
         <p class="font-semibold">Turnos</p>
     </a>
     
-    <button class="bg-purple-600 text-white rounded-lg p-4 hover:bg-purple-700 transition text-center">
+    <button onclick="exportarReporte()" class="bg-purple-600 text-white rounded-lg p-4 hover:bg-purple-700 transition text-center">
         <i class="fas fa-download text-2xl mb-2"></i>
         <p class="font-semibold">Exportar Reporte</p>
     </button>
@@ -142,3 +142,32 @@
         </table>
     </div>
 </div>
+
+<script>
+function exportarReporte() {
+    // Mostrar opciones de exportación
+    const formato = prompt('Seleccione el formato de exportación:\n1 - PDF\n2 - Excel\n3 - CSV\n\nIngrese el número (1, 2 o 3):', '1');
+    
+    if (formato) {
+        let nombreFormato = '';
+        switch(formato) {
+            case '1':
+                nombreFormato = 'PDF';
+                break;
+            case '2':
+                nombreFormato = 'Excel';
+                break;
+            case '3':
+                nombreFormato = 'CSV';
+                break;
+            default:
+                alert('Formato no válido');
+                return;
+        }
+        
+        alert('Generando reporte en formato ' + nombreFormato + '...\n\nEn una implementación completa, aquí se generaría y descargaría el archivo.');
+        // En una implementación real, aquí se haría una petición al servidor para generar el reporte
+        // window.location.href = '<?php echo BASE_URL; ?>asistencia/exportar?formato=' + formato;
+    }
+}
+</script>
