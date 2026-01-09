@@ -179,21 +179,37 @@ function closeVacacionModal() {
     document.body.style.overflow = '';
 }
 
-function aprobarSolicitud(id) {
-    if (confirm('¿Está seguro de que desea aprobar esta solicitud de vacaciones?')) {
-        alert('Solicitud aprobada correctamente.\n\nEn una implementación completa, aquí se actualizaría el estado en la base de datos.');
-    }
+async function aprobarSolicitud(id) {
+    Modal.confirmar(
+        '¿Está seguro de que desea aprobar esta solicitud de vacaciones?',
+        async () => {
+            try {
+                const resultado = await API.aprobarVacaciones(id);
+                Notificacion.exito(resultado.message || 'Solicitud aprobada exitosamente');
+                setTimeout(() => location.reload(), 1500);
+            } catch (error) {
+                Notificacion.error('Error al aprobar solicitud: ' + error.message);
+            }
+        }
+    );
 }
 
-function rechazarSolicitud(id) {
-    const motivo = prompt('Ingrese el motivo del rechazo:');
-    if (motivo) {
-        alert('Solicitud rechazada.\nMotivo: ' + motivo + '\n\nEn una implementación completa, aquí se actualizaría el estado en la base de datos.');
+async function rechazarSolicitud(id) {
+    const comentario = prompt('Ingrese el motivo del rechazo (opcional):');
+    
+    if (comentario !== null) { // Si no se presionó cancelar
+        try {
+            const resultado = await API.rechazarVacaciones(id, comentario);
+            Notificacion.exito(resultado.message || 'Solicitud rechazada');
+            setTimeout(() => location.reload(), 1500);
+        } catch (error) {
+            Notificacion.error('Error al rechazar solicitud: ' + error.message);
+        }
     }
 }
 
 function verDetalles(id) {
-    alert('Ver detalles de la solicitud ID: ' + id + '\n\nEn una implementación completa, aquí se mostraría un modal con todos los detalles de la solicitud.');
+    alert('Ver detalles de la solicitud ID: ' + id + '\n\nFuncionalidad en desarrollo');
 }
 
 // Calcular días automáticamente
@@ -213,7 +229,7 @@ function calcularDias() {
             document.getElementById('vacacionDias').value = dias;
         } else {
             document.getElementById('vacacionDias').value = '';
-            alert('La fecha de fin debe ser posterior a la fecha de inicio');
+            Notificacion.advertencia('La fecha de fin debe ser posterior a la fecha de inicio');
         }
     }
 }
@@ -221,7 +237,7 @@ function calcularDias() {
 // Manejar envío del formulario
 document.getElementById('vacacionForm')?.addEventListener('submit', function(e) {
     e.preventDefault();
-    alert('Solicitud de vacaciones enviada correctamente.\n\nEn una implementación completa, aquí se enviarían los datos al servidor.');
+    Notificacion.info('Funcionalidad de crear solicitud en desarrollo');
     closeVacacionModal();
 });
 

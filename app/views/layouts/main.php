@@ -19,6 +19,14 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Scripts del sistema -->
+    <script>
+        // Definir BASE_URL para JavaScript
+        const BASE_URL = '<?php echo BASE_URL; ?>';
+    </script>
+    <script src="<?php echo BASE_URL; ?>assets/js/validaciones.js" defer></script>
+    <script src="<?php echo BASE_URL; ?>assets/js/api-client.js" defer></script>
+    
     <style>
         .bg-gradient-sinforosa {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

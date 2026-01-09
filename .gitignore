@@ -42,3 +42,7 @@ package-lock.json
 # Build artifacts
 dist/
 build/
+
+# Other
+recursos_humanos.txt
+MEJORAS_IMPLEMENTADAS.md

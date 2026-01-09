@@ -49,51 +49,73 @@ class EmpleadosController {
         $success = '';
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $empleadoModel = new Empleado();
+            // Cargar validador
+            require_once BASE_PATH . 'app/helpers/Validator.php';
+            $validator = new Validator();
             
-            // Generar número de empleado automático
-            $db = Database::getInstance()->getConnection();
-            $stmt = $db->query("SELECT MAX(CAST(SUBSTRING(numero_empleado, 4) AS UNSIGNED)) as max_num FROM empleados");
-            $result = $stmt->fetch();
-            $nextNum = ($result['max_num'] ?? 0) + 1;
-            $numeroEmpleado = 'EMP' . str_pad($nextNum, 3, '0', STR_PAD_LEFT);
+            // Limpiar datos
+            $data = Validator::sanitizeArray($_POST);
             
-            $data = [
-                'numero_empleado' => $numeroEmpleado,
-                'nombres' => $_POST['nombres'],
-                'apellido_paterno' => $_POST['apellido_paterno'],
-                'apellido_materno' => $_POST['apellido_materno'] ?? null,
-                'curp' => $_POST['curp'] ?? null,
-                'rfc' => $_POST['rfc'] ?? null,
-                'nss' => $_POST['nss'] ?? null,
-                'fecha_nacimiento' => $_POST['fecha_nacimiento'] ?? null,
-                'genero' => $_POST['genero'] ?? null,
-                'estado_civil' => $_POST['estado_civil'] ?? null,
-                'email_personal' => $_POST['email_personal'] ?? null,
-                'telefono' => $_POST['telefono'] ?? null,
-                'celular' => $_POST['celular'] ?? null,
-                'calle' => $_POST['calle'] ?? null,
-                'numero_exterior' => $_POST['numero_exterior'] ?? null,
-                'numero_interior' => $_POST['numero_interior'] ?? null,
-                'colonia' => $_POST['colonia'] ?? null,
-                'codigo_postal' => $_POST['codigo_postal'] ?? null,
-                'municipio' => $_POST['municipio'] ?? 'Querétaro',
-                'estado' => $_POST['estado'] ?? 'Querétaro',
-                'fecha_ingreso' => $_POST['fecha_ingreso'],
-                'tipo_contrato' => $_POST['tipo_contrato'],
-                'departamento' => $_POST['departamento'],
-                'puesto' => $_POST['puesto'],
-                'salario_diario' => $_POST['salario_diario'] ?? 0,
-                'salario_mensual' => $_POST['salario_mensual'] ?? 0,
-                'estatus' => 'Activo'
-            ];
+            // Limpiar teléfonos
+            if (!empty($data['telefono'])) {
+                $data['telefono'] = Validator::limpiarTelefono($data['telefono']);
+            }
+            if (!empty($data['celular'])) {
+                $data['celular'] = Validator::limpiarTelefono($data['celular']);
+            }
             
-            if ($empleadoModel->create($data)) {
-                $success = 'Empleado creado exitosamente';
-                // Redirigir después de 2 segundos
-                header("refresh:2;url=" . BASE_URL . "empleados");
+            // Validar datos
+            if ($validator->validarEmpleado($data)) {
+                $empleadoModel = new Empleado();
+                
+                // Generar número de empleado automático
+                $db = Database::getInstance()->getConnection();
+                $stmt = $db->query("SELECT MAX(CAST(SUBSTRING(numero_empleado, 4) AS UNSIGNED)) as max_num FROM empleados");
+                $result = $stmt->fetch();
+                $nextNum = ($result['max_num'] ?? 0) + 1;
+                $numeroEmpleado = 'EMP' . str_pad($nextNum, 3, '0', STR_PAD_LEFT);
+                
+                $dataEmpleado = [
+                    'numero_empleado' => $numeroEmpleado,
+                    'nombres' => $data['nombres'],
+                    'apellido_paterno' => $data['apellido_paterno'],
+                    'apellido_materno' => $data['apellido_materno'] ?? null,
+                    'curp' => !empty($data['curp']) ? strtoupper($data['curp']) : null,
+                    'rfc' => !empty($data['rfc']) ? strtoupper($data['rfc']) : null,
+                    'nss' => $data['nss'] ?? null,
+                    'fecha_nacimiento' => $data['fecha_nacimiento'] ?? null,
+                    'genero' => $data['genero'] ?? null,
+                    'estado_civil' => $data['estado_civil'] ?? null,
+                    'email_personal' => $data['email_personal'] ?? null,
+                    'telefono' => $data['telefono'] ?? null,
+                    'celular' => $data['celular'] ?? null,
+                    'calle' => $data['calle'] ?? null,
+                    'numero_exterior' => $data['numero_exterior'] ?? null,
+                    'numero_interior' => $data['numero_interior'] ?? null,
+                    'colonia' => $data['colonia'] ?? null,
+                    'codigo_postal' => $data['codigo_postal'] ?? null,
+                    'municipio' => $data['municipio'] ?? 'Querétaro',
+                    'estado' => $data['estado'] ?? 'Querétaro',
+                    'fecha_ingreso' => $data['fecha_ingreso'],
+                    'tipo_contrato' => $data['tipo_contrato'],
+                    'departamento' => $data['departamento'],
+                    'puesto' => $data['puesto'],
+                    'salario_diario' => $data['salario_diario'] ?? 0,
+                    'salario_mensual' => $data['salario_mensual'] ?? 0,
+                    'estatus' => 'Activo'
+                ];
+                
+                if ($empleadoModel->create($dataEmpleado)) {
+                    $success = 'Empleado creado exitosamente';
+                    // Redirigir después de 2 segundos
+                    header("refresh:2;url=" . BASE_URL . "empleados");
+                } else {
+                    $error = 'Error al crear empleado en la base de datos';
+                }
             } else {
-                $error = 'Error al crear empleado';
+                // Obtener errores de validación
+                $errores = $validator->getErrors();
+                $error = 'Errores de validación: ' . implode(', ', $errores);
             }
         }
         

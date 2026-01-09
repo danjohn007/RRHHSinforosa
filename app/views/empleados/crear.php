@@ -25,7 +25,7 @@
 </div>
 <?php endif; ?>
 
-<form method="POST" action="<?php echo BASE_URL; ?>empleados/crear" class="bg-white rounded-lg shadow-md p-6">
+<form method="POST" action="<?php echo BASE_URL; ?>empleados/crear" id="form-crear-empleado" class="bg-white rounded-lg shadow-md p-6">
     <!-- Información Personal -->
     <div class="mb-8">
         <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
