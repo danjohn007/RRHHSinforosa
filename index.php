@@ -119,6 +119,10 @@ if ($request === '' || $request === 'login') {
         $controller->recibos();
     } elseif ($parts[1] === 'configuracion') {
         $controller->configuracion();
+    } elseif ($parts[1] === 'detalle') {
+        $controller->detalle();
+    } elseif ($parts[1] === 'descargar') {
+        $controller->descargar();
     } else {
         http_response_code(404);
         die('Página no encontrada');

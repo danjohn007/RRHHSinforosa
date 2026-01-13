@@ -172,6 +172,11 @@ class NominaService {
             ");
             $empleados = $stmt->fetchAll();
             
+            // Validar que haya empleados activos
+            if (empty($empleados)) {
+                throw new Exception("No hay empleados activos para procesar");
+            }
+            
             $procesados = 0;
             $errores = [];
             
@@ -222,6 +227,11 @@ class NominaService {
     private function procesarNominaEmpleado($periodoId, $empleado) {
         $salarioMensual = $empleado['salario_mensual'];
         $empleadoId = $empleado['id'];
+        
+        // Validar que el salario sea válido
+        if (!$salarioMensual || $salarioMensual <= 0) {
+            throw new Exception("El empleado {$empleado['numero_empleado']} no tiene un salario válido");
+        }
         
         // Obtener días trabajados (por defecto 30)
         $diasTrabajados = $this->calcularDiasTrabajados($empleadoId, $periodoId);

@@ -106,6 +106,17 @@
                 </select>
             </div>
             
+            <div class="mb-4">
+                <label class="flex items-center space-x-2">
+                    <input type="checkbox" name="reprocesar" value="1" 
+                           class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                    <span class="text-sm text-gray-700">
+                        <i class="fas fa-exclamation-triangle text-yellow-500 mr-1"></i>
+                        Reprocesar (eliminar cálculos anteriores y volver a calcular)
+                    </span>
+                </label>
+            </div>
+            
             <div class="flex justify-end">
                 <button type="submit" class="bg-gradient-sinforosa text-white px-6 py-3 rounded-lg hover:opacity-90">
                     <i class="fas fa-calculator mr-2"></i>
