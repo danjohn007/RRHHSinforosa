@@ -11,20 +11,24 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Función auxiliar para cargar vistas
-function view($view, $data = []) {
-    extract($data);
-    $viewFile = BASE_PATH . "app/views/{$view}.php";
-    if (file_exists($viewFile)) {
-        require_once $viewFile;
-    } else {
-        die("Vista no encontrada: {$view}");
+if (!function_exists('view')) {
+    function view($view, $data = []) {
+        extract($data);
+        $viewFile = BASE_PATH . "app/views/{$view}.php";
+        if (file_exists($viewFile)) {
+            require_once $viewFile;
+        } else {
+            die("Vista no encontrada: {$view}");
+        }
     }
 }
 
 // Función para redireccionar
-function redirect($url) {
-    header("Location: " . BASE_URL . ltrim($url, '/'));
-    exit();
+if (!function_exists('redirect')) {
+    function redirect($url) {
+        header("Location: " . BASE_URL . ltrim($url, '/'));
+        exit();
+    }
 }
 
 // Autoloader simple para modelos y controladores
@@ -130,6 +134,20 @@ if ($request === '' || $request === 'login') {
         $controller->index();
     } elseif ($parts[1] === 'entrevistas') {
         $controller->entrevistas();
+    } elseif ($parts[1] === 'obtener-perfil') {
+        $controller->obtenerPerfil();
+    } elseif ($parts[1] === 'programar-entrevista') {
+        $controller->programarEntrevista();
+    } elseif ($parts[1] === 'contratar-candidato') {
+        $controller->contratarCandidato();
+    } elseif ($parts[1] === 'rechazar-candidato') {
+        $controller->rechazarCandidato();
+    } elseif ($parts[1] === 'obtener-entrevista') {
+        $controller->obtenerEntrevista();
+    } elseif ($parts[1] === 'reagendar-entrevista') {
+        $controller->reagendarEntrevista();
+    } elseif ($parts[1] === 'marcar-revision') {
+        $controller->marcarRevision();
     } else {
         http_response_code(404);
         die('Página no encontrada');

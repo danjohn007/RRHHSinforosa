@@ -95,7 +95,7 @@
                         <?php echo $candidato['experiencia_anios'] ?? 0; ?> años
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        $<?php echo number_format($candidato['pretension_salarial'], 2); ?>
+                        $<?php echo $candidato['pretension_salarial'] ? number_format($candidato['pretension_salarial'], 2) : '0.00'; ?>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <?php echo date('d/m/Y', strtotime($candidato['fecha_aplicacion'])); ?>
@@ -118,16 +118,20 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex space-x-2">
+                        <div class="flex space-x-2 <?php echo ($candidato['estatus'] === 'Rechazado' || $candidato['estatus'] === 'Contratado' || $candidato['estatus'] === 'Entrevista') ? 'justify-center' : ''; ?>">
                             <button class="text-blue-600 hover:text-blue-900" title="Ver perfil" onclick="verPerfil('<?php echo $candidato['id'] ?? ''; ?>')">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="text-green-600 hover:text-green-900" title="Programar entrevista" onclick="programarEntrevista('<?php echo $candidato['id'] ?? ''; ?>')">
-                                <i class="fas fa-calendar-plus"></i>
-                            </button>
-                            <button class="text-purple-600 hover:text-purple-900" title="Contratar" onclick="contratarCandidato('<?php echo $candidato['id'] ?? ''; ?>')">
-                                <i class="fas fa-user-check"></i>
-                            </button>
+                            <?php if ($candidato['estatus'] !== 'Rechazado' && $candidato['estatus'] !== 'Contratado'): ?>
+                                <?php if ($candidato['estatus'] !== 'Entrevista'): ?>
+                                <button class="text-green-600 hover:text-green-900" title="Programar entrevista" onclick="programarEntrevista('<?php echo $candidato['id'] ?? ''; ?>')">
+                                    <i class="fas fa-calendar-plus"></i>
+                                </button>
+                                <?php endif; ?>
+                                <button class="text-purple-600 hover:text-purple-900" title="Contratar" onclick="contratarCandidato('<?php echo $candidato['id'] ?? ''; ?>')">
+                                    <i class="fas fa-user-check"></i>
+                                </button>
+                            <?php endif; ?>
                         </div>
                     </td>
                 </tr>
@@ -213,21 +217,389 @@ function closeCandidatoModal() {
     document.body.style.overflow = '';
 }
 
-function verPerfil(id) {
-    alert('Ver perfil completo del candidato ID: ' + id + '\n\nEn una implementación completa, aquí se mostraría el perfil detallado del candidato.');
+function programarEntrevista(id) {
+    const modalHTML = `
+        <div id="modalEntrevista" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg max-w-2xl w-full">
+                <div class="bg-blue-600 text-white p-6 rounded-t-lg">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-calendar-plus mr-2"></i>
+                        Programar Entrevista
+                    </h2>
+                </div>
+                
+                <form id="formEntrevista" class="p-6">
+                    <input type="hidden" name="candidato_id" value="${id}">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Tipo de Entrevista <span class="text-red-500">*</span>
+                            </label>
+                            <select name="tipo" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option value="">Seleccione...</option>
+                                <option value="Telefónica">Telefónica</option>
+                                <option value="Presencial">Presencial</option>
+                                <option value="Virtual">Virtual</option>
+                                <option value="Técnica">Técnica</option>
+                                <option value="Final">Final</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Fecha <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" name="fecha_programada" required 
+                                   min="${new Date().toISOString().split('T')[0]}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Hora <span class="text-red-500">*</span>
+                            </label>
+                            <input type="time" name="hora" required 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Duración (minutos)
+                            </label>
+                            <input type="number" name="duracion" value="60" min="15" max="240"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Ubicación / Link
+                        </label>
+                        <input type="text" name="ubicacion" 
+                               placeholder="Ej: Oficina principal, Sala de juntas, https://meet.google.com/..."
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Observaciones
+                        </label>
+                        <textarea name="observaciones" rows="3"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                  placeholder="Instrucciones adicionales, temas a evaluar, etc."></textarea>
+                    </div>
+                    
+                    <div class="mt-6 flex gap-3 justify-end">
+                        <button type="button" onclick="cerrarModal('modalEntrevista')" 
+                                class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                            <i class="fas fa-times mr-2"></i>Cancelar
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-save mr-2"></i>Programar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Manejar envío del formulario
+    document.getElementById('formEntrevista').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        fetch('<?php echo BASE_URL; ?>reclutamiento/programar-entrevista', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ ' + data.message);
+                cerrarModal('modalEntrevista');
+                location.reload();
+            } else {
+                alert('❌ ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al programar la entrevista');
+        });
+    });
 }
 
-function programarEntrevista(id) {
-    if (confirm('¿Desea programar una entrevista para este candidato?')) {
-        alert('Redirigiendo a programación de entrevista...\n\nEn una implementación completa, aquí se abriría el formulario de programación de entrevista.');
-        // window.location.href = '<?php echo BASE_URL; ?>reclutamiento/entrevistas?candidato=' + id;
-    }
+// Reagendar entrevista existente
+function reagendarEntrevista(entrevistaId, candidatoId) {
+    // Primero obtener los datos de la entrevista actual
+    fetch(`<?php echo BASE_URL; ?>reclutamiento/obtener-entrevista?id=${entrevistaId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarModalReagendar(data.entrevista, candidatoId);
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar la entrevista');
+        });
+}
+
+function mostrarModalReagendar(entrevista, candidatoId) {
+    // Extraer fecha y hora
+    const fechaHora = new Date(entrevista.fecha_programada);
+    const fecha = fechaHora.toISOString().split('T')[0];
+    const hora = fechaHora.toTimeString().substring(0, 5);
+    
+    const modalHTML = `
+        <div id="modalEntrevista" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg max-w-2xl w-full">
+                <div class="bg-yellow-600 text-white p-6 rounded-t-lg">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-calendar-alt mr-2"></i>
+                        Reagendar Entrevista
+                    </h2>
+                    <p class="text-yellow-100 mt-1">Modifique la fecha y hora de la entrevista existente</p>
+                </div>
+                
+                <form id="formEntrevista" class="p-6">
+                    <input type="hidden" name="entrevista_id" value="${entrevista.id}">
+                    <input type="hidden" name="candidato_id" value="${candidatoId}">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Tipo de Entrevista <span class="text-red-500">*</span>
+                            </label>
+                            <select name="tipo" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                                <option value="Telefónica" ${entrevista.tipo === 'Telefónica' ? 'selected' : ''}>Telefónica</option>
+                                <option value="Presencial" ${entrevista.tipo === 'Presencial' ? 'selected' : ''}>Presencial</option>
+                                <option value="Virtual" ${entrevista.tipo === 'Virtual' ? 'selected' : ''}>Virtual</option>
+                                <option value="Técnica" ${entrevista.tipo === 'Técnica' ? 'selected' : ''}>Técnica</option>
+                                <option value="Final" ${entrevista.tipo === 'Final' ? 'selected' : ''}>Final</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Fecha <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" name="fecha_programada" required value="${fecha}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Hora <span class="text-red-500">*</span>
+                            </label>
+                            <input type="time" name="hora" required value="${hora}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Duración (minutos)
+                            </label>
+                            <input type="number" name="duracion" value="${entrevista.duracion_minutos}" min="15" max="240"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Ubicación / Link
+                        </label>
+                        <input type="text" name="ubicacion" value="${entrevista.ubicacion || ''}"
+                               placeholder="Ej: Oficina principal, Sala de juntas, https://meet.google.com/..."
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            Observaciones
+                        </label>
+                        <textarea name="observaciones" rows="3"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500"
+                                  placeholder="Instrucciones adicionales, temas a evaluar, etc.">${entrevista.observaciones || ''}</textarea>
+                    </div>
+                    
+                    <div class="mt-6 flex gap-3 justify-end">
+                        <button type="button" onclick="cerrarModal('modalEntrevista')" 
+                                class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                            <i class="fas fa-times mr-2"></i>Cancelar
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">
+                            <i class="fas fa-save mr-2"></i>Reagendar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Manejar envío del formulario
+    document.getElementById('formEntrevista').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        fetch('<?php echo BASE_URL; ?>reclutamiento/reagendar-entrevista', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ ' + data.message);
+                cerrarModal('modalEntrevista');
+                location.reload();
+            } else {
+                alert('❌ ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al reagendar la entrevista');
+        });
+    });
 }
 
 function contratarCandidato(id) {
-    if (confirm('¿Está seguro de que desea marcar este candidato como contratado?')) {
-        alert('Candidato marcado como contratado.\n\nEn una implementación completa, aquí se actualizaría el estado y se iniciaría el proceso de contratación.');
-    }
+    const modalHTML = `
+        <div id="modalContratar" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg max-w-2xl w-full">
+                <div class="bg-green-600 text-white p-6 rounded-t-lg">
+                    <h2 class="text-2xl font-bold">
+                        <i class="fas fa-user-check mr-2"></i>
+                        Contratar Candidato
+                    </h2>
+                    <p class="text-green-100 mt-1">Complete los datos para crear el registro de empleado</p>
+                </div>
+                
+                <form id="formContratar" class="p-6">
+                    <input type="hidden" name="candidato_id" value="${id}">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Fecha de Ingreso <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" name="fecha_ingreso" required 
+                                   value="${new Date().toISOString().split('T')[0]}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Tipo de Contrato <span class="text-red-500">*</span>
+                            </label>
+                            <select name="tipo_contrato" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                                <option value="Planta">Planta</option>
+                                <option value="Eventual">Eventual</option>
+                                <option value="Honorarios">Honorarios</option>
+                                <option value="Practicante">Practicante</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Departamento <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="departamento" required 
+                                   placeholder="Ej: Operaciones, Cocina, Ventas"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Puesto <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="puesto" required 
+                                   placeholder="Ej: Barista, Supervisor"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Salario Diario <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2 text-gray-500">$</span>
+                                <input type="number" name="salario_diario" required min="0" step="0.01"
+                                       placeholder="0.00"
+                                       class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                            </div>
+                            <p class="text-sm text-gray-500 mt-1">El salario mensual se calculará automáticamente (× 30 días)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                        <div class="flex">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 mt-1 mr-3"></i>
+                            <div>
+                                <p class="font-semibold text-yellow-800">Importante:</p>
+                                <p class="text-sm text-yellow-700">
+                                    Al contratar este candidato se creará un nuevo registro en el módulo de Empleados 
+                                    y se actualizará su estatus a "Contratado".
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 flex gap-3 justify-end">
+                        <button type="button" onclick="cerrarModal('modalContratar')" 
+                                class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                            <i class="fas fa-times mr-2"></i>Cancelar
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                            <i class="fas fa-check-circle mr-2"></i>Confirmar Contratación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Manejar envío del formulario
+    document.getElementById('formContratar').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!confirm('¿Está seguro de contratar a este candidato? Se creará un nuevo empleado.')) {
+            return;
+        }
+        
+        const formData = new FormData(this);
+        
+        fetch('<?php echo BASE_URL; ?>reclutamiento/contratar-candidato', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ ' + data.message + '\nNúmero de empleado: ' + data.numero_empleado);
+                cerrarModal('modalContratar');
+                location.reload();
+            } else {
+                alert('❌ ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al contratar candidato');
+        });
+    });
 }
 
 // Manejar envío del formulario
@@ -241,6 +613,251 @@ document.getElementById('candidatoForm')?.addEventListener('submit', function(e)
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeCandidatoModal();
+        cerrarModal('modalPerfil');
+        cerrarModal('modalEntrevista');
+        cerrarModal('modalContratar');
     }
 });
+
+// Ver perfil completo del candidato
+function verPerfil(id) {
+    fetch(`<?php echo BASE_URL; ?>reclutamiento/obtener-perfil?id=${id}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarModalPerfil(data.candidato, data.entrevistas);
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al cargar el perfil');
+        });
+}
+
+// Mostrar modal con perfil completo
+function mostrarModalPerfil(candidato, entrevistas) {
+    const edad = candidato.fecha_nacimiento ? calcularEdad(candidato.fecha_nacimiento) : 'N/A';
+    const direccion = [candidato.calle, candidato.colonia, candidato.municipio, candidato.estado, candidato.codigo_postal]
+        .filter(v => v).join(', ') || 'No especificada';
+    
+    // Verificar si hay entrevista programada
+    const entrevistaProgramada = entrevistas && entrevistas.find(e => e.estatus === 'Programada');
+    
+    let entrevistasHTML = '';
+    if (entrevistas && entrevistas.length > 0) {
+        entrevistasHTML = entrevistas.map(e => `
+            <div class="border-l-4 border-blue-500 pl-3 py-2 mb-2">
+                <div class="flex justify-between">
+                    <span class="font-semibold">${e.tipo}</span>
+                    <span class="text-sm ${getEstatusClass(e.estatus)}">${e.estatus}</span>
+                </div>
+                <div class="text-sm text-gray-600">
+                    ${formatearFecha(e.fecha_programada)} • ${e.duracion_minutos} min
+                </div>
+                ${e.ubicacion ? `<div class="text-sm text-gray-500">📍 ${e.ubicacion}</div>` : ''}
+            </div>
+        `).join('');
+    } else {
+        entrevistasHTML = '<p class="text-gray-500 text-sm">No hay entrevistas programadas</p>';
+    }
+    
+    const modalHTML = `
+        <div id="modalPerfil" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-t-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h2 class="text-2xl font-bold">${candidato.nombres} ${candidato.apellido_paterno} ${candidato.apellido_materno || ''}</h2>
+                            <p class="text-blue-100 mt-1">${candidato.puesto_deseado || 'Puesto no especificado'}</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-sm font-semibold ${getEstatusClass(candidato.estatus)}">
+                            ${candidato.estatus}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Información Personal -->
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-user mr-2 text-blue-600"></i>
+                                Información Personal
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex">
+                                    <span class="font-semibold text-gray-600 w-32">Email:</span>
+                                    <span class="text-gray-800">${candidato.email || 'No registrado'}</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="font-semibold text-gray-600 w-32">Teléfono:</span>
+                                    <span class="text-gray-800">${candidato.telefono || 'N/A'}</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="font-semibold text-gray-600 w-32">Celular:</span>
+                                    <span class="text-gray-800">${candidato.celular || 'N/A'}</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="font-semibold text-gray-600 w-32">Fecha Nac.:</span>
+                                    <span class="text-gray-800">${candidato.fecha_nacimiento ? formatearFecha(candidato.fecha_nacimiento) + ' (' + edad + ' años)' : 'No registrada'}</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="font-semibold text-gray-600 w-32">Dirección:</span>
+                                    <span class="text-gray-800 flex-1">${direccion}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Información Profesional -->
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-briefcase mr-2 text-blue-600"></i>
+                                Información Profesional
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex">
+                                    <span class="font-semibold text-gray-600 w-32">Educación:</span>
+                                    <span class="text-gray-800">${candidato.nivel_estudios || 'No especificado'}</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="font-semibold text-gray-600 w-32">Carrera:</span>
+                                    <span class="text-gray-800">${candidato.carrera || 'N/A'}</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="font-semibold text-gray-600 w-32">Experiencia:</span>
+                                    <span class="text-gray-800">${candidato.experiencia_anios ? candidato.experiencia_anios + ' años' : 'Sin experiencia'}</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="font-semibold text-gray-600 w-32">Pretensión:</span>
+                                    <span class="text-gray-800 font-semibold text-green-600">
+                                        $${candidato.pretension_salarial ? parseFloat(candidato.pretension_salarial).toLocaleString('es-MX', {minimumFractionDigits: 2}) : '0.00'}
+                                    </span>
+                                </div>
+                                <div class="flex">
+                                    <span class="font-semibold text-gray-600 w-32">Fuente:</span>
+                                    <span class="text-gray-800">${candidato.fuente_reclutamiento || 'No especificada'}</span>
+                                </div>
+                                <div class="flex">
+                                    <span class="font-semibold text-gray-600 w-32">Aplicó:</span>
+                                    <span class="text-gray-800">${formatearFecha(candidato.fecha_aplicacion)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Historial de Entrevistas -->
+                    <div class="mt-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>
+                            Historial de Entrevistas
+                        </h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            ${entrevistasHTML}
+                        </div>
+                    </div>
+                    
+                    <!-- Acciones -->
+                    <div class="mt-6 flex flex-wrap gap-3 justify-end">
+                        <button onclick="cerrarModal('modalPerfil')" class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">
+                            <i class="fas fa-times mr-2"></i>Cerrar
+                        </button>
+                        ${candidato.estatus !== 'Contratado' && candidato.estatus !== 'Rechazado' ? `
+                            ${entrevistaProgramada ? `
+                                <button onclick="cerrarModal('modalPerfil'); reagendarEntrevista(${entrevistaProgramada.id}, ${candidato.id});" class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700">
+                                    <i class="fas fa-calendar-alt mr-2"></i>Reagendar Entrevista
+                                </button>
+                            ` : `
+                                <button onclick="cerrarModal('modalPerfil'); programarEntrevista(${candidato.id});" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                    <i class="fas fa-calendar-plus mr-2"></i>Programar Entrevista
+                                </button>
+                            `}
+                            <button onclick="cerrarModal('modalPerfil'); rechazarCandidato(${candidato.id});" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                <i class="fas fa-times-circle mr-2"></i>Rechazar
+                            </button>
+                            <button onclick="cerrarModal('modalPerfil'); contratarCandidato(${candidato.id});" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                <i class="fas fa-check-circle mr-2"></i>Contratar
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// Rechazar candidato
+function rechazarCandidato(id) {
+    if (!confirm('¿Está seguro de rechazar a este candidato?')) {
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('candidato_id', id);
+    
+    fetch('<?php echo BASE_URL; ?>reclutamiento/rechazar-candidato', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ ' + data.message);
+            location.reload();
+        } else {
+            alert('❌ ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al rechazar candidato');
+    });
+}
+
+// Cerrar modal
+function cerrarModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Funciones auxiliares
+function calcularEdad(fechaNacimiento) {
+    const hoy = new Date();
+    const nacimiento = new Date(fechaNacimiento);
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mes = hoy.getMonth() - nacimiento.getMonth();
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+        edad--;
+    }
+    return edad;
+}
+
+function formatearFecha(fecha) {
+    if (!fecha) return 'N/A';
+    const d = new Date(fecha);
+    const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
+    return d.toLocaleDateString('es-MX', opciones);
+}
+
+function getEstatusClass(estatus) {
+    const clases = {
+        'Nuevo': 'bg-blue-100 text-blue-800',
+        'En Revisión': 'bg-yellow-100 text-yellow-800',
+        'Entrevista': 'bg-purple-100 text-purple-800',
+        'Evaluación': 'bg-indigo-100 text-indigo-800',
+        'Seleccionado': 'bg-green-100 text-green-800',
+        'Rechazado': 'bg-red-100 text-red-800',
+        'Contratado': 'bg-green-200 text-green-900',
+        'Programada': 'bg-blue-100 text-blue-800',
+        'Realizada': 'bg-green-100 text-green-800',
+        'Cancelada': 'bg-red-100 text-red-800',
+        'Reprogramada': 'bg-yellow-100 text-yellow-800'
+    };
+    return clases[estatus] || 'bg-gray-100 text-gray-800';
+}
 </script>
