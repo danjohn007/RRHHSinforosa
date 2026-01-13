@@ -210,7 +210,7 @@ class Validator {
     /**
      * Validar datos de empleado
      */
-    public function validarEmpleado($data) {
+    public function validarEmpleado($data, $omitirValidacionesCURPRFC = false) {
         $this->errors = []; // Limpiar errores anteriores
         
         // Campos requeridos
@@ -230,8 +230,12 @@ class Validator {
         $this->validarTelefono($data['celular'] ?? '', 'Celular');
         $this->validarEmail($data['email_personal'] ?? '', 'Email Personal');
         
-        $this->validarCURP($data['curp'] ?? '', 'CURP');
-        $this->validarRFC($data['rfc'] ?? '', 'RFC');
+        // Solo validar CURP y RFC si no está en modo prueba
+        if (!$omitirValidacionesCURPRFC) {
+            $this->validarCURP($data['curp'] ?? '', 'CURP');
+            $this->validarRFC($data['rfc'] ?? '', 'RFC');
+        }
+        
         $this->validarNSS($data['nss'] ?? '', 'NSS');
         
         $this->validarCodigoPostal($data['codigo_postal'] ?? '', 'Código Postal');

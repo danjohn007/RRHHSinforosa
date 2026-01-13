@@ -77,16 +77,16 @@ if ($request === '' || $request === 'login') {
         $controller->index();
     } elseif ($parts[1] === 'crear') {
         $controller->crear();
-    } elseif ($parts[1] === 'editar' && isset($parts[2])) {
-        $controller->editar($parts[2]);
-    } elseif ($parts[1] === 'ver' && isset($parts[2])) {
-        $controller->ver($parts[2]);
-    } elseif ($parts[1] === 'eliminar' && isset($parts[2])) {
-        $controller->eliminar($parts[2]);
-    } elseif ($parts[1] === 'constancia' && isset($parts[2])) {
-        $controller->constancia($parts[2]);
-    } elseif ($parts[1] === 'carta-recomendacion' && isset($parts[2])) {
-        $controller->cartaRecomendacion($parts[2]);
+    } elseif ($parts[1] === 'editar') {
+        $controller->editar();
+    } elseif ($parts[1] === 'ver') {
+        $controller->ver();
+    } elseif ($parts[1] === 'eliminar') {
+        $controller->eliminar();
+    } elseif ($parts[1] === 'constancia') {
+        $controller->constancia();
+    } elseif ($parts[1] === 'carta-recomendacion') {
+        $controller->cartaRecomendacion();
     } else {
         http_response_code(404);
         die('Página no encontrada');

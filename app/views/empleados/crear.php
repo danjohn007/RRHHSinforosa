@@ -68,6 +68,17 @@
             </div>
         </div>
         
+        <div class="mt-4">
+            <label class="flex items-center space-x-2">
+                <input type="checkbox" name="omitir_validaciones" value="1" 
+                       class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                <span class="text-sm text-gray-600">
+                    <i class="fas fa-flask text-yellow-500 mr-1"></i>
+                    Modo prueba: omitir validaciones de formato CURP/RFC
+                </span>
+            </label>
+        </div>
+        
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Fecha de Nacimiento</label>

@@ -64,8 +64,11 @@ class EmpleadosController {
                 $data['celular'] = Validator::limpiarTelefono($data['celular']);
             }
             
+            // Verificar si se debe omitir validaciones (modo prueba)
+            $omitirValidaciones = isset($_POST['omitir_validaciones']) && $_POST['omitir_validaciones'] === '1';
+            
             // Validar datos
-            if ($validator->validarEmpleado($data)) {
+            if ($validator->validarEmpleado($data, $omitirValidaciones)) {
                 $empleadoModel = new Empleado();
                 
                 // Generar número de empleado automático
