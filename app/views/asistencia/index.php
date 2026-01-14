@@ -55,7 +55,7 @@
 </div>
 
 <!-- Acciones Rápidas -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-<?php echo (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin') ? '5' : '4'; ?> gap-4 mb-6">
     <a href="<?php echo BASE_URL; ?>asistencia/registro" class="bg-gradient-sinforosa text-white rounded-lg p-4 hover:opacity-90 transition text-center">
         <i class="fas fa-user-clock text-2xl mb-2"></i>
         <p class="font-semibold">Registrar Asistencia</p>
@@ -70,6 +70,13 @@
         <i class="fas fa-business-time text-2xl mb-2"></i>
         <p class="font-semibold">Turnos</p>
     </a>
+    
+    <?php if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'admin'): ?>
+    <a href="<?php echo BASE_URL; ?>asistencia/incidencias" class="bg-orange-600 text-white rounded-lg p-4 hover:bg-orange-700 transition text-center">
+        <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+        <p class="font-semibold">Incidencias</p>
+    </a>
+    <?php endif; ?>
     
     <button onclick="exportarReporte()" class="bg-purple-600 text-white rounded-lg p-4 hover:bg-purple-700 transition text-center">
         <i class="fas fa-download text-2xl mb-2"></i>

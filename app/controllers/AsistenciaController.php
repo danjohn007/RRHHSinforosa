@@ -213,4 +213,241 @@ class AsistenciaController {
         
         require_once BASE_PATH . 'app/views/layouts/main.php';
     }
+    
+    public function incidencias() {
+        AuthController::checkRole(['admin']);
+        
+        $db = Database::getInstance()->getConnection();
+        
+        // Obtener filtros
+        $tipo = $_GET['tipo'] ?? '';
+        $estatus = $_GET['estatus'] ?? '';
+        $fechaInicio = $_GET['fecha_inicio'] ?? '';
+        $fechaFin = $_GET['fecha_fin'] ?? '';
+        $busqueda = $_GET['busqueda'] ?? '';
+        
+        // Construir query con filtros
+        $query = "
+            SELECT i.*, 
+                   CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', COALESCE(e.apellido_materno, '')) as nombre_empleado,
+                   e.numero_empleado,
+                   e.departamento,
+                   u.nombre as nombre_usuario_registro
+            FROM incidencias_nomina i
+            INNER JOIN empleados e ON i.empleado_id = e.id
+            LEFT JOIN usuarios u ON i.usuario_registro_id = u.id
+            WHERE 1=1
+        ";
+        
+        $params = [];
+        
+        if ($tipo) {
+            $query .= " AND i.tipo_incidencia = ?";
+            $params[] = $tipo;
+        }
+        
+        if ($estatus) {
+            $query .= " AND i.estatus = ?";
+            $params[] = $estatus;
+        }
+        
+        if ($fechaInicio) {
+            $query .= " AND i.fecha_incidencia >= ?";
+            $params[] = $fechaInicio;
+        }
+        
+        if ($fechaFin) {
+            $query .= " AND i.fecha_incidencia <= ?";
+            $params[] = $fechaFin;
+        }
+        
+        if ($busqueda) {
+            $query .= " AND (e.nombres LIKE ? OR e.apellido_paterno LIKE ? OR e.numero_empleado LIKE ?)";
+            $busquedaParam = "%$busqueda%";
+            $params[] = $busquedaParam;
+            $params[] = $busquedaParam;
+            $params[] = $busquedaParam;
+        }
+        
+        $query .= " ORDER BY i.fecha_incidencia DESC, i.fecha_creacion DESC LIMIT 100";
+        
+        $stmt = $db->prepare($query);
+        $stmt->execute($params);
+        $incidencias = $stmt->fetchAll();
+        
+        // Obtener empleados activos para el formulario
+        $stmt = $db->query("
+            SELECT id, numero_empleado, 
+                   CONCAT(nombres, ' ', apellido_paterno, ' ', COALESCE(apellido_materno, '')) as nombre_completo
+            FROM empleados 
+            WHERE estatus = 'Activo'
+            ORDER BY numero_empleado
+        ");
+        $empleados = $stmt->fetchAll();
+        
+        $data = [
+            'title' => 'Gestión de Incidencias',
+            'incidencias' => $incidencias,
+            'empleados' => $empleados,
+            'filtros' => [
+                'tipo' => $tipo,
+                'estatus' => $estatus,
+                'fecha_inicio' => $fechaInicio,
+                'fecha_fin' => $fechaFin,
+                'busqueda' => $busqueda
+            ]
+        ];
+        
+        ob_start();
+        require_once BASE_PATH . 'app/views/asistencia/incidencias.php';
+        $content = ob_get_clean();
+        
+        require_once BASE_PATH . 'app/views/layouts/main.php';
+    }
+    
+    public function obtenerIncidencia() {
+        AuthController::checkRole(['admin']);
+        header('Content-Type: application/json');
+        
+        $id = $_GET['id'] ?? null;
+        
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => 'ID no proporcionado']);
+            exit;
+        }
+        
+        try {
+            $db = Database::getInstance()->getConnection();
+            $stmt = $db->prepare("
+                SELECT i.*, 
+                       CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', COALESCE(e.apellido_materno, '')) as nombre_empleado,
+                       e.numero_empleado
+                FROM incidencias_nomina i
+                INNER JOIN empleados e ON i.empleado_id = e.id
+                WHERE i.id = ?
+            ");
+            $stmt->execute([$id]);
+            $incidencia = $stmt->fetch();
+            
+            if (!$incidencia) {
+                echo json_encode(['success' => false, 'message' => 'Incidencia no encontrada']);
+            } else {
+                echo json_encode(['success' => true, 'incidencia' => $incidencia]);
+            }
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+    
+    public function guardarIncidencia() {
+        AuthController::checkRole(['admin']);
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+        
+        $data = json_decode(file_get_contents('php://input'), true);
+        
+        $id = $data['id'] ?? null;
+        $empleadoId = $data['empleado_id'] ?? null;
+        $tipoIncidencia = $data['tipo_incidencia'] ?? null;
+        $fechaIncidencia = $data['fecha_incidencia'] ?? null;
+        $cantidad = $data['cantidad'] ?? 1;
+        $monto = $data['monto'] ?? 0;
+        $descripcion = $data['descripcion'] ?? null;
+        
+        if (!$empleadoId || !$tipoIncidencia || !$fechaIncidencia) {
+            echo json_encode(['success' => false, 'message' => 'Empleado, tipo y fecha son obligatorios']);
+            exit;
+        }
+        
+        try {
+            $db = Database::getInstance()->getConnection();
+            
+            if ($id) {
+                // Actualizar incidencia existente
+                $stmt = $db->prepare("
+                    UPDATE incidencias_nomina 
+                    SET empleado_id = ?, tipo_incidencia = ?, fecha_incidencia = ?, 
+                        cantidad = ?, monto = ?, descripcion = ?
+                    WHERE id = ? AND estatus = 'Pendiente'
+                ");
+                $stmt->execute([$empleadoId, $tipoIncidencia, $fechaIncidencia, $cantidad, $monto, $descripcion, $id]);
+                
+                if ($stmt->rowCount() > 0) {
+                    echo json_encode(['success' => true, 'message' => 'Incidencia actualizada exitosamente']);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'No se pudo actualizar. La incidencia puede estar procesada.']);
+                }
+            } else {
+                // Insertar nueva incidencia
+                $stmt = $db->prepare("
+                    INSERT INTO incidencias_nomina 
+                    (empleado_id, tipo_incidencia, fecha_incidencia, cantidad, monto, descripcion, usuario_registro_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ");
+                $stmt->execute([
+                    $empleadoId, 
+                    $tipoIncidencia, 
+                    $fechaIncidencia, 
+                    $cantidad, 
+                    $monto, 
+                    $descripcion,
+                    $_SESSION['user_id']
+                ]);
+                echo json_encode(['success' => true, 'message' => 'Incidencia creada exitosamente']);
+            }
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+    
+    public function eliminarIncidencia() {
+        AuthController::checkRole(['admin']);
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+        
+        $data = json_decode(file_get_contents('php://input'), true);
+        $id = $data['id'] ?? null;
+        
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => 'ID no proporcionado']);
+            exit;
+        }
+        
+        try {
+            $db = Database::getInstance()->getConnection();
+            
+            // Verificar que la incidencia esté pendiente
+            $stmt = $db->prepare("SELECT estatus FROM incidencias_nomina WHERE id = ?");
+            $stmt->execute([$id]);
+            $incidencia = $stmt->fetch();
+            
+            if (!$incidencia) {
+                echo json_encode(['success' => false, 'message' => 'Incidencia no encontrada']);
+                exit;
+            }
+            
+            if ($incidencia['estatus'] !== 'Pendiente') {
+                echo json_encode(['success' => false, 'message' => 'Solo se pueden eliminar incidencias pendientes']);
+                exit;
+            }
+            
+            $stmt = $db->prepare("DELETE FROM incidencias_nomina WHERE id = ?");
+            $stmt->execute([$id]);
+            
+            echo json_encode(['success' => true, 'message' => 'Incidencia eliminada exitosamente']);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
 }

@@ -119,6 +119,10 @@
                             <i class="fas fa-umbrella-beach w-5"></i>
                             <span class="ml-3">Vacaciones</span>
                         </a>
+                        <a href="<?php echo BASE_URL; ?>asistencia/incidencias" class="sidebar-item flex items-center px-4 py-3 rounded-lg transition">
+                            <i class="fas fa-exclamation-triangle w-5"></i>
+                            <span class="ml-3">Incidencias</span>
+                        </a>
                     </div>
                     
                     <!-- Reclutamiento -->
@@ -395,8 +399,12 @@
             
             menuItems.forEach(item => {
                 const href = item.getAttribute('href');
-                if (href && currentPath.includes(href.split('/').pop())) {
-                    item.classList.add('active');
+                if (href) {
+                    const menuPath = href.replace(BASE_URL, '');
+                    // Verificar coincidencia exacta para rutas anidadas
+                    if (currentPath.includes(menuPath) && href.includes(currentPath.split('/').filter(p => p).pop())) {
+                        item.classList.add('active');
+                    }
                 }
             });
             

@@ -105,6 +105,14 @@ if ($request === '' || $request === 'login') {
         $controller->turnos();
     } elseif ($parts[1] === 'vacaciones') {
         $controller->vacaciones();
+    } elseif ($parts[1] === 'incidencias') {
+        $controller->incidencias();
+    } elseif ($parts[1] === 'obtener-incidencia') {
+        $controller->obtenerIncidencia();
+    } elseif ($parts[1] === 'guardar-incidencia') {
+        $controller->guardarIncidencia();
+    } elseif ($parts[1] === 'eliminar-incidencia') {
+        $controller->eliminarIncidencia();
     } else {
         http_response_code(404);
         die('Página no encontrada');
