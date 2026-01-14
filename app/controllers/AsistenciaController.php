@@ -450,4 +450,50 @@ class AsistenciaController {
         }
         exit;
     }
+    
+    public function marcarRevisado() {
+        AuthController::checkRole(['admin']);
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+        
+        $data = json_decode(file_get_contents('php://input'), true);
+        $id = $data['id'] ?? null;
+        
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => 'ID no proporcionado']);
+            exit;
+        }
+        
+        try {
+            $db = Database::getInstance()->getConnection();
+            
+            // Verificar que la incidencia exista y esté pendiente
+            $stmt = $db->prepare("SELECT estatus FROM incidencias_nomina WHERE id = ?");
+            $stmt->execute([$id]);
+            $incidencia = $stmt->fetch();
+            
+            if (!$incidencia) {
+                echo json_encode(['success' => false, 'message' => 'Incidencia no encontrada']);
+                exit;
+            }
+            
+            if ($incidencia['estatus'] !== 'Pendiente') {
+                echo json_encode(['success' => false, 'message' => 'Solo se pueden marcar como revisadas las incidencias pendientes']);
+                exit;
+            }
+            
+            // Actualizar estatus a Revisado
+            $stmt = $db->prepare("UPDATE incidencias_nomina SET estatus = 'Revisado' WHERE id = ?");
+            $stmt->execute([$id]);
+            
+            echo json_encode(['success' => true, 'message' => 'Incidencia marcada como Revisada exitosamente']);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
 }

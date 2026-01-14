@@ -25,15 +25,15 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
                 <select name="tipo" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
                     <option value="">Todos los tipos</option>
-                    <option value="Falta" <?php echo $filtros['tipo'] === 'Falta' ? 'selected' : ''; ?>>Falta</option>
-                    <option value="Retardo" <?php echo $filtros['tipo'] === 'Retardo' ? 'selected' : ''; ?>>Retardo</option>
-                    <option value="Incapacidad" <?php echo $filtros['tipo'] === 'Incapacidad' ? 'selected' : ''; ?>>Incapacidad</option>
-                    <option value="Permiso" <?php echo $filtros['tipo'] === 'Permiso' ? 'selected' : ''; ?>>Permiso</option>
-                    <option value="Vacaciones" <?php echo $filtros['tipo'] === 'Vacaciones' ? 'selected' : ''; ?>>Vacaciones</option>
-                    <option value="Hora Extra" <?php echo $filtros['tipo'] === 'Hora Extra' ? 'selected' : ''; ?>>Hora Extra</option>
-                    <option value="Bono" <?php echo $filtros['tipo'] === 'Bono' ? 'selected' : ''; ?>>Bono</option>
-                    <option value="Descuento" <?php echo $filtros['tipo'] === 'Descuento' ? 'selected' : ''; ?>>Descuento</option>
-                    <option value="Otro" <?php echo $filtros['tipo'] === 'Otro' ? 'selected' : ''; ?>>Otro</option>
+                    <option value="Falta" <?php echo (isset($filtros['tipo']) && $filtros['tipo'] === 'Falta') ? 'selected' : ''; ?>>Falta</option>
+                    <option value="Retardo" <?php echo (isset($filtros['tipo']) && $filtros['tipo'] === 'Retardo') ? 'selected' : ''; ?>>Retardo</option>
+                    <option value="Incapacidad" <?php echo (isset($filtros['tipo']) && $filtros['tipo'] === 'Incapacidad') ? 'selected' : ''; ?>>Incapacidad</option>
+                    <option value="Permiso" <?php echo (isset($filtros['tipo']) && $filtros['tipo'] === 'Permiso') ? 'selected' : ''; ?>>Permiso</option>
+                    <option value="Vacaciones" <?php echo (isset($filtros['tipo']) && $filtros['tipo'] === 'Vacaciones') ? 'selected' : ''; ?>>Vacaciones</option>
+                    <option value="Hora Extra" <?php echo (isset($filtros['tipo']) && $filtros['tipo'] === 'Hora Extra') ? 'selected' : ''; ?>>Hora Extra</option>
+                    <option value="Bono" <?php echo (isset($filtros['tipo']) && $filtros['tipo'] === 'Bono') ? 'selected' : ''; ?>>Bono</option>
+                    <option value="Descuento" <?php echo (isset($filtros['tipo']) && $filtros['tipo'] === 'Descuento') ? 'selected' : ''; ?>>Descuento</option>
+                    <option value="Otro" <?php echo (isset($filtros['tipo']) && $filtros['tipo'] === 'Otro') ? 'selected' : ''; ?>>Otro</option>
                 </select>
             </div>
             
@@ -41,21 +41,22 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Estatus</label>
                 <select name="estatus" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
                     <option value="">Todos los estatus</option>
-                    <option value="Pendiente" <?php echo $filtros['estatus'] === 'Pendiente' ? 'selected' : ''; ?>>Pendiente</option>
-                    <option value="Aprobado" <?php echo $filtros['estatus'] === 'Aprobado' ? 'selected' : ''; ?>>Aprobado</option>
-                    <option value="Rechazado" <?php echo $filtros['estatus'] === 'Rechazado' ? 'selected' : ''; ?>>Rechazado</option>
-                    <option value="Procesado" <?php echo $filtros['estatus'] === 'Procesado' ? 'selected' : ''; ?>>Procesado</option>
+                    <option value="Pendiente" <?php echo (isset($filtros['estatus']) && $filtros['estatus'] === 'Pendiente') ? 'selected' : ''; ?>>Pendiente</option>
+                    <option value="Revisado" <?php echo (isset($filtros['estatus']) && $filtros['estatus'] === 'Revisado') ? 'selected' : ''; ?>>Revisado</option>
+                    <option value="Aprobado" <?php echo (isset($filtros['estatus']) && $filtros['estatus'] === 'Aprobado') ? 'selected' : ''; ?>>Aprobado</option>
+                    <option value="Rechazado" <?php echo (isset($filtros['estatus']) && $filtros['estatus'] === 'Rechazado') ? 'selected' : ''; ?>>Rechazado</option>
+                    <option value="Procesado" <?php echo (isset($filtros['estatus']) && $filtros['estatus'] === 'Procesado') ? 'selected' : ''; ?>>Procesado</option>
                 </select>
             </div>
             
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Inicio</label>
-                <input type="date" name="fecha_inicio" value="<?php echo htmlspecialchars($filtros['fecha_inicio']); ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
+                <input type="date" name="fecha_inicio" value="<?php echo isset($filtros['fecha_inicio']) ? htmlspecialchars($filtros['fecha_inicio']) : ''; ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
             </div>
             
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Fin</label>
-                <input type="date" name="fecha_fin" value="<?php echo htmlspecialchars($filtros['fecha_fin']); ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
+                <input type="date" name="fecha_fin" value="<?php echo isset($filtros['fecha_fin']) ? htmlspecialchars($filtros['fecha_fin']) : ''; ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
             </div>
             
             <div>
@@ -83,8 +84,6 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Empleado</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cantidad</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Monto</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estatus</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
@@ -93,7 +92,7 @@
         <tbody class="bg-white divide-y divide-gray-200">
             <?php if (empty($incidencias)): ?>
                 <tr>
-                    <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">
                         <i class="fas fa-inbox text-4xl mb-2"></i>
                         <p>No se encontraron incidencias</p>
                     </td>
@@ -129,19 +128,13 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <?php echo date('d/m/Y', strtotime($incidencia['fecha_incidencia'])); ?>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <?php echo number_format($incidencia['cantidad'], 2); ?>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        $<?php echo number_format($incidencia['monto'], 2); ?>
-                    </td>
                     <td class="px-6 py-4 text-sm text-gray-500">
                         <?php echo htmlspecialchars(substr($incidencia['descripcion'], 0, 50)) . (strlen($incidencia['descripcion']) > 50 ? '...' : ''); ?>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <?php
+                    <td class="px-6 py-4 whitespace-nowrap"><?php
                         $estatusColores = [
                             'Pendiente' => 'bg-yellow-100 text-yellow-800',
+                            'Revisado' => 'bg-cyan-100 text-cyan-800',
                             'Aprobado' => 'bg-green-100 text-green-800',
                             'Rechazado' => 'bg-red-100 text-red-800',
                             'Procesado' => 'bg-blue-100 text-blue-800'
@@ -153,17 +146,22 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <button onclick="verIncidencia(<?php echo $incidencia['id']; ?>)" class="text-blue-600 hover:text-blue-900 mr-2" title="Ver detalles">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <?php if ($incidencia['estatus'] === 'Pendiente'): ?>
-                            <button onclick="editarIncidencia(<?php echo $incidencia['id']; ?>)" class="text-purple-600 hover:text-purple-900 mr-2" title="Editar">
-                                <i class="fas fa-edit"></i>
+                        <div class="flex <?php echo ($incidencia['estatus'] === 'Revisado') ? 'justify-center' : ''; ?>">
+                            <button onclick="verIncidencia(<?php echo $incidencia['id']; ?>)" class="text-blue-600 hover:text-blue-900 mr-2" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
                             </button>
-                            <button onclick="eliminarIncidencia(<?php echo $incidencia['id']; ?>)" class="text-red-600 hover:text-red-900" title="Eliminar">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        <?php endif; ?>
+                            <?php if ($incidencia['estatus'] === 'Pendiente'): ?>
+                                <button onclick="editarIncidencia(<?php echo $incidencia['id']; ?>)" class="text-purple-600 hover:text-purple-900 mr-2" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="marcarRevisado(<?php echo $incidencia['id']; ?>)" class="text-green-600 hover:text-green-900 mr-2" title="Marcar como Revisado">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button onclick="eliminarIncidencia(<?php echo $incidencia['id']; ?>)" class="text-red-600 hover:text-red-900" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            <?php endif; ?>
+                        </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -215,21 +213,9 @@
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Fecha *</label>
-                        <input type="date" id="fecha_incidencia" name="fecha_incidencia" value="<?php echo date('Y-m-d'); ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Cantidad</label>
-                        <input type="number" step="0.01" id="cantidad" name="cantidad" value="1" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Monto</label>
-                        <input type="number" step="0.01" id="monto" name="monto" value="0" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
-                    </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha *</label>
+                    <input type="date" id="fecha_incidencia" name="fecha_incidencia" value="<?php echo date('Y-m-d'); ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
                 </div>
                 
                 <div>
@@ -303,8 +289,6 @@ async function editarIncidencia(id) {
             document.getElementById('empleado_id').value = inc.empleado_id;
             document.getElementById('tipo_incidencia').value = inc.tipo_incidencia;
             document.getElementById('fecha_incidencia').value = inc.fecha_incidencia;
-            document.getElementById('cantidad').value = inc.cantidad;
-            document.getElementById('monto').value = inc.monto;
             document.getElementById('descripcion').value = inc.descripcion || '';
             
             document.getElementById('incidenciaModal').classList.remove('hidden');
@@ -344,6 +328,33 @@ async function eliminarIncidencia(id) {
     }
 }
 
+async function marcarRevisado(id) {
+    if (!confirm('¿Desea marcar esta incidencia como Revisada?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('<?php echo BASE_URL; ?>asistencia/marcar-revisado', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id: id })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Error al marcar la incidencia: ' + error.message);
+    }
+}
+
 // Manejar envío del formulario
 document.getElementById('incidenciaForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -353,8 +364,8 @@ document.getElementById('incidenciaForm').addEventListener('submit', async funct
         empleado_id: document.getElementById('empleado_id').value,
         tipo_incidencia: document.getElementById('tipo_incidencia').value,
         fecha_incidencia: document.getElementById('fecha_incidencia').value,
-        cantidad: document.getElementById('cantidad').value,
-        monto: document.getElementById('monto').value,
+        cantidad: 1,
+        monto: 0,
         descripcion: document.getElementById('descripcion').value
     };
     

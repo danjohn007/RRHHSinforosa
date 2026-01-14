@@ -113,6 +113,8 @@ if ($request === '' || $request === 'login') {
         $controller->guardarIncidencia();
     } elseif ($parts[1] === 'eliminar-incidencia') {
         $controller->eliminarIncidencia();
+    } elseif ($parts[1] === 'marcar-revisado') {
+        $controller->marcarRevisado();
     } else {
         http_response_code(404);
         die('Página no encontrada');
