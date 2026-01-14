@@ -13,39 +13,56 @@
 </div>
 
 <div class="max-w-4xl mx-auto">
+    <?php if (isset($success)): ?>
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            <i class="fas fa-check-circle mr-2"></i><?php echo $success; ?>
+        </div>
+    <?php endif; ?>
+    
+    <?php if (isset($error)): ?>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <i class="fas fa-exclamation-circle mr-2"></i><?php echo $error; ?>
+        </div>
+    <?php endif; ?>
+    
     <div class="bg-white rounded-lg shadow-md p-6">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">
             <i class="fas fa-clock text-blue-600 mr-2"></i>
             Nuevo Registro
         </h3>
         
-        <form class="space-y-4">
+        <form method="POST" action="<?php echo BASE_URL; ?>asistencia/guardar-registro" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Empleado</label>
-                    <select class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
-                        <option>Seleccione un empleado...</option>
+                    <select id="empleado_id" name="empleado_id" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
+                        <option value="">Seleccione un empleado...</option>
+                        <?php foreach ($empleados as $empleado): ?>
+                            <option value="<?php echo $empleado['id']; ?>">
+                                <?php echo htmlspecialchars($empleado['numero_empleado'] . ' - ' . $empleado['nombre_completo']); ?>
+                            </option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Fecha</label>
-                    <input type="date" value="<?php echo date('Y-m-d'); ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
+                    <input type="date" id="fecha" name="fecha" value="<?php echo date('Y-m-d'); ?>" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
                 </div>
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Hora de Entrada</label>
-                    <input type="time" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
+                    <input type="time" id="hora_entrada" name="hora_entrada" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
                 </div>
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Hora de Salida</label>
-                    <input type="time" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
+                    <input type="time" id="hora_salida" name="hora_salida" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
                 </div>
                 
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Notas</label>
-                    <textarea rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" placeholder="Notas adicionales..."></textarea>
+                    <textarea rows="3" id="notas" name="notas" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" placeholder="Notas adicionales..."></textarea>
                 </div>
             </div>
             
@@ -53,7 +70,7 @@
                 <a href="<?php echo BASE_URL; ?>asistencia" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
                     Cancelar
                 </a>
-                <button type="button" class="bg-gradient-sinforosa text-white px-6 py-3 rounded-lg hover:opacity-90">
+                <button type="submit" class="bg-gradient-sinforosa text-white px-6 py-3 rounded-lg hover:opacity-90">
                     <i class="fas fa-save mr-2"></i>
                     Guardar Registro
                 </button>

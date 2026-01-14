@@ -99,6 +99,8 @@ if ($request === '' || $request === 'login') {
         $controller->index();
     } elseif ($parts[1] === 'registro') {
         $controller->registro();
+    } elseif ($parts[1] === 'guardar-registro') {
+        $controller->guardarRegistro();
     } elseif ($parts[1] === 'turnos') {
         $controller->turnos();
     } elseif ($parts[1] === 'vacaciones') {
