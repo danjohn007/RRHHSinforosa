@@ -190,6 +190,139 @@ class NominaController {
         require_once BASE_PATH . 'app/views/layouts/main.php';
     }
     
+    public function obtenerConcepto() {
+        AuthController::checkRole(['admin', 'rrhh']);
+        header('Content-Type: application/json');
+        
+        $clave = $_GET['clave'] ?? null;
+        
+        if (!$clave) {
+            echo json_encode(['success' => false, 'message' => 'Clave no proporcionada']);
+            exit;
+        }
+        
+        try {
+            $db = Database::getInstance()->getConnection();
+            $stmt = $db->prepare("SELECT * FROM conceptos_nomina WHERE clave = ?");
+            $stmt->execute([$clave]);
+            $concepto = $stmt->fetch();
+            
+            if (!$concepto) {
+                echo json_encode(['success' => false, 'message' => 'Concepto no encontrado']);
+            } else {
+                echo json_encode(['success' => true, 'concepto' => $concepto]);
+            }
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+    
+    public function guardarConcepto() {
+        AuthController::checkRole(['admin', 'rrhh']);
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+        
+        $data = json_decode(file_get_contents('php://input'), true);
+        
+        $clave = $data['clave'] ?? null;
+        $claveOriginal = $data['clave_original'] ?? null;
+        $nombre = $data['nombre'] ?? null;
+        $tipo = $data['tipo'] ?? null;
+        $categoria = $data['categoria'] ?? null;
+        $afectaIMSS = isset($data['afecta_imss']) ? (int)$data['afecta_imss'] : 0;
+        $afectaISR = isset($data['afecta_isr']) ? (int)$data['afecta_isr'] : 0;
+        $activo = isset($data['activo']) ? (int)$data['activo'] : 1;
+        
+        if (!$clave || !$nombre || !$tipo || !$categoria) {
+            echo json_encode(['success' => false, 'message' => 'Todos los campos son obligatorios']);
+            exit;
+        }
+        
+        try {
+            $db = Database::getInstance()->getConnection();
+            
+            if ($claveOriginal) {
+                // Actualizar concepto existente
+                $stmt = $db->prepare("
+                    UPDATE conceptos_nomina 
+                    SET clave = ?, nombre = ?, tipo = ?, categoria = ?, 
+                        afecta_imss = ?, afecta_isr = ?, activo = ?
+                    WHERE clave = ?
+                ");
+                $stmt->execute([$clave, $nombre, $tipo, $categoria, $afectaIMSS, $afectaISR, $activo, $claveOriginal]);
+                echo json_encode(['success' => true, 'message' => 'Concepto actualizado exitosamente']);
+            } else {
+                // Verificar si la clave ya existe
+                $stmt = $db->prepare("SELECT COUNT(*) FROM conceptos_nomina WHERE clave = ?");
+                $stmt->execute([$clave]);
+                if ($stmt->fetchColumn() > 0) {
+                    echo json_encode(['success' => false, 'message' => 'La clave ya existe']);
+                    exit;
+                }
+                
+                // Insertar nuevo concepto
+                $stmt = $db->prepare("
+                    INSERT INTO conceptos_nomina 
+                    (clave, nombre, tipo, categoria, afecta_imss, afecta_isr, activo)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ");
+                $stmt->execute([$clave, $nombre, $tipo, $categoria, $afectaIMSS, $afectaISR, $activo]);
+                echo json_encode(['success' => true, 'message' => 'Concepto creado exitosamente']);
+            }
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+    
+    public function eliminarConcepto() {
+        AuthController::checkRole(['admin', 'rrhh']);
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+        
+        $data = json_decode(file_get_contents('php://input'), true);
+        $clave = $data['clave'] ?? null;
+        
+        if (!$clave) {
+            echo json_encode(['success' => false, 'message' => 'Clave no proporcionada']);
+            exit;
+        }
+        
+        try {
+            $db = Database::getInstance()->getConnection();
+            
+            // Verificar si el concepto está en uso
+            $stmt = $db->prepare("
+                SELECT COUNT(*) FROM nomina_conceptos 
+                WHERE concepto_clave = ?
+            ");
+            $stmt->execute([$clave]);
+            $enUso = $stmt->fetchColumn();
+            
+            if ($enUso > 0) {
+                echo json_encode(['success' => false, 'message' => 'No se puede eliminar el concepto porque está en uso en registros de nómina']);
+                exit;
+            }
+            
+            $stmt = $db->prepare("DELETE FROM conceptos_nomina WHERE clave = ?");
+            $stmt->execute([$clave]);
+            
+            echo json_encode(['success' => true, 'message' => 'Concepto eliminado exitosamente']);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+    
     public function detalle() {
         AuthController::check();
         header('Content-Type: application/json');

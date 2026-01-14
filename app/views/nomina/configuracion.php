@@ -214,6 +214,8 @@
 </div>
 
 <script>
+let claveOriginal = null;
+
 function showTab(tab) {
     document.querySelectorAll('.config-content').forEach(el => el.classList.add('hidden'));
     document.querySelectorAll('.config-tab').forEach(el => {
@@ -228,9 +230,11 @@ function showTab(tab) {
 }
 
 function openConceptModal() {
+    claveOriginal = null;
     document.getElementById('conceptModal').classList.remove('hidden');
     document.getElementById('conceptModalTitle').textContent = 'Nuevo Concepto';
     document.getElementById('conceptForm').reset();
+    document.getElementById('conceptClave').disabled = false;
     document.body.style.overflow = 'hidden';
 }
 
@@ -239,26 +243,97 @@ function closeConceptModal() {
     document.body.style.overflow = '';
 }
 
-function editConcept(clave) {
-    document.getElementById('conceptModal').classList.remove('hidden');
-    document.getElementById('conceptModalTitle').textContent = 'Editar Concepto';
-    // En una implementación real, cargarías los datos del concepto aquí
-    alert('Función de edición para concepto: ' + clave + '\n\nEn una implementación completa, aquí se cargarían los datos del concepto para editarlos.');
-    document.body.style.overflow = 'hidden';
+async function editConcept(clave) {
+    try {
+        const response = await fetch('<?php echo BASE_URL; ?>nomina/obtener-concepto?clave=' + encodeURIComponent(clave));
+        const data = await response.json();
+        
+        if (data.success) {
+            claveOriginal = clave;
+            const concepto = data.concepto;
+            
+            document.getElementById('conceptModalTitle').textContent = 'Editar Concepto';
+            document.getElementById('conceptTipo').value = concepto.tipo;
+            document.getElementById('conceptClave').value = concepto.clave;
+            document.getElementById('conceptClave').disabled = true; // No permitir cambiar la clave
+            document.getElementById('conceptNombre').value = concepto.nombre;
+            document.getElementById('conceptCategoria').value = concepto.categoria;
+            document.getElementById('conceptAfectaIMSS').checked = concepto.afecta_imss == 1;
+            document.getElementById('conceptAfectaISR').checked = concepto.afecta_isr == 1;
+            document.getElementById('conceptActivo').checked = concepto.activo == 1;
+            
+            document.getElementById('conceptModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        } else {
+            alert('Error al cargar el concepto: ' + data.message);
+        }
+    } catch (error) {
+        alert('Error al cargar el concepto: ' + error.message);
+    }
 }
 
-function deleteConcept(clave) {
-    if (confirm('¿Está seguro de que desea eliminar el concepto ' + clave + '?')) {
-        alert('Concepto eliminado: ' + clave + '\n\nEn una implementación completa, aquí se eliminaría el concepto de la base de datos.');
-        // En una implementación real, harías la petición AJAX para eliminar
+async function deleteConcept(clave) {
+    if (!confirm('¿Está seguro de que desea eliminar el concepto ' + clave + '?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('<?php echo BASE_URL; ?>nomina/eliminar-concepto', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ clave: clave })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Error al eliminar el concepto: ' + error.message);
     }
 }
 
 // Manejar envío del formulario
-document.getElementById('conceptForm').addEventListener('submit', function(e) {
+document.getElementById('conceptForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    alert('Concepto guardado correctamente\n\nEn una implementación completa, aquí se enviarían los datos al servidor.');
-    closeConceptModal();
+    
+    const formData = {
+        clave: document.getElementById('conceptClave').value,
+        clave_original: claveOriginal,
+        nombre: document.getElementById('conceptNombre').value,
+        tipo: document.getElementById('conceptTipo').value,
+        categoria: document.getElementById('conceptCategoria').value,
+        afecta_imss: document.getElementById('conceptAfectaIMSS').checked ? 1 : 0,
+        afecta_isr: document.getElementById('conceptAfectaISR').checked ? 1 : 0,
+        activo: document.getElementById('conceptActivo').checked ? 1 : 0
+    };
+    
+    try {
+        const response = await fetch('<?php echo BASE_URL; ?>nomina/guardar-concepto', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Error al guardar el concepto: ' + error.message);
+    }
 });
 
 // Cerrar modal al presionar ESC

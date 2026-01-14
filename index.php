@@ -123,6 +123,12 @@ if ($request === '' || $request === 'login') {
         $controller->detalle();
     } elseif ($parts[1] === 'descargar') {
         $controller->descargar();
+    } elseif ($parts[1] === 'obtener-concepto') {
+        $controller->obtenerConcepto();
+    } elseif ($parts[1] === 'guardar-concepto') {
+        $controller->guardarConcepto();
+    } elseif ($parts[1] === 'eliminar-concepto') {
+        $controller->eliminarConcepto();
     } else {
         http_response_code(404);
         die('Página no encontrada');
