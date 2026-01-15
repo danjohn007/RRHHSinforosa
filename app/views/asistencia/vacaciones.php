@@ -133,7 +133,13 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Empleado</label>
                     <select id="vacacionEmpleado" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
                         <option value="">Seleccione un empleado...</option>
-                        <!-- Aquí se cargarían los empleados dinámicamente -->
+                        <?php if (!empty($empleados)): ?>
+                            <?php foreach ($empleados as $empleado): ?>
+                                <option value="<?php echo $empleado['id']; ?>">
+                                    <?php echo htmlspecialchars($empleado['nombre_completo']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </select>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -208,8 +214,30 @@ async function rechazarSolicitud(id) {
     }
 }
 
-function verDetalles(id) {
-    alert('Ver detalles de la solicitud ID: ' + id + '\n\nFuncionalidad en desarrollo');
+async function verDetalles(id) {
+    try {
+        const response = await fetch('<?php echo BASE_URL; ?>asistencia/obtener-vacacion?id=' + id);
+        const data = await response.json();
+        
+        if (data.success) {
+            const sol = data.solicitud;
+            alert(
+                'DETALLES DE LA SOLICITUD\n\n' +
+                'Empleado: ' + sol.nombre_empleado + '\n' +
+                'Departamento: ' + sol.departamento + '\n' +
+                'Fecha Inicio: ' + new Date(sol.fecha_inicio).toLocaleDateString('es-MX') + '\n' +
+                'Fecha Fin: ' + new Date(sol.fecha_fin).toLocaleDateString('es-MX') + '\n' +
+                'Días: ' + sol.dias_solicitados + '\n' +
+                'Estatus: ' + sol.estatus + '\n' +
+                'Motivo: ' + (sol.motivo || 'N/A') + '\n' +
+                'Fecha Solicitud: ' + new Date(sol.fecha_solicitud).toLocaleString('es-MX')
+            );
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Error al obtener detalles: ' + error.message);
+    }
 }
 
 // Calcular días automáticamente
@@ -235,10 +263,47 @@ function calcularDias() {
 }
 
 // Manejar envío del formulario
-document.getElementById('vacacionForm')?.addEventListener('submit', function(e) {
+document.getElementById('vacacionForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
-    Notificacion.info('Funcionalidad de crear solicitud en desarrollo');
-    closeVacacionModal();
+    
+    const empleadoId = document.getElementById('vacacionEmpleado').value;
+    const fechaInicio = document.getElementById('vacacionFechaInicio').value;
+    const fechaFin = document.getElementById('vacacionFechaFin').value;
+    const dias = document.getElementById('vacacionDias').value;
+    const motivo = document.getElementById('vacacionMotivo').value;
+    
+    if (!empleadoId || !fechaInicio || !fechaFin || !dias) {
+        alert('Por favor complete todos los campos requeridos');
+        return;
+    }
+    
+    try {
+        const response = await fetch('<?php echo BASE_URL; ?>asistencia/guardar-vacacion', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                empleado_id: empleadoId,
+                fecha_inicio: fechaInicio,
+                fecha_fin: fechaFin,
+                dias_solicitados: dias,
+                motivo: motivo
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(data.message || 'Solicitud creada exitosamente');
+            closeVacacionModal();
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Error al guardar solicitud: ' + error.message);
+    }
 });
 
 // Cerrar modal al presionar ESC

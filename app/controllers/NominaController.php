@@ -179,8 +179,20 @@ class NominaController {
     public function recibos() {
         AuthController::check();
         
+        $db = Database::getInstance()->getConnection();
+        
+        // Obtener periodos procesados
+        $stmt = $db->query("SELECT * FROM periodos_nomina WHERE estatus IN ('Procesado', 'Pagado', 'Cerrado') ORDER BY fecha_inicio DESC");
+        $periodos = $stmt->fetchAll();
+        
+        // Obtener empleados activos
+        $stmt = $db->query("SELECT id, nombres, apellido_paterno, apellido_materno FROM empleados WHERE estatus = 'Activo' ORDER BY nombres, apellido_paterno");
+        $empleados = $stmt->fetchAll();
+        
         $data = [
-            'title' => 'Recibos de Nómina'
+            'title' => 'Recibos de Nómina',
+            'periodos' => $periodos,
+            'empleados' => $empleados
         ];
         
         ob_start();
@@ -456,6 +468,240 @@ class NominaController {
             
         } catch (Exception $e) {
             redirect('nomina');
+        }
+    }
+    
+    public function generarRecibos() {
+        AuthController::check();
+        
+        $periodoId = $_GET['periodo_id'] ?? null;
+        $empleadoId = $_GET['empleado_id'] ?? null;
+        
+        if (!$periodoId) {
+            echo "Error: Período no especificado";
+            exit;
+        }
+        
+        try {
+            $db = Database::getInstance()->getConnection();
+            
+            // Obtener información del período
+            $stmt = $db->prepare("SELECT * FROM periodos_nomina WHERE id = ?");
+            $stmt->execute([$periodoId]);
+            $periodo = $stmt->fetch();
+            
+            if (!$periodo) {
+                echo "Error: Período no encontrado";
+                exit;
+            }
+            
+            // Construir query para obtener detalles de nómina
+            $query = "
+                SELECT 
+                    e.numero_empleado,
+                    CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', e.apellido_materno) as nombre_empleado,
+                    e.rfc,
+                    e.curp,
+                    e.nss,
+                    e.puesto,
+                    e.departamento,
+                    nd.id as nomina_detalle_id,
+                    nd.dias_trabajados,
+                    nd.salario_base,
+                    nd.total_percepciones,
+                    nd.total_deducciones,
+                    nd.total_neto
+                FROM nomina_detalle nd
+                INNER JOIN empleados e ON nd.empleado_id = e.id
+                WHERE nd.periodo_id = ?
+            ";
+            
+            $params = [$periodoId];
+            
+            if ($empleadoId) {
+                $query .= " AND nd.empleado_id = ?";
+                $params[] = $empleadoId;
+            }
+            
+            $query .= " ORDER BY e.nombres, e.apellido_paterno";
+            
+            $stmt = $db->prepare($query);
+            $stmt->execute($params);
+            $empleados = $stmt->fetchAll();
+            
+            if (empty($empleados)) {
+                echo "No se encontraron registros de nómina para los criterios seleccionados.";
+                exit;
+            }
+            
+            // Para cada empleado, obtener sus conceptos de percepciones y deducciones
+            foreach ($empleados as &$emp) {
+                // Obtener percepciones
+                $stmtPerc = $db->prepare("
+                    SELECT cn.nombre, nc.monto 
+                    FROM nomina_conceptos nc
+                    INNER JOIN conceptos_nomina cn ON nc.concepto_id = cn.id
+                    WHERE nc.nomina_detalle_id = ? AND cn.tipo = 'Percepción'
+                    ORDER BY cn.nombre
+                ");
+                $stmtPerc->execute([$emp['nomina_detalle_id']]);
+                $emp['percepciones'] = $stmtPerc->fetchAll();
+                
+                // Obtener deducciones
+                $stmtDed = $db->prepare("
+                    SELECT cn.nombre, nc.monto 
+                    FROM nomina_conceptos nc
+                    INNER JOIN conceptos_nomina cn ON nc.concepto_id = cn.id
+                    WHERE nc.nomina_detalle_id = ? AND cn.tipo = 'Deducción'
+                    ORDER BY cn.nombre
+                ");
+                $stmtDed->execute([$emp['nomina_detalle_id']]);
+                $emp['deducciones'] = $stmtDed->fetchAll();
+            }
+            unset($emp);
+            
+            // Generar HTML para el PDF
+            $html = '
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; font-size: 10pt; }
+                    .recibo { page-break-after: always; margin: 20px; border: 2px solid #333; padding: 15px; }
+                    .header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                    .empresa { font-size: 14pt; font-weight: bold; }
+                    .titulo { font-size: 12pt; font-weight: bold; margin-top: 5px; }
+                    .info-empleado { margin: 15px 0; }
+                    .info-empleado table { width: 100%; }
+                    .info-empleado td { padding: 3px; }
+                    .conceptos { margin: 15px 0; }
+                    .conceptos table { width: 100%; border-collapse: collapse; }
+                    .conceptos th { background-color: #f0f0f0; padding: 5px; border: 1px solid #333; text-align: left; }
+                    .conceptos td { padding: 5px; border: 1px solid #333; }
+                    .totales { margin-top: 15px; text-align: right; }
+                    .totales table { width: 40%; margin-left: auto; border-collapse: collapse; }
+                    .totales td { padding: 5px; border: 1px solid #333; }
+                    .total-neto { font-weight: bold; background-color: #f0f0f0; }
+                    .footer { margin-top: 20px; text-align: center; font-size: 8pt; border-top: 1px solid #333; padding-top: 10px; }
+                </style>
+            </head>
+            <body>';
+            
+            foreach ($empleados as $emp) {
+                // Las percepciones y deducciones ya vienen como arrays desde la consulta
+                $percepciones = $emp['percepciones'] ?? [];
+                $deducciones = $emp['deducciones'] ?? [];
+                
+                $html .= '
+                <div class="recibo">
+                    <div class="header">
+                        <div class="empresa">SINFOROSA - RECURSOS HUMANOS</div>
+                        <div class="titulo">RECIBO DE NÓMINA</div>
+                        <div>Período: ' . date('d/m/Y', strtotime($periodo['fecha_inicio'])) . ' - ' . date('d/m/Y', strtotime($periodo['fecha_fin'])) . '</div>
+                    </div>
+                    
+                    <div class="info-empleado">
+                        <table>
+                            <tr>
+                                <td><strong>No. Empleado:</strong></td>
+                                <td>' . htmlspecialchars($emp['numero_empleado']) . '</td>
+                                <td><strong>RFC:</strong></td>
+                                <td>' . htmlspecialchars($emp['rfc'] ?? 'N/A') . '</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Nombre:</strong></td>
+                                <td colspan="3">' . htmlspecialchars($emp['nombre_empleado']) . '</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CURP:</strong></td>
+                                <td>' . htmlspecialchars($emp['curp'] ?? 'N/A') . '</td>
+                                <td><strong>NSS:</strong></td>
+                                <td>' . htmlspecialchars($emp['nss'] ?? 'N/A') . '</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Puesto:</strong></td>
+                                <td>' . htmlspecialchars($emp['puesto'] ?? 'N/A') . '</td>
+                                <td><strong>Departamento:</strong></td>
+                                <td>' . htmlspecialchars($emp['departamento'] ?? 'N/A') . '</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Días Trabajados:</strong></td>
+                                <td>' . $emp['dias_trabajados'] . '</td>
+                                <td><strong>Salario Base:</strong></td>
+                                <td>$' . number_format($emp['salario_base'], 2) . '</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="conceptos">
+                        <table>
+                            <tr>
+                                <th colspan="2">PERCEPCIONES</th>
+                                <th colspan="2">DEDUCCIONES</th>
+                            </tr>';
+                
+                $maxRows = max(count($percepciones), count($deducciones));
+                for ($i = 0; $i < $maxRows; $i++) {
+                    $html .= '<tr>';
+                    
+                    // Percepción
+                    if (isset($percepciones[$i])) {
+                        $html .= '<td>' . htmlspecialchars($percepciones[$i]['nombre']) . '</td>';
+                        $html .= '<td style="text-align: right;">$' . number_format($percepciones[$i]['monto'], 2) . '</td>';
+                    } else {
+                        $html .= '<td></td><td></td>';
+                    }
+                    
+                    // Deducción
+                    if (isset($deducciones[$i])) {
+                        $html .= '<td>' . htmlspecialchars($deducciones[$i]['nombre']) . '</td>';
+                        $html .= '<td style="text-align: right;">$' . number_format($deducciones[$i]['monto'], 2) . '</td>';
+                    } else {
+                        $html .= '<td></td><td></td>';
+                    }
+                    
+                    $html .= '</tr>';
+                }
+                
+                $html .= '
+                        </table>
+                    </div>
+                    
+                    <div class="totales">
+                        <table>
+                            <tr>
+                                <td>Total Percepciones:</td>
+                                <td style="text-align: right;">$' . number_format($emp['total_percepciones'], 2) . '</td>
+                            </tr>
+                            <tr>
+                                <td>Total Deducciones:</td>
+                                <td style="text-align: right;">$' . number_format($emp['total_deducciones'], 2) . '</td>
+                            </tr>
+                            <tr class="total-neto">
+                                <td>NETO A PAGAR:</td>
+                                <td style="text-align: right;">$' . number_format($emp['total_neto'], 2) . '</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="footer">
+                        Este documento es una representación impresa de un CFDI<br>
+                        Generado: ' . date('d/m/Y H:i:s') . '
+                    </div>
+                </div>';
+            }
+            
+            $html .= '</body></html>';
+            
+            // Enviar como HTML que se puede imprimir como PDF
+            header('Content-Type: text/html; charset=utf-8');
+            echo $html;
+            exit;
+            
+        } catch (Exception $e) {
+            echo "Error al generar recibos: " . $e->getMessage();
+            exit;
         }
     }
 }

@@ -115,6 +115,10 @@ if ($request === '' || $request === 'login') {
         $controller->eliminarIncidencia();
     } elseif ($parts[1] === 'marcar-revisado') {
         $controller->marcarRevisado();
+    } elseif ($parts[1] === 'obtener-vacacion') {
+        $controller->obtenerVacacion();
+    } elseif ($parts[1] === 'guardar-vacacion') {
+        $controller->guardarVacacion();
     } else {
         http_response_code(404);
         die('Página no encontrada');
@@ -129,6 +133,8 @@ if ($request === '' || $request === 'login') {
         $controller->procesar();
     } elseif ($parts[1] === 'recibos') {
         $controller->recibos();
+    } elseif ($parts[1] === 'generar-recibos') {
+        $controller->generarRecibos();
     } elseif ($parts[1] === 'configuracion') {
         $controller->configuracion();
     } elseif ($parts[1] === 'detalle') {

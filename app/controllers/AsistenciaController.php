@@ -181,9 +181,19 @@ class AsistenciaController {
         ");
         $solicitudes = $stmt->fetchAll();
         
+        // Obtener empleados activos para el formulario
+        $stmt = $db->query("
+            SELECT id, CONCAT(nombres, ' ', apellido_paterno, ' ', apellido_materno) as nombre_completo
+            FROM empleados 
+            WHERE estatus = 'Activo'
+            ORDER BY nombres, apellido_paterno
+        ");
+        $empleados = $stmt->fetchAll();
+        
         $data = [
             'title' => 'Gestión de Vacaciones',
-            'solicitudes' => $solicitudes
+            'solicitudes' => $solicitudes,
+            'empleados' => $empleados
         ];
         
         ob_start();
@@ -491,6 +501,99 @@ class AsistenciaController {
             $stmt->execute([$id]);
             
             echo json_encode(['success' => true, 'message' => 'Incidencia marcada como Revisada exitosamente']);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+    
+    public function obtenerVacacion() {
+        AuthController::check();
+        header('Content-Type: application/json');
+        
+        $id = $_GET['id'] ?? null;
+        
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => 'ID no proporcionado']);
+            exit;
+        }
+        
+        try {
+            $db = Database::getInstance()->getConnection();
+            
+            $stmt = $db->prepare("
+                SELECT sv.*, 
+                       CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', e.apellido_materno) as nombre_empleado,
+                       e.departamento
+                FROM solicitudes_vacaciones sv
+                INNER JOIN empleados e ON sv.empleado_id = e.id
+                WHERE sv.id = ?
+            ");
+            $stmt->execute([$id]);
+            $solicitud = $stmt->fetch();
+            
+            if (!$solicitud) {
+                echo json_encode(['success' => false, 'message' => 'Solicitud no encontrada']);
+            } else {
+                echo json_encode(['success' => true, 'solicitud' => $solicitud]);
+            }
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+    
+    public function guardarVacacion() {
+        AuthController::checkRole(['admin', 'rrhh']);
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+        
+        $data = json_decode(file_get_contents('php://input'), true);
+        
+        $empleadoId = $data['empleado_id'] ?? null;
+        $fechaInicio = $data['fecha_inicio'] ?? null;
+        $fechaFin = $data['fecha_fin'] ?? null;
+        $diasSolicitados = $data['dias_solicitados'] ?? null;
+        $motivo = $data['motivo'] ?? null;
+        
+        if (!$empleadoId || !$fechaInicio || !$fechaFin || !$diasSolicitados) {
+            echo json_encode(['success' => false, 'message' => 'Todos los campos son obligatorios']);
+            exit;
+        }
+        
+        // Validar que la fecha fin sea posterior a la fecha inicio
+        if (strtotime($fechaFin) < strtotime($fechaInicio)) {
+            echo json_encode(['success' => false, 'message' => 'La fecha fin debe ser posterior a la fecha inicio']);
+            exit;
+        }
+        
+        try {
+            $db = Database::getInstance()->getConnection();
+            
+            // Verificar que el empleado existe
+            $stmt = $db->prepare("SELECT id FROM empleados WHERE id = ? AND estatus = 'Activo'");
+            $stmt->execute([$empleadoId]);
+            if (!$stmt->fetch()) {
+                echo json_encode(['success' => false, 'message' => 'Empleado no encontrado o inactivo']);
+                exit;
+            }
+            
+            // Insertar solicitud
+            $stmt = $db->prepare("
+                INSERT INTO solicitudes_vacaciones 
+                (empleado_id, fecha_inicio, fecha_fin, dias_solicitados, motivo, estatus, fecha_solicitud)
+                VALUES (?, ?, ?, ?, ?, 'Pendiente', NOW())
+            ");
+            
+            if ($stmt->execute([$empleadoId, $fechaInicio, $fechaFin, $diasSolicitados, $motivo])) {
+                echo json_encode(['success' => true, 'message' => 'Solicitud de vacaciones creada exitosamente']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Error al guardar la solicitud']);
+            }
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
         }
