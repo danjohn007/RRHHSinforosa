@@ -139,7 +139,13 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Candidato</label>
                     <select id="entrevistaCandidato" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500" required>
                         <option value="">Seleccione un candidato...</option>
-                        <!-- Aquí se cargarían los candidatos dinámicamente -->
+                        <?php if (!empty($candidatos)): ?>
+                            <?php foreach ($candidatos as $candidato): ?>
+                                <option value="<?php echo $candidato['id']; ?>">
+                                    <?php echo htmlspecialchars($candidato['nombre_completo']); ?> - <?php echo htmlspecialchars($candidato['puesto_deseado']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </select>
                 </div>
                 <div>
@@ -188,39 +194,184 @@
 </div>
 
 <script>
+let editandoEntrevistaId = null;
+
 function openEntrevistaModal() {
+    editandoEntrevistaId = null;
+    document.getElementById('entrevistaForm').reset();
+    document.querySelector('#entrevistaModal h3').textContent = 'Nueva Entrevista';
     document.getElementById('entrevistaModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
 
 function closeEntrevistaModal() {
+    editandoEntrevistaId = null;
     document.getElementById('entrevistaModal').classList.add('hidden');
     document.body.style.overflow = '';
 }
 
-function editarEntrevista(id) {
-    alert('Editar entrevista ID: ' + id + '\n\nEn una implementación completa, aquí se cargarían los datos de la entrevista para editarlos.');
-    openEntrevistaModal();
-}
-
-function completarEntrevista(id) {
-    if (confirm('¿Está seguro de que desea marcar esta entrevista como completada?')) {
-        alert('Entrevista marcada como completada.\n\nEn una implementación completa, aquí se actualizaría el estado y se podría agregar la evaluación.');
+async function editarEntrevista(id) {
+    try {
+        const response = await fetch('<?php echo BASE_URL; ?>reclutamiento/obtener-entrevista?id=' + id);
+        const data = await response.json();
+        
+        if (data.success) {
+            const ent = data.entrevista;
+            editandoEntrevistaId = id;
+            
+            // Cambiar título del modal
+            document.querySelector('#entrevistaModal h3').textContent = 'Editar Entrevista';
+            
+            // Llenar formulario con los datos
+            document.getElementById('entrevistaCandidato').value = ent.candidato_id;
+            document.getElementById('entrevistaTipo').value = ent.tipo;
+            
+            // Separar fecha y hora
+            const fechaHora = new Date(ent.fecha_programada);
+            const fecha = fechaHora.toISOString().split('T')[0];
+            const hora = fechaHora.toTimeString().slice(0, 5);
+            
+            document.getElementById('entrevistaFecha').value = fecha;
+            document.getElementById('entrevistaHora').value = hora;
+            document.getElementById('entrevistaDuracion').value = ent.duracion_minutos;
+            document.getElementById('entrevistaEntrevistador').value = ent.ubicacion || '';
+            document.getElementById('entrevistaNotas').value = ent.observaciones || '';
+            
+            // Abrir modal
+            document.getElementById('entrevistaModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        } else {
+            alert('Error: ' + data.message);
+        }
+    } catch (error) {
+        alert('Error al cargar la entrevista: ' + error.message);
     }
 }
 
-function cancelarEntrevista(id) {
+async function completarEntrevista(id) {
+    if (confirm('¿Está seguro de que desea marcar esta entrevista como completada?')) {
+        try {
+            const formData = new FormData();
+            formData.append('entrevista_id', id);
+            
+            const response = await fetch('<?php echo BASE_URL; ?>reclutamiento/completar-entrevista', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(data.message || 'Entrevista marcada como completada exitosamente');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (error) {
+            alert('Error al completar la entrevista: ' + error.message);
+        }
+    }
+}
+
+async function cancelarEntrevista(id) {
     const motivo = prompt('Ingrese el motivo de la cancelación:');
     if (motivo) {
-        alert('Entrevista cancelada.\nMotivo: ' + motivo + '\n\nEn una implementación completa, aquí se actualizaría el estado en la base de datos.');
+        try {
+            const formData = new FormData();
+            formData.append('entrevista_id', id);
+            formData.append('motivo', motivo);
+            
+            const response = await fetch('<?php echo BASE_URL; ?>reclutamiento/cancelar-entrevista', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(data.message || 'Entrevista cancelada exitosamente');
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (error) {
+            alert('Error al cancelar la entrevista: ' + error.message);
+        }
     }
 }
 
 // Manejar envío del formulario
-document.getElementById('entrevistaForm')?.addEventListener('submit', function(e) {
+document.getElementById('entrevistaForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
-    alert('Entrevista programada correctamente.\n\nEn una implementación completa, aquí se enviarían los datos al servidor y se enviaría una notificación al candidato.');
-    closeEntrevistaModal();
+    
+    const candidatoId = document.getElementById('entrevistaCandidato').value;
+    const tipo = document.getElementById('entrevistaTipo').value;
+    const fecha = document.getElementById('entrevistaFecha').value;
+    const hora = document.getElementById('entrevistaHora').value;
+    const duracion = document.getElementById('entrevistaDuracion').value;
+    const entrevistador = document.getElementById('entrevistaEntrevistador').value;
+    const notas = document.getElementById('entrevistaNotas').value;
+    
+    if (!candidatoId || !tipo || !fecha || !hora) {
+        alert('Por favor complete todos los campos requeridos');
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        
+        if (editandoEntrevistaId) {
+            // Modo edición
+            formData.append('entrevista_id', editandoEntrevistaId);
+            formData.append('tipo', tipo);
+            formData.append('fecha_programada', fecha);
+            formData.append('hora', hora);
+            formData.append('duracion', duracion);
+            formData.append('ubicacion', entrevistador);
+            formData.append('observaciones', notas);
+            
+            const response = await fetch('<?php echo BASE_URL; ?>reclutamiento/reagendar-entrevista', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(data.message || 'Entrevista actualizada exitosamente');
+                closeEntrevistaModal();
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } else {
+            // Modo creación
+            formData.append('candidato_id', candidatoId);
+            formData.append('tipo', tipo);
+            formData.append('fecha_programada', fecha);
+            formData.append('hora', hora);
+            formData.append('duracion', duracion);
+            formData.append('ubicacion', entrevistador);
+            formData.append('observaciones', notas);
+            
+            const response = await fetch('<?php echo BASE_URL; ?>reclutamiento/programar-entrevista', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(data.message || 'Entrevista programada exitosamente');
+                closeEntrevistaModal();
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        }
+    } catch (error) {
+        alert('Error al guardar la entrevista: ' + error.message);
+    }
 });
 
 // Cerrar modal al presionar ESC

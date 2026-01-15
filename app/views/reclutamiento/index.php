@@ -42,13 +42,44 @@
     <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h2 class="text-lg font-semibold text-gray-800">Candidatos Recientes</h2>
         <div class="flex space-x-2">
-            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
+            <button onclick="toggleFiltros()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
                 <i class="fas fa-filter mr-2"></i>Filtrar
             </button>
-            <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
+            <button onclick="exportarCandidatos()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
                 <i class="fas fa-download mr-2"></i>Exportar
             </button>
         </div>
+    </div>
+    
+    <!-- Panel de filtros -->
+    <div id="filtrosPanel" class="hidden px-6 py-4 bg-gray-50 border-b border-gray-200">
+        <form id="filtrosForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Estatus</label>
+                <select name="estatus" id="filtroEstatus" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                    <option value="">Todos</option>
+                    <option value="Nuevo">Nuevo</option>
+                    <option value="En Revisión">En Revisión</option>
+                    <option value="Entrevista">Entrevista</option>
+                    <option value="Seleccionado">Seleccionado</option>
+                    <option value="Rechazado">Rechazado</option>
+                    <option value="Contratado">Contratado</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Puesto</label>
+                <input type="text" name="puesto" id="filtroPuesto" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Buscar puesto...">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Experiencia mínima</label>
+                <input type="number" name="experiencia" id="filtroExperiencia" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Años" min="0">
+            </div>
+            <div class="flex items-end">
+                <button type="button" onclick="aplicarFiltros()" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    <i class="fas fa-search mr-2"></i>Buscar
+                </button>
+            </div>
+        </form>
     </div>
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
@@ -859,5 +890,60 @@ function getEstatusClass(estatus) {
         'Reprogramada': 'bg-yellow-100 text-yellow-800'
     };
     return clases[estatus] || 'bg-gray-100 text-gray-800';
+}
+
+// Función para toggle del panel de filtros
+function toggleFiltros() {
+    const panel = document.getElementById('filtrosPanel');
+    if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+    } else {
+        panel.classList.add('hidden');
+    }
+}
+
+// Función para aplicar filtros
+function aplicarFiltros() {
+    const estatus = document.getElementById('filtroEstatus').value;
+    const puesto = document.getElementById('filtroPuesto').value;
+    const experiencia = document.getElementById('filtroExperiencia').value;
+    
+    // Construir URL con parámetros
+    let url = '<?php echo BASE_URL; ?>reclutamiento?';
+    const params = [];
+    
+    if (estatus) params.push('estatus=' + encodeURIComponent(estatus));
+    if (puesto) params.push('puesto=' + encodeURIComponent(puesto));
+    if (experiencia) params.push('experiencia=' + experiencia);
+    
+    if (params.length > 0) {
+        url += params.join('&');
+    }
+    
+    window.location.href = url;
+}
+
+// Función para exportar candidatos a CSV
+function exportarCandidatos() {
+    // Obtener los parámetros de filtro actuales si existen
+    const urlParams = new URLSearchParams(window.location.search);
+    const estatus = urlParams.get('estatus') || '';
+    const puesto = urlParams.get('puesto') || '';
+    const experiencia = urlParams.get('experiencia') || '';
+    
+    // Construir URL de exportación con los mismos filtros
+    let url = '<?php echo BASE_URL; ?>reclutamiento/exportar-candidatos?';
+    const params = [];
+    
+    if (estatus) params.push('estatus=' + encodeURIComponent(estatus));
+    if (puesto) params.push('puesto=' + encodeURIComponent(puesto));
+    if (experiencia) params.push('experiencia=' + experiencia);
+    
+    if (params.length > 0) {
+        url += params.join('&');
+    }
+    
+    // Abrir en nueva ventana para descargar
+    window.location.href = url;
 }
 </script>

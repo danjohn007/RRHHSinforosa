@@ -176,6 +176,12 @@ if ($request === '' || $request === 'login') {
         $controller->reagendarEntrevista();
     } elseif ($parts[1] === 'marcar-revision') {
         $controller->marcarRevision();
+    } elseif ($parts[1] === 'exportar-candidatos') {
+        $controller->exportarCandidatos();
+    } elseif ($parts[1] === 'completar-entrevista') {
+        $controller->completarEntrevista();
+    } elseif ($parts[1] === 'cancelar-entrevista') {
+        $controller->cancelarEntrevista();
     } else {
         http_response_code(404);
         die('Página no encontrada');

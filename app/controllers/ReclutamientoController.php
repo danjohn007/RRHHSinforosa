@@ -10,8 +10,35 @@ class ReclutamientoController {
         
         $db = Database::getInstance()->getConnection();
         
+        // Obtener parámetros de filtro
+        $estatus = $_GET['estatus'] ?? '';
+        $puesto = $_GET['puesto'] ?? '';
+        $experiencia = $_GET['experiencia'] ?? '';
+        
+        // Construir consulta con filtros
+        $query = "SELECT * FROM candidatos WHERE 1=1";
+        $params = [];
+        
+        if ($estatus) {
+            $query .= " AND estatus = ?";
+            $params[] = $estatus;
+        }
+        
+        if ($puesto) {
+            $query .= " AND puesto_deseado LIKE ?";
+            $params[] = "%$puesto%";
+        }
+        
+        if ($experiencia) {
+            $query .= " AND experiencia_anios >= ?";
+            $params[] = $experiencia;
+        }
+        
+        $query .= " ORDER BY fecha_aplicacion DESC LIMIT 50";
+        
         // Obtener candidatos
-        $stmt = $db->query("SELECT * FROM candidatos ORDER BY fecha_aplicacion DESC LIMIT 20");
+        $stmt = $db->prepare($query);
+        $stmt->execute($params);
         $candidatos = $stmt->fetchAll();
         
         // Contar por estatus
@@ -54,9 +81,19 @@ class ReclutamientoController {
         ");
         $entrevistas = $stmt->fetchAll();
         
+        // Obtener candidatos con estatus Nuevo para el formulario
+        $stmt = $db->query("
+            SELECT id, CONCAT(nombres, ' ', apellido_paterno, ' ', apellido_materno) as nombre_completo, puesto_deseado
+            FROM candidatos 
+            WHERE estatus = 'Nuevo'
+            ORDER BY nombres, apellido_paterno
+        ");
+        $candidatos = $stmt->fetchAll();
+        
         $data = [
             'title' => 'Gestión de Entrevistas',
-            'entrevistas' => $entrevistas
+            'entrevistas' => $entrevistas,
+            'candidatos' => $candidatos
         ];
         
         ob_start();
@@ -471,6 +508,201 @@ class ReclutamientoController {
             
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+    
+    public function exportarCandidatos() {
+        AuthController::check();
+        
+        $db = Database::getInstance()->getConnection();
+        
+        // Obtener parámetros de filtro (mismos que en index)
+        $estatus = $_GET['estatus'] ?? '';
+        $puesto = $_GET['puesto'] ?? '';
+        $experiencia = $_GET['experiencia'] ?? '';
+        
+        // Construir consulta con filtros
+        $query = "SELECT * FROM candidatos WHERE 1=1";
+        $params = [];
+        
+        if ($estatus) {
+            $query .= " AND estatus = ?";
+            $params[] = $estatus;
+        }
+        
+        if ($puesto) {
+            $query .= " AND puesto_deseado LIKE ?";
+            $params[] = "%$puesto%";
+        }
+        
+        if ($experiencia) {
+            $query .= " AND experiencia_anios >= ?";
+            $params[] = $experiencia;
+        }
+        
+        $query .= " ORDER BY fecha_aplicacion DESC";
+        
+        // Obtener candidatos
+        $stmt = $db->prepare($query);
+        $stmt->execute($params);
+        $candidatos = $stmt->fetchAll();
+        
+        // Generar CSV
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="candidatos_' . date('Y-m-d') . '.csv"');
+        
+        $output = fopen('php://output', 'w');
+        
+        // BOM para UTF-8
+        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+        
+        // Encabezados
+        fputcsv($output, [
+            'ID',
+            'Nombres',
+            'Apellido Paterno',
+            'Apellido Materno',
+            'Email',
+            'Teléfono',
+            'Puesto Deseado',
+            'Experiencia (años)',
+            'Pretensión Salarial',
+            'Estatus',
+            'Fecha Aplicación'
+        ]);
+        
+        // Datos
+        foreach ($candidatos as $candidato) {
+            fputcsv($output, [
+                $candidato['id'],
+                $candidato['nombres'],
+                $candidato['apellido_paterno'],
+                $candidato['apellido_materno'] ?? '',
+                $candidato['email'] ?? '',
+                "'" . ($candidato['telefono'] ?? ''),
+                $candidato['puesto_deseado'],
+                $candidato['experiencia_anios'] ?? 0,
+                $candidato['pretension_salarial'] ? number_format($candidato['pretension_salarial'], 2) : '0.00',
+                $candidato['estatus'],
+                date('d/m/Y', strtotime($candidato['fecha_aplicacion']))
+            ]);
+        }
+        
+        fclose($output);
+        exit;
+    }
+    
+    public function completarEntrevista() {
+        AuthController::check();
+        
+        // Limpiar cualquier output buffer previo
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+        
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+        
+        $entrevista_id = $_POST['entrevista_id'] ?? 0;
+        
+        if (!$entrevista_id) {
+            echo json_encode(['success' => false, 'message' => 'ID de entrevista no válido']);
+            exit;
+        }
+        
+        try {
+            $db = Database::getInstance()->getConnection();
+            
+            // Obtener información de la entrevista
+            $stmt = $db->prepare("SELECT * FROM entrevistas WHERE id = ?");
+            $stmt->execute([$entrevista_id]);
+            $entrevista = $stmt->fetch();
+            
+            if (!$entrevista) {
+                echo json_encode(['success' => false, 'message' => 'Entrevista no encontrada']);
+                exit;
+            }
+            
+            // Actualizar estatus de la entrevista a Realizada
+            $stmt = $db->prepare("UPDATE entrevistas SET estatus = 'Realizada' WHERE id = ?");
+            $result1 = $stmt->execute([$entrevista_id]);
+            
+            // Actualizar estatus del candidato a Seleccionado (en lugar de Evaluación)
+            $stmt = $db->prepare("UPDATE candidatos SET estatus = 'Seleccionado' WHERE id = ?");
+            $result2 = $stmt->execute([$entrevista['candidato_id']]);
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Entrevista completada exitosamente. El candidato ha sido marcado como Seleccionado.'
+            ]);
+            
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
+    }
+    
+    public function cancelarEntrevista() {
+        AuthController::check();
+        
+        // Limpiar cualquier output buffer previo
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+        
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+        
+        $entrevista_id = $_POST['entrevista_id'] ?? 0;
+        $motivo = $_POST['motivo'] ?? '';
+        
+        if (!$entrevista_id) {
+            echo json_encode(['success' => false, 'message' => 'ID de entrevista no válido']);
+            exit;
+        }
+        
+        try {
+            $db = Database::getInstance()->getConnection();
+            $db->beginTransaction();
+            
+            // Obtener información de la entrevista
+            $stmt = $db->prepare("SELECT * FROM entrevistas WHERE id = ?");
+            $stmt->execute([$entrevista_id]);
+            $entrevista = $stmt->fetch();
+            
+            if (!$entrevista) {
+                $db->rollBack();
+                echo json_encode(['success' => false, 'message' => 'Entrevista no encontrada']);
+                exit;
+            }
+            
+            // Actualizar estatus de la entrevista a Cancelada con el motivo
+            $stmt = $db->prepare("UPDATE entrevistas SET estatus = 'Cancelada', observaciones = CONCAT(COALESCE(observaciones, ''), '\n\nMotivo cancelación: ', ?) WHERE id = ?");
+            $stmt->execute([$motivo, $entrevista_id]);
+            
+            // Devolver al candidato a En Revisión
+            $stmt = $db->prepare("UPDATE candidatos SET estatus = 'En Revisión' WHERE id = ?");
+            $stmt->execute([$entrevista['candidato_id']]);
+            
+            $db->commit();
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Entrevista cancelada. El candidato ha sido devuelto a revisión.'
+            ]);
+            
+        } catch (Exception $e) {
+            $db->rollBack();
+            echo json_encode(['success' => false, 'message' => 'Error al cancelar entrevista: ' . $e->getMessage()]);
         }
         exit;
     }
