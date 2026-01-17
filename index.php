@@ -221,6 +221,26 @@ if ($request === '' || $request === 'login') {
 } elseif ($request === 'notificaciones') {
     $controller = new NotificacionesController();
     $controller->index();
+} elseif (strpos($request, 'configuraciones') === 0) {
+    $controller = new ConfiguracionesController();
+    $parts = explode('/', $request);
+    
+    if (count($parts) === 1) {
+        $controller->index();
+    } elseif ($parts[1] === 'guardar') {
+        $controller->guardar();
+    } elseif ($parts[1] === 'dispositivos') {
+        $controller->dispositivos();
+    } elseif ($parts[1] === 'guardar-dispositivo') {
+        $controller->guardarDispositivo();
+    } elseif ($parts[1] === 'obtener-dispositivo') {
+        $controller->obtenerDispositivo();
+    } elseif ($parts[1] === 'eliminar-dispositivo') {
+        $controller->eliminarDispositivo();
+    } else {
+        http_response_code(404);
+        die('Página no encontrada');
+    }
 } else {
     http_response_code(404);
     die('Página no encontrada');
