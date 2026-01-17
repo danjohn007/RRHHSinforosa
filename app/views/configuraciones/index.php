@@ -395,7 +395,7 @@ document.getElementById('form-configuraciones').addEventListener('submit', async
 // Sincronizar color pickers con inputs de texto
 document.querySelectorAll('input[type="color"]').forEach(colorInput => {
     colorInput.addEventListener('change', function() {
-        const textInput = this.nextElementSibling.querySelector('input[type="text"]');
+        const textInput = this.parentElement.querySelector('input[type="text"]');
         if (textInput) {
             textInput.value = this.value;
         }

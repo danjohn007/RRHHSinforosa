@@ -127,9 +127,9 @@ class ConfiguracionesController {
                     'canal_salida' => $_POST['canal_salida'] ?? 0,
                     'duracion_pulso' => $_POST['duracion_pulso'] ?? 600,
                     'accion' => $_POST['accion'] ?? 'Abrir/Cerrar',
-                    'habilitado' => isset($_POST['habilitado']) ? 1 : 0,
-                    'invertido' => isset($_POST['invertido']) ? 1 : 0,
-                    'simultaneo' => isset($_POST['simultaneo']) ? 1 : 0
+                    'habilitado' => (isset($_POST['habilitado']) && $_POST['habilitado']) ? 1 : 0,
+                    'invertido' => (isset($_POST['invertido']) && $_POST['invertido']) ? 1 : 0,
+                    'simultaneo' => (isset($_POST['simultaneo']) && $_POST['simultaneo']) ? 1 : 0
                 ];
                 
                 if ($id) {
@@ -162,12 +162,12 @@ class ConfiguracionesController {
                     'area_domain' => $_POST['area_domain'],
                     'device_index_code' => $_POST['device_index_code'],
                     'area_ubicacion' => $_POST['area_ubicacion'],
-                    'isapi_habilitado' => isset($_POST['isapi_habilitado']) ? 1 : 0,
+                    'isapi_habilitado' => (isset($_POST['isapi_habilitado']) && $_POST['isapi_habilitado']) ? 1 : 0,
                     'isapi_url' => $_POST['isapi_url'] ?? '',
                     'isapi_usuario' => $_POST['isapi_usuario'] ?? '',
                     'isapi_password' => $_POST['isapi_password'] ?? '',
-                    'verificar_ssl' => isset($_POST['verificar_ssl']) ? 1 : 0,
-                    'habilitado' => isset($_POST['habilitado']) ? 1 : 0
+                    'verificar_ssl' => (isset($_POST['verificar_ssl']) && $_POST['verificar_ssl']) ? 1 : 0,
+                    'habilitado' => (isset($_POST['habilitado']) && $_POST['habilitado']) ? 1 : 0
                 ];
                 
                 if ($id) {

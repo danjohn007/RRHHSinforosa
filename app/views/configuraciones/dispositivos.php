@@ -76,11 +76,11 @@
                             </div>
                             <div>
                                 <label class="text-xs text-gray-600 font-medium">Acción</label>
-                                <div class="mt-1">
-                                    <select disabled class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
+                                <div class="mt-1 relative">
+                                    <select disabled class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm appearance-none">
                                         <option><?php echo htmlspecialchars($dispositivo['accion']); ?></option>
                                     </select>
-                                    <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                    <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
                                 </div>
                             </div>
                         </div>
@@ -151,8 +151,8 @@
             <button onclick="location.href='<?php echo BASE_URL; ?>configuraciones'" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
                 <i class="fas fa-times mr-2"></i>Cancelar
             </button>
-            <button onclick="saveShellyDevices()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
-                <i class="fas fa-save mr-2"></i>Guardar Dispositivos Shelly
+            <button onclick="alert('Los dispositivos se guardan automáticamente al agregar/editar'); location.href='<?php echo BASE_URL; ?>configuraciones'" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                <i class="fas fa-check mr-2"></i>Listo
             </button>
         </div>
     </div>
@@ -309,8 +309,8 @@
             <button onclick="location.href='<?php echo BASE_URL; ?>configuraciones'" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
                 <i class="fas fa-times mr-2"></i>Cancelar
             </button>
-            <button onclick="saveHikVisionDevices()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
-                <i class="fas fa-save mr-2"></i>Guardar Dispositivos HikVision
+            <button onclick="alert('Los dispositivos se guardan automáticamente al agregar/editar'); location.href='<?php echo BASE_URL; ?>configuraciones'" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                <i class="fas fa-check mr-2"></i>Listo
             </button>
         </div>
     </div>
@@ -595,10 +595,6 @@ function deleteShellyDevice(id) {
     });
 }
 
-function saveShellyDevices() {
-    alert('Dispositivos Shelly guardados');
-}
-
 // HikVision Modal
 function openHikVisionModal() {
     document.getElementById('modal-hikvision').classList.remove('hidden');
@@ -659,9 +655,5 @@ function deleteHikVisionDevice(id) {
         console.error('Error:', error);
         alert('Error al eliminar el dispositivo');
     });
-}
-
-function saveHikVisionDevices() {
-    alert('Dispositivos HikVision guardados');
 }
 </script>
