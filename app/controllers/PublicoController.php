@@ -173,6 +173,11 @@ class PublicoController {
                 // Activar dispositivo Shelly
                 $activacionShelly = $this->activarDispositivoShelly($sucursalActual['id'], 'Entrada');
                 
+                // Log error si Shelly no se activa pero continuar con registro
+                if (!$activacionShelly['activado']) {
+                    error_log('Advertencia: Shelly no activado para entrada - ' . $activacionShelly['mensaje']);
+                }
+                
                 // Calcular horas extras acumuladas en el periodo actual
                 $horasExtras = $this->calcularHorasExtras($empleado['id']);
                 
@@ -237,6 +242,11 @@ class PublicoController {
                 
                 // Activar dispositivo Shelly
                 $activacionShelly = $this->activarDispositivoShelly($sucursalActual['id'], 'Salida');
+                
+                // Log error si Shelly no se activa pero continuar con registro
+                if (!$activacionShelly['activado']) {
+                    error_log('Advertencia: Shelly no activado para salida - ' . $activacionShelly['mensaje']);
+                }
                 
                 // Calcular horas extras acumuladas en el periodo actual
                 $horasExtrasAcumuladas = $this->calcularHorasExtras($empleado['id']);
