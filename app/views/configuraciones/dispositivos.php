@@ -189,8 +189,8 @@
                                 <label class="text-xs text-gray-600 font-medium">Tipo de Dispositivo <span class="text-red-500">*</span></label>
                                 <div class="mt-1">
                                     <select disabled class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
-                                        <option value="LPR" <?php echo $dispositivo['tipo_dispositivo'] === 'LPR' ? 'selected' : ''; ?>>Cámara LPR (Lectura de Placas)</option>
-                                        <option value="Barcode" <?php echo $dispositivo['tipo_dispositivo'] === 'Barcode' ? 'selected' : ''; ?>>Lector de Código de Barras</option>
+                                        <option value="LPR" <?php echo ($dispositivo['tipo_dispositivo'] ?? 'LPR') === 'LPR' ? 'selected' : ''; ?>>Cámara LPR (Lectura de Placas)</option>
+                                        <option value="Barcode" <?php echo ($dispositivo['tipo_dispositivo'] ?? '') === 'Barcode' ? 'selected' : ''; ?>>Lector de Código de Barras</option>
                                     </select>
                                 </div>
                             </div>
@@ -200,13 +200,13 @@
                             <div>
                                 <label class="text-xs text-gray-600 font-medium">Api Key</label>
                                 <div class="mt-1">
-                                    <input type="text" value="<?php echo htmlspecialchars($dispositivo['api_key']); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm font-mono">
+                                    <input type="text" value="<?php echo htmlspecialchars($dispositivo['api_key'] ?? ''); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm font-mono">
                                 </div>
                             </div>
                             <div>
                                 <label class="text-xs text-gray-600 font-medium">Api Secret</label>
                                 <div class="flex items-center space-x-2 mt-1">
-                                    <input type="password" value="<?php echo htmlspecialchars($dispositivo['api_secret']); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm font-mono">
+                                    <input type="password" value="<?php echo htmlspecialchars($dispositivo['api_secret'] ?? ''); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm font-mono">
                                     <button class="text-gray-600 hover:text-gray-900">
                                         <i class="fas fa-eye"></i>
                                     </button>
@@ -217,7 +217,7 @@
                         <div class="mb-4">
                             <label class="text-xs text-gray-600 font-medium">Endpoint (Token)</label>
                             <div class="mt-1">
-                                <input type="text" value="<?php echo htmlspecialchars($dispositivo['endpoint_token']); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
+                                <input type="text" value="<?php echo htmlspecialchars($dispositivo['endpoint_token'] ?? ''); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
                                 <p class="text-xs text-gray-500 mt-1">URL para obtener token de autenticación</p>
                             </div>
                         </div>
@@ -225,7 +225,7 @@
                         <div class="mb-4">
                             <label class="text-xs text-gray-600 font-medium">Area Domain</label>
                             <div class="mt-1">
-                                <input type="text" value="<?php echo htmlspecialchars($dispositivo['area_domain']); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
+                                <input type="text" value="<?php echo htmlspecialchars($dispositivo['area_domain'] ?? ''); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
                                 <p class="text-xs text-gray-500 mt-1">Dominio del área para consultas API</p>
                             </div>
                         </div>
@@ -234,13 +234,13 @@
                             <div>
                                 <label class="text-xs text-gray-600 font-medium">Device Index Code / Serial</label>
                                 <div class="mt-1">
-                                    <input type="text" value="<?php echo htmlspecialchars($dispositivo['device_index_code']); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
+                                    <input type="text" value="<?php echo htmlspecialchars($dispositivo['device_index_code'] ?? ''); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
                                 </div>
                             </div>
                             <div>
                                 <label class="text-xs text-gray-600 font-medium">Área / Ubicación</label>
                                 <div class="mt-1">
-                                    <input type="text" value="<?php echo htmlspecialchars($dispositivo['area_ubicacion']); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
+                                    <input type="text" value="<?php echo htmlspecialchars($dispositivo['area_ubicacion'] ?? ''); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
                                 </div>
                             </div>
                         </div>
@@ -280,11 +280,11 @@
 
                             <div class="flex items-center space-x-6">
                                 <label class="flex items-center space-x-2 cursor-pointer">
-                                    <input type="checkbox" <?php echo $dispositivo['isapi_habilitado'] ? 'checked' : ''; ?> disabled class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                                    <input type="checkbox" <?php echo ($dispositivo['isapi_habilitado'] ?? 0) ? 'checked' : ''; ?> disabled class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
                                     <span class="text-sm text-gray-700">Dispositivo habilitado</span>
                                 </label>
                                 <label class="flex items-center space-x-2 cursor-pointer">
-                                    <input type="checkbox" <?php echo $dispositivo['verificar_ssl'] ? 'checked' : ''; ?> disabled class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                                    <input type="checkbox" <?php echo ($dispositivo['verificar_ssl'] ?? 0) ? 'checked' : ''; ?> disabled class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
                                     <span class="text-sm text-gray-700">Verificar certificado SSL</span>
                                 </label>
                             </div>
