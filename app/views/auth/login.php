@@ -3,26 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - <?php echo APP_NAME; ?></title>
+    <?php 
+    $configHelper = ConfigHelper::getInstance();
+    $siteName = $configHelper->getSiteName();
+    ?>
+    <title>Login - <?php echo $siteName; ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .bg-gradient-sinforosa {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-    </style>
+    
+    <!-- CSS personalizado con colores del sistema -->
+    <?php echo $configHelper->generateCustomCSS(); ?>
 </head>
 <body class="bg-gray-50">
     <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full space-y-8">
             <!-- Logo y título -->
             <div class="text-center">
-                <div class="mx-auto h-20 w-20 bg-gradient-sinforosa rounded-full flex items-center justify-center mb-4">
-                    <svg class="h-12 w-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
+                <div class="mx-auto mb-4 flex items-center justify-center">
+                    <?php 
+                    $logo = $configHelper->getLogo();
+                    if (!empty($logo)) {
+                        // Mostrar logo personalizado
+                        $logoUrl = (strpos($logo, 'http') === 0) ? $logo : BASE_URL . $logo;
+                        echo '<img src="' . htmlspecialchars($logoUrl) . '" alt="' . htmlspecialchars($siteName) . '" class="h-20 w-20 object-contain">';
+                    } else {
+                        // Mostrar logo por defecto
+                        echo '<div class="h-20 w-20 bg-gradient-sinforosa rounded-full flex items-center justify-center">
+                            <svg class="h-12 w-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        </div>';
+                    }
+                    ?>
                 </div>
                 <h2 class="text-3xl font-extrabold text-gray-900">
-                    Sinforosa Café
+                    <?php echo htmlspecialchars($siteName); ?>
                 </h2>
                 <p class="mt-2 text-sm text-gray-600">
                     Sistema de Gestión de RRHH

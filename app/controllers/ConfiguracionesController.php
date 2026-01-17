@@ -56,6 +56,14 @@ class ConfiguracionesController {
         try {
             $configuraciones = $_POST['configuraciones'] ?? [];
             
+            // Manejar upload de logo si existe
+            if (isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
+                $logoPath = $this->subirLogo($_FILES['logo']);
+                if ($logoPath) {
+                    $configuraciones['sitio_logo'] = $logoPath;
+                }
+            }
+            
             foreach ($configuraciones as $clave => $valor) {
                 $stmt = $db->prepare("UPDATE configuraciones_globales SET valor = ? WHERE clave = ?");
                 $stmt->execute([$valor, $clave]);
@@ -64,6 +72,46 @@ class ConfiguracionesController {
             echo json_encode(['success' => true, 'message' => 'Configuraciones guardadas exitosamente']);
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error al guardar configuraciones: ' . $e->getMessage()]);
+        }
+    }
+    
+    /**
+     * Subir logo del sistema
+     */
+    private function subirLogo($archivo) {
+        try {
+            // Validar tipo de archivo
+            $tiposPermitidos = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!in_array($archivo['type'], $tiposPermitidos)) {
+                throw new Exception('Tipo de archivo no permitido');
+            }
+            
+            // Validar tamaño (máximo 2MB)
+            if ($archivo['size'] > 2 * 1024 * 1024) {
+                throw new Exception('El archivo es muy grande (máximo 2MB)');
+            }
+            
+            // Crear directorio si no existe
+            $uploadDir = BASE_PATH . 'uploads/logos';
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            
+            // Generar nombre único
+            $extension = pathinfo($archivo['name'], PATHINFO_EXTENSION);
+            $filename = 'logo_' . time() . '.' . $extension;
+            $filepath = $uploadDir . '/' . $filename;
+            
+            // Mover archivo
+            if (move_uploaded_file($archivo['tmp_name'], $filepath)) {
+                // Retornar ruta relativa
+                return 'uploads/logos/' . $filename;
+            }
+            
+            return false;
+        } catch (Exception $e) {
+            error_log('Error al subir logo: ' . $e->getMessage());
+            return false;
         }
     }
     
