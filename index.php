@@ -221,6 +221,30 @@ if ($request === '' || $request === 'login') {
 } elseif ($request === 'notificaciones') {
     $controller = new NotificacionesController();
     $controller->index();
+} elseif (strpos($request, 'sucursales') === 0) {
+    $controller = new SucursalesController();
+    $parts = explode('/', $request);
+    
+    if (count($parts) === 1) {
+        $controller->index();
+    } elseif ($parts[1] === 'crear') {
+        $controller->crear();
+    } elseif ($parts[1] === 'editar') {
+        $controller->editar();
+    } elseif ($parts[1] === 'eliminar') {
+        $controller->eliminar();
+    } elseif ($parts[1] === 'asignar-gerente') {
+        $controller->asignarGerente();
+    } elseif ($parts[1] === 'remover-gerente') {
+        $controller->removerGerente();
+    } elseif ($parts[1] === 'asignar-dispositivo') {
+        $controller->asignarDispositivo();
+    } elseif ($parts[1] === 'remover-dispositivo') {
+        $controller->removerDispositivo();
+    } else {
+        http_response_code(404);
+        die('Página no encontrada');
+    }
 } elseif (strpos($request, 'configuraciones') === 0) {
     $controller = new ConfiguracionesController();
     $parts = explode('/', $request);

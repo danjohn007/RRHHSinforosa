@@ -93,6 +93,10 @@
                             <i class="fas fa-users w-5"></i>
                             <span class="ml-3">Empleados</span>
                         </a>
+                        <a href="<?php echo BASE_URL; ?>sucursales" class="sidebar-item flex items-center px-4 py-3 rounded-lg transition">
+                            <i class="fas fa-building w-5"></i>
+                            <span class="ml-3">Sucursales</span>
+                        </a>
                     </div>
                     
                     <!-- Nómina -->
