@@ -231,6 +231,34 @@
                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
             </div>
         </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Sucursal *</label>
+                <select name="sucursal_id" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    <option value="">Seleccione una sucursal</option>
+                    <?php foreach ($sucursales as $sucursal): ?>
+                        <option value="<?php echo $sucursal['id']; ?>">
+                            <?php echo htmlspecialchars($sucursal['nombre']); ?> (<?php echo htmlspecialchars($sucursal['codigo']); ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <p class="text-sm text-gray-500 mt-1">Sucursal donde trabajará el empleado</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Turno/Horario</label>
+                <select name="turno_id" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    <option value="">Seleccione un turno</option>
+                    <?php foreach ($turnos as $turno): ?>
+                        <option value="<?php echo $turno['id']; ?>">
+                            <?php echo htmlspecialchars($turno['nombre']); ?> 
+                            (<?php echo substr($turno['hora_entrada'], 0, 5); ?> - <?php echo substr($turno['hora_salida'], 0, 5); ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <p class="text-sm text-gray-500 mt-1">Horario de trabajo del empleado</p>
+            </div>
+        </div>
     </div>
     
     <!-- Botones -->

@@ -2,13 +2,15 @@
 /**
  * Layout principal del sistema
  */
+$configHelper = ConfigHelper::getInstance();
+$siteName = $configHelper->getSiteName();
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $title ?? 'Dashboard'; ?> - <?php echo APP_NAME; ?></title>
+    <title><?php echo $title ?? 'Dashboard'; ?> - <?php echo $siteName; ?></title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,10 +29,10 @@
     <script src="<?php echo BASE_URL; ?>assets/js/validaciones.js" defer></script>
     <script src="<?php echo BASE_URL; ?>assets/js/api-client.js" defer></script>
     
+    <!-- CSS personalizado con colores del sistema -->
+    <?php echo $configHelper->generateCustomCSS(); ?>
+    
     <style>
-        .bg-gradient-sinforosa {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
         .sidebar-item:hover {
             background-color: rgba(255, 255, 255, 0.1);
         }
@@ -66,13 +68,9 @@
             <!-- Logo -->
             <div class="p-6 border-b border-white border-opacity-20">
                 <div class="flex items-center space-x-3">
-                    <div class="h-10 w-10 bg-white rounded-lg flex items-center justify-center">
-                        <svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                    </div>
+                    <?php echo $configHelper->renderLogo('h-10 w-10'); ?>
                     <div>
-                        <h1 class="font-bold text-lg">Sinforosa</h1>
+                        <h1 class="font-bold text-lg"><?php echo htmlspecialchars(explode(' ', $siteName)[0]); ?></h1>
                         <p class="text-xs text-purple-200">Sistema RRHH</p>
                     </div>
                 </div>
@@ -92,6 +90,10 @@
                         <a href="<?php echo BASE_URL; ?>empleados" class="sidebar-item flex items-center px-4 py-3 rounded-lg transition">
                             <i class="fas fa-users w-5"></i>
                             <span class="ml-3">Empleados</span>
+                        </a>
+                        <a href="<?php echo BASE_URL; ?>sucursales" class="sidebar-item flex items-center px-4 py-3 rounded-lg transition">
+                            <i class="fas fa-building w-5"></i>
+                            <span class="ml-3">Sucursales</span>
                         </a>
                     </div>
                     

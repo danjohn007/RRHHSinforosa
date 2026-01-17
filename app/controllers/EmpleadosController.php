@@ -105,6 +105,8 @@ class EmpleadosController {
                     'puesto' => $data['puesto'],
                     'salario_diario' => $data['salario_diario'] ?? 0,
                     'salario_mensual' => $data['salario_mensual'] ?? 0,
+                    'sucursal_id' => $data['sucursal_id'] ?? null,
+                    'turno_id' => $data['turno_id'] ?? null,
                     'estatus' => 'Activo'
                 ];
                 
@@ -122,10 +124,23 @@ class EmpleadosController {
             }
         }
         
+        // Obtener datos para los select
+        $db = Database::getInstance()->getConnection();
+        
+        // Obtener sucursales activas
+        $stmtSucursales = $db->query("SELECT id, nombre, codigo FROM sucursales WHERE activo = 1 ORDER BY nombre");
+        $sucursales = $stmtSucursales->fetchAll();
+        
+        // Obtener turnos activos
+        $stmtTurnos = $db->query("SELECT id, nombre, hora_entrada, hora_salida FROM turnos WHERE activo = 1 ORDER BY nombre");
+        $turnos = $stmtTurnos->fetchAll();
+        
         $data = [
             'title' => 'Nuevo Empleado',
             'error' => $error,
-            'success' => $success
+            'success' => $success,
+            'sucursales' => $sucursales,
+            'turnos' => $turnos
         ];
         
         ob_start();

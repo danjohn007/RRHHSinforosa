@@ -35,7 +35,7 @@
     </div>
 </div>
 
-<form id="form-configuraciones">
+<form id="form-configuraciones" enctype="multipart/form-data">
     <!-- Sitio -->
     <div id="content-sitio" class="config-content">
         <div class="bg-white rounded-lg shadow-md p-6">
@@ -55,11 +55,34 @@
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Logotipo</label>
-                    <input type="text" name="configuraciones[sitio_logo]" 
-                        value="<?php echo htmlspecialchars($configs['sitio'][1]['valor'] ?? ''); ?>"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        placeholder="URL o ruta del logotipo">
-                    <p class="text-sm text-gray-500 mt-1">URL completa o ruta relativa al logotipo</p>
+                    
+                    <?php if (!empty($configs['sitio'][1]['valor'])): ?>
+                        <div class="mb-3">
+                            <p class="text-sm text-gray-600 mb-2">Logo actual:</p>
+                            <?php 
+                            $logoUrl = (strpos($configs['sitio'][1]['valor'], 'http') === 0) 
+                                ? $configs['sitio'][1]['valor'] 
+                                : BASE_URL . $configs['sitio'][1]['valor'];
+                            ?>
+                            <img src="<?php echo htmlspecialchars($logoUrl); ?>" 
+                                 alt="Logo actual" 
+                                 class="h-16 w-16 object-contain border border-gray-200 rounded p-2">
+                        </div>
+                    <?php endif; ?>
+                    
+                    <input type="file" 
+                           name="logo" 
+                           id="logo-upload"
+                           accept="image/jpeg,image/png,image/gif,image/webp"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <p class="text-sm text-gray-500 mt-1">
+                        Formatos permitidos: JPG, PNG, GIF, WEBP (máx. 2MB)
+                    </p>
+                    
+                    <!-- Campo oculto para mantener el valor actual si no se sube nuevo archivo -->
+                    <input type="hidden" 
+                           name="configuraciones[sitio_logo]" 
+                           value="<?php echo htmlspecialchars($configs['sitio'][1]['valor'] ?? ''); ?>">
                 </div>
             </div>
         </div>

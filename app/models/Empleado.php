@@ -96,8 +96,8 @@ class Empleado {
                     email_personal, telefono, celular,
                     calle, numero_exterior, numero_interior, colonia, codigo_postal, municipio, estado,
                     fecha_ingreso, tipo_contrato, departamento, puesto, 
-                    salario_diario, salario_mensual, estatus
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    salario_diario, salario_mensual, sucursal_id, turno_id, estatus
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
@@ -108,7 +108,8 @@ class Empleado {
             $data['calle'] ?? null, $data['numero_exterior'] ?? null, $data['numero_interior'] ?? null,
             $data['colonia'] ?? null, $data['codigo_postal'] ?? null, $data['municipio'] ?? 'Querétaro', $data['estado'] ?? 'Querétaro',
             $data['fecha_ingreso'], $data['tipo_contrato'], $data['departamento'], $data['puesto'],
-            $data['salario_diario'] ?? 0, $data['salario_mensual'] ?? 0, $data['estatus'] ?? 'Activo'
+            $data['salario_diario'] ?? 0, $data['salario_mensual'] ?? 0, 
+            $data['sucursal_id'] ?? null, $data['turno_id'] ?? null, $data['estatus'] ?? 'Activo'
         ]);
     }
     
