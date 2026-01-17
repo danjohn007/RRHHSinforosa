@@ -43,7 +43,8 @@ class SucursalesController {
             } else {
                 // Validar URL única si se proporcionó
                 if (!empty($urlPublica)) {
-                    $stmt = $db->query("SELECT id FROM sucursales WHERE url_publica = " . $db->quote($urlPublica));
+                    $stmt = $db->prepare("SELECT id FROM sucursales WHERE url_publica = ?");
+                    $stmt->execute([$urlPublica]);
                     if ($stmt->fetch()) {
                         $error = 'La URL pública ya está en uso por otra sucursal';
                     }
@@ -121,7 +122,8 @@ class SucursalesController {
             } else {
                 // Validar URL única si se proporcionó
                 if (!empty($urlPublica)) {
-                    $stmt = $db->query("SELECT id FROM sucursales WHERE url_publica = " . $db->quote($urlPublica) . " AND id != " . $sucursalId);
+                    $stmt = $db->prepare("SELECT id FROM sucursales WHERE url_publica = ? AND id != ?");
+                    $stmt->execute([$urlPublica, $sucursalId]);
                     if ($stmt->fetch()) {
                         $error = 'La URL pública ya está en uso por otra sucursal';
                     }

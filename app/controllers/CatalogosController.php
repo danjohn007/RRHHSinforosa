@@ -123,7 +123,12 @@ class CatalogosController {
         $db = Database::getInstance()->getConnection();
         
         // Verificar si hay empleados o puestos asignados
-        $stmt = $db->prepare("SELECT COUNT(*) as total FROM empleados WHERE departamento IN (SELECT nombre FROM departamentos WHERE id = ?)");
+        $stmt = $db->prepare("
+            SELECT COUNT(*) as total 
+            FROM empleados e 
+            INNER JOIN departamentos d ON e.departamento = d.nombre 
+            WHERE d.id = ?
+        ");
         $stmt->execute([$id]);
         $result = $stmt->fetch();
         
@@ -199,7 +204,12 @@ class CatalogosController {
         $db = Database::getInstance()->getConnection();
         
         // Verificar si hay empleados asignados
-        $stmt = $db->prepare("SELECT COUNT(*) as total FROM empleados WHERE puesto IN (SELECT nombre FROM puestos WHERE id = ?)");
+        $stmt = $db->prepare("
+            SELECT COUNT(*) as total 
+            FROM empleados e 
+            INNER JOIN puestos p ON e.puesto = p.nombre 
+            WHERE p.id = ?
+        ");
         $stmt->execute([$id]);
         $result = $stmt->fetch();
         
