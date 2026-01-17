@@ -166,6 +166,10 @@ $siteName = $configHelper->getSiteName();
                     <?php if (isset($_SESSION['user_rol']) && $_SESSION['user_rol'] === 'admin'): ?>
                     <div class="mt-4">
                         <p class="px-4 text-xs font-semibold text-purple-200 uppercase tracking-wider mb-2">Sistema</p>
+                        <a href="<?php echo BASE_URL; ?>usuarios" class="sidebar-item flex items-center px-4 py-3 rounded-lg transition">
+                            <i class="fas fa-users-cog w-5"></i>
+                            <span class="ml-3">Usuarios</span>
+                        </a>
                         <a href="<?php echo BASE_URL; ?>configuraciones" class="sidebar-item flex items-center px-4 py-3 rounded-lg transition">
                             <i class="fas fa-cogs w-5"></i>
                             <span class="ml-3">Configuraciones</span>

@@ -262,6 +262,22 @@ if ($request === '' || $request === 'login') {
         http_response_code(404);
         die('Página no encontrada');
     }
+} elseif (strpos($request, 'usuarios') === 0) {
+    $controller = new UsuariosController();
+    $parts = explode('/', $request);
+    
+    if (count($parts) === 1) {
+        $controller->index();
+    } elseif ($parts[1] === 'crear') {
+        $controller->crear();
+    } elseif ($parts[1] === 'editar') {
+        $controller->editar();
+    } elseif ($parts[1] === 'eliminar') {
+        $controller->eliminar();
+    } else {
+        http_response_code(404);
+        die('Página no encontrada');
+    }
 } elseif (strpos($request, 'configuraciones') === 0) {
     $controller = new ConfiguracionesController();
     $parts = explode('/', $request);

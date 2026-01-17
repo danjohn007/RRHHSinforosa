@@ -41,27 +41,37 @@ class SucursalesController {
             if (empty($nombre) || empty($codigo)) {
                 $error = 'El nombre y código son obligatorios';
             } else {
-                $sucursalModel = new Sucursal();
-                $sucursalId = $sucursalModel->create([
-                    'nombre' => $nombre,
-                    'codigo' => $codigo,
-                    'direccion' => $direccion,
-                    'telefono' => $telefono,
-                    'url_publica' => $urlPublica,
-                    'activo' => $activo
-                ]);
+                // Validar URL única si se proporcionó
+                if (!empty($urlPublica)) {
+                    $stmt = $db->query("SELECT id FROM sucursales WHERE url_publica = " . $db->quote($urlPublica));
+                    if ($stmt->fetch()) {
+                        $error = 'La URL pública ya está en uso por otra sucursal';
+                    }
+                }
                 
-                if ($sucursalId) {
-                    $success = 'Sucursal creada exitosamente';
+                if (!$error) {
+                    $sucursalModel = new Sucursal();
+                    $sucursalId = $sucursalModel->create([
+                        'nombre' => $nombre,
+                        'codigo' => $codigo,
+                        'direccion' => $direccion,
+                        'telefono' => $telefono,
+                        'url_publica' => $urlPublica,
+                        'activo' => $activo
+                    ]);
                     
-                    // Redirigir después de 2 segundos
-                    echo "<script>
-                        setTimeout(function() {
-                            window.location.href = '" . BASE_URL . "sucursales/editar?id=" . $sucursalId . "';
-                        }, 2000);
-                    </script>";
-                } else {
-                    $error = 'Error al crear la sucursal';
+                    if ($sucursalId) {
+                        $success = 'Sucursal creada exitosamente';
+                        
+                        // Redirigir después de 2 segundos
+                        echo "<script>
+                            setTimeout(function() {
+                                window.location.href = '" . BASE_URL . "sucursales/editar?id=" . $sucursalId . "';
+                            }, 2000);
+                        </script>";
+                    } else {
+                        $error = 'Error al crear la sucursal';
+                    }
                 }
             }
         }
@@ -109,20 +119,30 @@ class SucursalesController {
             if (empty($nombre) || empty($codigo)) {
                 $error = 'El nombre y código son obligatorios';
             } else {
-                $result = $sucursalModel->update($sucursalId, [
-                    'nombre' => $nombre,
-                    'codigo' => $codigo,
-                    'direccion' => $direccion,
-                    'telefono' => $telefono,
-                    'url_publica' => $urlPublica,
-                    'activo' => $activo
-                ]);
+                // Validar URL única si se proporcionó
+                if (!empty($urlPublica)) {
+                    $stmt = $db->query("SELECT id FROM sucursales WHERE url_publica = " . $db->quote($urlPublica) . " AND id != " . $sucursalId);
+                    if ($stmt->fetch()) {
+                        $error = 'La URL pública ya está en uso por otra sucursal';
+                    }
+                }
                 
-                if ($result) {
-                    $success = 'Sucursal actualizada exitosamente';
-                    $sucursal = $sucursalModel->getById($sucursalId);
-                } else {
-                    $error = 'Error al actualizar la sucursal';
+                if (!$error) {
+                    $result = $sucursalModel->update($sucursalId, [
+                        'nombre' => $nombre,
+                        'codigo' => $codigo,
+                        'direccion' => $direccion,
+                        'telefono' => $telefono,
+                        'url_publica' => $urlPublica,
+                        'activo' => $activo
+                    ]);
+                    
+                    if ($result) {
+                        $success = 'Sucursal actualizada exitosamente';
+                        $sucursal = $sucursalModel->getById($sucursalId);
+                    } else {
+                        $error = 'Error al actualizar la sucursal';
+                    }
                 }
             }
         }
@@ -135,12 +155,14 @@ class SucursalesController {
         // Obtener lista de empleados disponibles para ser gerentes
         $db = Database::getInstance()->getConnection();
         $stmt = $db->query("
-            SELECT id, numero_empleado, codigo_empleado,
-            CONCAT(nombres, ' ', apellido_paterno, ' ', IFNULL(apellido_materno, '')) as nombre_completo,
-            puesto
-            FROM empleados
-            WHERE estatus = 'Activo'
-            ORDER BY nombres
+            SELECT e.id, e.numero_empleado, e.codigo_empleado,
+            CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', IFNULL(e.apellido_materno, '')) as nombre_completo,
+            e.puesto, u.rol
+            FROM empleados e
+            LEFT JOIN usuarios u ON e.usuario_id = u.id
+            WHERE e.estatus = 'Activo'
+            AND u.rol = 'gerente'
+            ORDER BY e.nombres
         ");
         $empleadosDisponibles = $stmt->fetchAll();
         

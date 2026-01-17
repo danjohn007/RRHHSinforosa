@@ -66,12 +66,20 @@
             
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">URL Pública</label>
-                <input type="text" name="url_publica" 
-                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                       placeholder="Ej: sucursal-centro">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="text-gray-500 sm:text-sm"><?php echo BASE_URL; ?>publico/asistencia/</span>
+                    </div>
+                    <input type="text" name="url_publica" 
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                           style="padding-left: <?php echo strlen(BASE_URL . 'publico/asistencia/') * 7; ?>px;"
+                           pattern="[a-zA-Z0-9\-_]+"
+                           title="Solo letras, números, guiones y guiones bajos"
+                           placeholder="sucursal-centro">
+                </div>
                 <p class="text-xs text-gray-500 mt-1">
                     <i class="fas fa-info-circle"></i>
-                    Identificador único para el sistema de asistencia pública. Solo letras, números y guiones.
+                    Identificador único para el registro de asistencia pública. Solo letras, números, guiones y guiones bajos.
                 </p>
             </div>
         </div>
