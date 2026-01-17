@@ -24,6 +24,7 @@ storage/uploads/*
 storage/logs/*
 !storage/uploads/.gitkeep
 !storage/logs/.gitkeep
+uploads/
 
 # Environment files
 .env

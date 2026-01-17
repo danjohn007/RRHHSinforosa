@@ -54,8 +54,11 @@ $request = str_replace(parse_url(BASE_URL, PHP_URL_PATH), '', $request);
 $request = strtok($request, '?');
 $request = trim($request, '/');
 
-// Si no hay sesión y no está en login, redirigir
-if (!isset($_SESSION['user_id']) && $request !== 'login' && $request !== 'auth/login') {
+// Si no hay sesión y no está en login o rutas públicas, redirigir
+$rutasPublicas = ['login', 'auth/login'];
+$esRutaPublica = in_array($request, $rutasPublicas) || strpos($request, 'publico/') === 0;
+
+if (!isset($_SESSION['user_id']) && !$esRutaPublica) {
     redirect('login');
 }
 
@@ -66,6 +69,20 @@ if ($request === '' || $request === 'login') {
 } elseif ($request === 'logout') {
     $controller = new AuthController();
     $controller->logout();
+} elseif (strpos($request, 'publico/asistencia') === 0) {
+    // Ruta pública de asistencia
+    $controller = new PublicoController();
+    $parts = explode('/', $request);
+    
+    if (count($parts) >= 3) {
+        $controller->asistencia();
+    } else {
+        http_response_code(404);
+        die('Página no encontrada');
+    }
+} elseif ($request === 'publico/registrar-asistencia') {
+    $controller = new PublicoController();
+    $controller->registrarAsistencia();
 } elseif ($request === 'dashboard') {
     $controller = new DashboardController();
     $controller->index();
