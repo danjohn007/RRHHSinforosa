@@ -85,22 +85,33 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Departamento *</label>
-                <input type="text" name="departamento" required value="<?php echo htmlspecialchars($empleado['departamento']); ?>"
-                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                       list="departamentos">
-                <datalist id="departamentos">
-                    <option value="Administración">
-                    <option value="Operaciones">
-                    <option value="Recursos Humanos">
-                    <option value="Ventas">
-                    <option value="Cocina">
-                    <option value="Mantenimiento">
-                </datalist>
+                <select name="departamento" required 
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    <option value="">Seleccione un departamento...</option>
+                    <?php if (!empty($departamentos)): ?>
+                        <?php foreach ($departamentos as $depto): ?>
+                            <option value="<?php echo htmlspecialchars($depto['nombre']); ?>"
+                                    <?php echo ($empleado['departamento'] == $depto['nombre']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($depto['nombre']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </select>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Puesto *</label>
-                <input type="text" name="puesto" required value="<?php echo htmlspecialchars($empleado['puesto']); ?>"
-                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <select name="puesto" required 
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                    <option value="">Seleccione un puesto...</option>
+                    <?php if (!empty($puestos)): ?>
+                        <?php foreach ($puestos as $puesto): ?>
+                            <option value="<?php echo htmlspecialchars($puesto['nombre']); ?>"
+                                    <?php echo ($empleado['puesto'] == $puesto['nombre']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($puesto['nombre']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </select>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Salario Mensual *</label>
