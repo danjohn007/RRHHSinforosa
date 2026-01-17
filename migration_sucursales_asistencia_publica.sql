@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS sucursal_gerentes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     sucursal_id INT NOT NULL,
     empleado_id INT NOT NULL,
-    fecha_asignacion DATE NOT NULL DEFAULT (CURRENT_DATE),
+    fecha_asignacion DATE NOT NULL,
     activo TINYINT(1) DEFAULT 1,
     FOREIGN KEY (sucursal_id) REFERENCES sucursales(id) ON DELETE CASCADE,
     FOREIGN KEY (empleado_id) REFERENCES empleados(id) ON DELETE CASCADE,
@@ -42,7 +42,25 @@ CREATE TABLE IF NOT EXISTS sucursal_gerentes (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ============================================================
--- TABLA: sucursal_dispositivos (Dispositivos Shelly asignados a sucursales)
+-- TRIGGER: Asignar fecha actual al crear sucursal_gerente
+-- ============================================================
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS before_sucursal_gerente_insert$$
+
+CREATE TRIGGER before_sucursal_gerente_insert
+BEFORE INSERT ON sucursal_gerentes
+FOR EACH ROW
+BEGIN
+    IF NEW.fecha_asignacion IS NULL OR NEW.fecha_asignacion = '0000-00-00' THEN
+        SET NEW.fecha_asignacion = CURDATE();
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- ============================================================
+-- TABLA:  sucursal_dispositivos (Dispositivos Shelly asignados a sucursales)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS sucursal_dispositivos (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -58,65 +76,154 @@ CREATE TABLE IF NOT EXISTS sucursal_dispositivos (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ============================================================
+-- PROCEDIMIENTO:  Agregar columna si no existe
+-- ============================================================
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS add_column_if_not_exists$$
+
+CREATE PROCEDURE add_column_if_not_exists(
+    IN tableName VARCHAR(128),
+    IN columnName VARCHAR(128),
+    IN columnDefinition TEXT
+)
+BEGIN
+    DECLARE column_count INT;
+    
+    SELECT COUNT(*) INTO column_count
+    FROM information_schema. COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME COLLATE utf8_general_ci = tableName COLLATE utf8_general_ci
+        AND COLUMN_NAME COLLATE utf8_general_ci = columnName COLLATE utf8_general_ci;
+    
+    IF column_count = 0 THEN
+        SET @sql = CONCAT('ALTER TABLE ', tableName, ' ADD COLUMN ', columnName, ' ', columnDefinition);
+        PREPARE stmt FROM @sql;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- ============================================================
+-- PROCEDIMIENTO: Agregar índice si no existe
+-- ============================================================
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS add_index_if_not_exists$$
+
+CREATE PROCEDURE add_index_if_not_exists(
+    IN tableName VARCHAR(128),
+    IN indexName VARCHAR(128),
+    IN indexDefinition TEXT
+)
+BEGIN
+    DECLARE index_count INT;
+    
+    SELECT COUNT(*) INTO index_count
+    FROM information_schema.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME COLLATE utf8_general_ci = tableName COLLATE utf8_general_ci
+        AND INDEX_NAME COLLATE utf8_general_ci = indexName COLLATE utf8_general_ci;
+    
+    IF index_count = 0 THEN
+        SET @sql = CONCAT('ALTER TABLE ', tableName, ' ADD INDEX ', indexName, ' ', indexDefinition);
+        PREPARE stmt FROM @sql;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- ============================================================
+-- PROCEDIMIENTO: Agregar foreign key si no existe
+-- ============================================================
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS add_fk_if_not_exists$$
+
+CREATE PROCEDURE add_fk_if_not_exists(
+    IN tableName VARCHAR(128),
+    IN constraintName VARCHAR(128),
+    IN fkDefinition TEXT
+)
+BEGIN
+    DECLARE fk_count INT;
+    
+    SELECT COUNT(*) INTO fk_count
+    FROM information_schema.TABLE_CONSTRAINTS
+    WHERE CONSTRAINT_SCHEMA = DATABASE()
+        AND TABLE_NAME COLLATE utf8_general_ci = tableName COLLATE utf8_general_ci
+        AND CONSTRAINT_NAME COLLATE utf8_general_ci = constraintName COLLATE utf8_general_ci;
+    
+    IF fk_count = 0 THEN
+        SET @sql = CONCAT('ALTER TABLE ', tableName, ' ADD CONSTRAINT ', constraintName, ' ', fkDefinition);
+        PREPARE stmt FROM @sql;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- ============================================================
 -- MODIFICACIONES A TABLA: empleados
 -- ============================================================
 
 -- Agregar código único de 6 dígitos para cada empleado
-ALTER TABLE empleados 
-ADD COLUMN IF NOT EXISTS codigo_empleado VARCHAR(6) UNIQUE COMMENT 'Código único de 6 dígitos para registro de asistencia' AFTER numero_empleado;
+CALL add_column_if_not_exists('empleados', 'codigo_empleado', 
+    'VARCHAR(6) UNIQUE COMMENT "Código único de 6 dígitos para registro de asistencia" AFTER numero_empleado');
 
--- Agregar sucursal_id (requerido)
-ALTER TABLE empleados 
-ADD COLUMN IF NOT EXISTS sucursal_id INT COMMENT 'Sucursal de trabajo del empleado' AFTER departamento;
+-- Agregar sucursal_id
+CALL add_column_if_not_exists('empleados', 'sucursal_id', 
+    'INT COMMENT "Sucursal de trabajo del empleado" AFTER departamento');
 
 -- Agregar turno_id para asignar horarios
-ALTER TABLE empleados 
-ADD COLUMN IF NOT EXISTS turno_id INT COMMENT 'Turno/horario asignado al empleado' AFTER sucursal_id;
+CALL add_column_if_not_exists('empleados', 'turno_id', 
+    'INT COMMENT "Turno/horario asignado al empleado" AFTER sucursal_id');
 
 -- Agregar índices
-ALTER TABLE empleados ADD INDEX IF NOT EXISTS idx_codigo_empleado (codigo_empleado);
-ALTER TABLE empleados ADD INDEX IF NOT EXISTS idx_sucursal (sucursal_id);
-ALTER TABLE empleados ADD INDEX IF NOT EXISTS idx_turno (turno_id);
+CALL add_index_if_not_exists('empleados', 'idx_codigo_empleado', '(codigo_empleado)');
+CALL add_index_if_not_exists('empleados', 'idx_sucursal', '(sucursal_id)');
+CALL add_index_if_not_exists('empleados', 'idx_turno', '(turno_id)');
 
 -- Agregar foreign keys
-ALTER TABLE empleados 
-ADD CONSTRAINT fk_empleado_sucursal 
-FOREIGN KEY IF NOT EXISTS (sucursal_id) REFERENCES sucursales(id) ON DELETE SET NULL;
+CALL add_fk_if_not_exists('empleados', 'fk_empleado_sucursal', 
+    'FOREIGN KEY (sucursal_id) REFERENCES sucursales(id) ON DELETE SET NULL');
 
-ALTER TABLE empleados 
-ADD CONSTRAINT fk_empleado_turno 
-FOREIGN KEY IF NOT EXISTS (turno_id) REFERENCES turnos(id) ON DELETE SET NULL;
+CALL add_fk_if_not_exists('empleados', 'fk_empleado_turno', 
+    'FOREIGN KEY (turno_id) REFERENCES turnos(id) ON DELETE SET NULL');
 
 -- ============================================================
--- MODIFICACIONES A TABLA: asistencias
+-- MODIFICACIONES A TABLA:  asistencias
 -- ============================================================
 
 -- Agregar campos para fotos de entrada y salida
-ALTER TABLE asistencias 
-ADD COLUMN IF NOT EXISTS foto_entrada VARCHAR(255) COMMENT 'Ruta de la foto de entrada' AFTER dispositivo_entrada;
+CALL add_column_if_not_exists('asistencias', 'foto_entrada', 
+    'VARCHAR(255) COMMENT "Ruta de la foto de entrada" AFTER dispositivo_entrada');
 
-ALTER TABLE asistencias 
-ADD COLUMN IF NOT EXISTS foto_salida VARCHAR(255) COMMENT 'Ruta de la foto de salida' AFTER dispositivo_salida;
+CALL add_column_if_not_exists('asistencias', 'foto_salida', 
+    'VARCHAR(255) COMMENT "Ruta de la foto de salida" AFTER dispositivo_salida');
 
 -- Agregar campo para sucursal donde se registró
-ALTER TABLE asistencias 
-ADD COLUMN IF NOT EXISTS sucursal_id INT COMMENT 'Sucursal donde se registró la asistencia' AFTER empleado_id;
+CALL add_column_if_not_exists('asistencias', 'sucursal_id', 
+    'INT COMMENT "Sucursal donde se registró la asistencia" AFTER empleado_id');
 
--- Agregar campo para código de gerente autorizador (cuando es otra sucursal)
-ALTER TABLE asistencias 
-ADD COLUMN IF NOT EXISTS gerente_autorizador_id INT COMMENT 'ID del gerente que autorizó acceso a otra sucursal' AFTER sucursal_id;
+-- Agregar campo para código de gerente autorizador
+CALL add_column_if_not_exists('asistencias', 'gerente_autorizador_id', 
+    'INT COMMENT "ID del gerente que autorizó acceso a otra sucursal" AFTER sucursal_id');
 
 -- Agregar índice para sucursal
-ALTER TABLE asistencias ADD INDEX IF NOT EXISTS idx_asistencia_sucursal (sucursal_id);
+CALL add_index_if_not_exists('asistencias', 'idx_asistencia_sucursal', '(sucursal_id)');
 
--- Agregar foreign key
-ALTER TABLE asistencias 
-ADD CONSTRAINT fk_asistencia_sucursal 
-FOREIGN KEY IF NOT EXISTS (sucursal_id) REFERENCES sucursales(id) ON DELETE SET NULL;
+-- Agregar foreign keys
+CALL add_fk_if_not_exists('asistencias', 'fk_asistencia_sucursal', 
+    'FOREIGN KEY (sucursal_id) REFERENCES sucursales(id) ON DELETE SET NULL');
 
-ALTER TABLE asistencias 
-ADD CONSTRAINT fk_asistencia_gerente_autorizador 
-FOREIGN KEY IF NOT EXISTS (gerente_autorizador_id) REFERENCES empleados(id) ON DELETE SET NULL;
+CALL add_fk_if_not_exists('asistencias', 'fk_asistencia_gerente_autorizador', 
+    'FOREIGN KEY (gerente_autorizador_id) REFERENCES empleados(id) ON DELETE SET NULL');
 
 -- ============================================================
 -- FUNCIÓN: Generar código único de 6 dígitos
@@ -188,7 +295,7 @@ SET codigo_empleado = generar_codigo_empleado()
 WHERE codigo_empleado IS NULL OR codigo_empleado = '';
 
 -- ============================================================
--- DATOS DE EJEMPLO: Sucursales
+-- DATOS DE EJEMPLO:  Sucursales
 -- ============================================================
 
 INSERT IGNORE INTO sucursales (nombre, codigo, direccion, telefono, url_publica, activo) VALUES
@@ -230,31 +337,39 @@ WHERE turno_id IS NULL AND id > 6;
 
 CREATE OR REPLACE VIEW vista_empleados_completo AS
 SELECT 
-    e.id,
+    e. id,
     e.numero_empleado,
     e.codigo_empleado,
     CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', IFNULL(e.apellido_materno, '')) as nombre_completo,
     e.departamento,
     e.puesto,
-    e.estatus,
+    e. estatus,
     s.nombre as sucursal_nombre,
     s.codigo as sucursal_codigo,
     t.nombre as turno_nombre,
-    t.hora_entrada,
-    t.hora_salida,
+    t. hora_entrada,
+    t. hora_salida,
     t.horas_laborales,
     e.fecha_ingreso,
     TIMESTAMPDIFF(YEAR, e.fecha_ingreso, CURDATE()) as anios_antiguedad
 FROM empleados e
 LEFT JOIN sucursales s ON e.sucursal_id = s.id
-LEFT JOIN turnos t ON e.turno_id = t.id;
+LEFT JOIN turnos t ON e. turno_id = t.id;
 
 -- ============================================================
 -- ÍNDICES ADICIONALES PARA OPTIMIZACIÓN
 -- ============================================================
 
-CREATE INDEX IF NOT EXISTS idx_asistencias_periodo ON asistencias(fecha, empleado_id);
-CREATE INDEX IF NOT EXISTS idx_empleados_activos_sucursal ON empleados(estatus, sucursal_id);
+CALL add_index_if_not_exists('asistencias', 'idx_asistencias_periodo', '(fecha, empleado_id)');
+CALL add_index_if_not_exists('empleados', 'idx_empleados_activos_sucursal', '(estatus, sucursal_id)');
+
+-- ============================================================
+-- LIMPIAR PROCEDIMIENTOS TEMPORALES
+-- ============================================================
+
+DROP PROCEDURE IF EXISTS add_column_if_not_exists;
+DROP PROCEDURE IF EXISTS add_index_if_not_exists;
+DROP PROCEDURE IF EXISTS add_fk_if_not_exists;
 
 -- ============================================================
 -- FIN DE LA MIGRACIÓN
