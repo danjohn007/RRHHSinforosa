@@ -1,5 +1,5 @@
 -- ============================================================
--- MIGRACIÓN: ÁREAS DE TRABAJO EN SUCURSALES
+-- MIGRACIÓN:  ÁREAS DE TRABAJO EN SUCURSALES
 -- Fecha: 2026-01-18
 -- Descripción: Agrega sistema de áreas de trabajo para sucursales
 --              con asignación de dispositivos Shelly y canales específicos
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS sucursal_areas_trabajo (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ============================================================
--- PROCEDIMIENTO: Agregar columna si no existe
+-- PROCEDIMIENTO:  Agregar columna si no existe
 -- ============================================================
 DELIMITER $$
 
@@ -43,10 +43,10 @@ BEGIN
     DECLARE column_count INT;
     
     SELECT COUNT(*) INTO column_count
-    FROM information_schema.COLUMNS
+    FROM information_schema. COLUMNS
     WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME COLLATE utf8mb4_unicode_ci = tableName COLLATE utf8mb4_unicode_ci
-        AND COLUMN_NAME COLLATE utf8mb4_unicode_ci = columnName COLLATE utf8mb4_unicode_ci;
+        AND TABLE_NAME COLLATE utf8_general_ci = tableName COLLATE utf8_general_ci
+        AND COLUMN_NAME COLLATE utf8_general_ci = columnName COLLATE utf8_general_ci;
     
     IF column_count = 0 THEN
         SET @sql = CONCAT('ALTER TABLE ', tableName, ' ADD COLUMN ', columnName, ' ', columnDefinition);
@@ -127,7 +127,7 @@ SELECT
 FROM sucursales s
 WHERE NOT EXISTS (
     SELECT 1 FROM sucursal_areas_trabajo sat 
-    WHERE sat.sucursal_id = s.id AND sat.nombre = 'Salida'
+    WHERE sat.sucursal_id = s.id AND sat. nombre = 'Salida'
 );
 
 -- ============================================================
@@ -156,10 +156,10 @@ SELECT 'Migración de áreas de trabajo completada exitosamente' as mensaje;
 SELECT COUNT(*) as total_areas_trabajo FROM sucursal_areas_trabajo;
 SELECT 
     s.nombre as sucursal, 
-    COUNT(sat.id) as areas_trabajo
+    COUNT(sat. id) as areas_trabajo
 FROM sucursales s
 LEFT JOIN sucursal_areas_trabajo sat ON s.id = sat.sucursal_id
-GROUP BY s.id, s.nombre;
+GROUP BY s. id, s. nombre;
 
 -- ============================================================
 -- FIN DE LA MIGRACIÓN
