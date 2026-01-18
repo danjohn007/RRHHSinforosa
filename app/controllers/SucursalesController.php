@@ -220,8 +220,10 @@ class SucursalesController {
             return;
         }
         
-        $sucursalId = $_POST['sucursal_id'] ?? null;
-        $empleadoId = $_POST['empleado_id'] ?? null;
+        // Read JSON body
+        $input = json_decode(file_get_contents('php://input'), true);
+        $sucursalId = $input['sucursal_id'] ?? $_POST['sucursal_id'] ?? null;
+        $empleadoId = $input['empleado_id'] ?? $_POST['empleado_id'] ?? null;
         
         if (!$sucursalId || !$empleadoId) {
             echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
@@ -246,8 +248,10 @@ class SucursalesController {
             return;
         }
         
-        $sucursalId = $_POST['sucursal_id'] ?? null;
-        $empleadoId = $_POST['empleado_id'] ?? null;
+        // Read JSON body
+        $input = json_decode(file_get_contents('php://input'), true);
+        $sucursalId = $input['sucursal_id'] ?? $_POST['sucursal_id'] ?? null;
+        $empleadoId = $input['empleado_id'] ?? $_POST['empleado_id'] ?? null;
         
         if (!$sucursalId || !$empleadoId) {
             echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
@@ -272,9 +276,11 @@ class SucursalesController {
             return;
         }
         
-        $sucursalId = $_POST['sucursal_id'] ?? null;
-        $dispositivoId = $_POST['dispositivo_id'] ?? null;
-        $tipoAccion = $_POST['tipo_accion'] ?? 'Ambos';
+        // Read JSON body
+        $input = json_decode(file_get_contents('php://input'), true);
+        $sucursalId = $input['sucursal_id'] ?? $_POST['sucursal_id'] ?? null;
+        $dispositivoId = $input['dispositivo_id'] ?? $_POST['dispositivo_id'] ?? null;
+        $tipoAccion = $input['tipo_accion'] ?? $_POST['tipo_accion'] ?? 'Ambos';
         
         if (!$sucursalId || !$dispositivoId) {
             echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
@@ -299,8 +305,10 @@ class SucursalesController {
             return;
         }
         
-        $sucursalId = $_POST['sucursal_id'] ?? null;
-        $dispositivoId = $_POST['dispositivo_id'] ?? null;
+        // Read JSON body
+        $input = json_decode(file_get_contents('php://input'), true);
+        $sucursalId = $input['sucursal_id'] ?? $_POST['sucursal_id'] ?? null;
+        $dispositivoId = $input['dispositivo_id'] ?? $_POST['dispositivo_id'] ?? null;
         
         if (!$sucursalId || !$dispositivoId) {
             echo json_encode(['success' => false, 'message' => 'Datos incompletos']);

@@ -55,7 +55,15 @@
     <div class="header">
         <?php if (!empty($configs['sitio_logo'])): ?>
         <div style="text-align: center; margin-bottom: 20px;">
-            <img src="<?php echo htmlspecialchars($configs['sitio_logo']); ?>" alt="Logo" style="max-height: 80px; max-width: 200px; margin: 0 auto;">
+            <?php 
+            // Build correct logo URL
+            $logoUrl = $configs['sitio_logo'];
+            if (strpos($logoUrl, 'http') !== 0 && strpos($logoUrl, '//') !== 0) {
+                // It's a relative path, prepend BASE_URL
+                $logoUrl = BASE_URL . ltrim($logoUrl, '/');
+            }
+            ?>
+            <img src="<?php echo htmlspecialchars($logoUrl); ?>" alt="Logo" style="max-height: 80px; max-width: 200px; margin: 0 auto;">
         </div>
         <?php endif; ?>
         <h1><?php echo htmlspecialchars($configs['sitio_nombre'] ?? 'Sinforosa Café'); ?></h1>
