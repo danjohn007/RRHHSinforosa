@@ -91,17 +91,17 @@ class Empleado {
      */
     public function create($data) {
         $sql = "INSERT INTO empleados (
-                    numero_empleado, nombres, apellido_paterno, apellido_materno,
+                    numero_empleado, codigo_empleado, nombres, apellido_paterno, apellido_materno,
                     curp, rfc, nss, fecha_nacimiento, genero, estado_civil,
                     email_personal, telefono, celular,
                     calle, numero_exterior, numero_interior, colonia, codigo_postal, municipio, estado,
                     fecha_ingreso, tipo_contrato, departamento, puesto, 
                     salario_diario, salario_mensual, sucursal_id, turno_id, estatus
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
-            $data['numero_empleado'], $data['nombres'], $data['apellido_paterno'], $data['apellido_materno'] ?? null,
+            $data['numero_empleado'], $data['codigo_empleado'], $data['nombres'], $data['apellido_paterno'], $data['apellido_materno'] ?? null,
             $data['curp'] ?? null, $data['rfc'] ?? null, $data['nss'] ?? null, 
             $data['fecha_nacimiento'] ?? null, $data['genero'] ?? null, $data['estado_civil'] ?? null,
             $data['email_personal'] ?? null, $data['telefono'] ?? null, $data['celular'] ?? null,

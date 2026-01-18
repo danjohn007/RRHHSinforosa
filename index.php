@@ -104,6 +104,10 @@ if ($request === '' || $request === 'login') {
         $controller->constancia();
     } elseif ($parts[1] === 'carta-recomendacion') {
         $controller->cartaRecomendacion();
+    } elseif ($parts[1] === 'subir-documento') {
+        $controller->subirDocumento();
+    } elseif ($parts[1] === 'descargar-documento') {
+        $controller->descargarDocumento();
     } else {
         http_response_code(404);
         die('Página no encontrada');

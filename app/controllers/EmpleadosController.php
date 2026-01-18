@@ -78,8 +78,15 @@ class EmpleadosController {
                 $nextNum = ($result['max_num'] ?? 0) + 1;
                 $numeroEmpleado = 'EMP' . str_pad($nextNum, 3, '0', STR_PAD_LEFT);
                 
+                // Generar código de empleado (6 dígitos) - formato: 183XXX
+                $stmtCodigo = $db->query("SELECT MAX(CAST(codigo_empleado AS UNSIGNED)) as max_codigo FROM empleados WHERE codigo_empleado LIKE '183%'");
+                $resultCodigo = $stmtCodigo->fetch();
+                $nextCodigo = ($resultCodigo['max_codigo'] ?? 183000) + 1;
+                $codigoEmpleado = str_pad($nextCodigo, 6, '0', STR_PAD_LEFT);
+                
                 $dataEmpleado = [
                     'numero_empleado' => $numeroEmpleado,
+                    'codigo_empleado' => $codigoEmpleado,
                     'nombres' => $data['nombres'],
                     'apellido_paterno' => $data['apellido_paterno'],
                     'apellido_materno' => $data['apellido_materno'] ?? null,
