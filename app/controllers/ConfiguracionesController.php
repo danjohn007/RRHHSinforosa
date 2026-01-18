@@ -56,12 +56,20 @@ class ConfiguracionesController {
         try {
             $configuraciones = $_POST['configuraciones'] ?? [];
             
+            // Guardar el nombre del sitio antes de procesar el logo
+            $sitioNombre = $configuraciones['sitio_nombre'] ?? null;
+            
             // Manejar upload de logo si existe
             if (isset($_FILES['logo']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
                 $logoPath = $this->subirLogo($_FILES['logo']);
                 if ($logoPath) {
                     $configuraciones['sitio_logo'] = $logoPath;
                 }
+            }
+            
+            // Asegurar que sitio_nombre no se sobrescriba con la ruta del logo
+            if ($sitioNombre !== null) {
+                $configuraciones['sitio_nombre'] = $sitioNombre;
             }
             
             foreach ($configuraciones as $clave => $valor) {
@@ -323,6 +331,110 @@ class ConfiguracionesController {
             echo json_encode(['success' => true, 'message' => 'Dispositivo eliminado exitosamente']);
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error al eliminar dispositivo: ' . $e->getMessage()]);
+        }
+    }
+    
+    public function testShellyChannel() {
+        AuthController::check();
+        
+        if ($_SESSION['user_rol'] !== 'admin') {
+            echo json_encode(['success' => false, 'message' => 'No autorizado']);
+            return;
+        }
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            return;
+        }
+        
+        $dispositivoId = $_POST['dispositivo_id'] ?? null;
+        $canal = $_POST['canal'] ?? null;
+        
+        if ($dispositivoId === null || $canal === null) {
+            echo json_encode(['success' => false, 'message' => 'Parámetros incompletos']);
+            return;
+        }
+        
+        try {
+            $db = Database::getInstance()->getConnection();
+            
+            // Obtener configuración del dispositivo
+            $stmt = $db->prepare("SELECT * FROM dispositivos_shelly WHERE id = ?");
+            $stmt->execute([$dispositivoId]);
+            $dispositivo = $stmt->fetch();
+            
+            if (!$dispositivo) {
+                echo json_encode(['success' => false, 'message' => 'Dispositivo no encontrado']);
+                return;
+            }
+            
+            // Validar configuración
+            if (empty($dispositivo['device_id']) || empty($dispositivo['token_autenticacion']) || empty($dispositivo['servidor_cloud'])) {
+                echo json_encode(['success' => false, 'message' => 'Configuración del dispositivo incompleta']);
+                return;
+            }
+            
+            // Activar canal
+            $url = rtrim($dispositivo['servidor_cloud'], '/') . '/device/relay/control';
+            
+            $data = [
+                'id' => $dispositivo['device_id'],
+                'auth_key' => $dispositivo['token_autenticacion'],
+                'channel' => (int)$canal,
+                'turn' => 'on'
+            ];
+            
+            // Si tiene duración de pulso, usarla
+            if (!empty($dispositivo['duracion_pulso']) && $dispositivo['duracion_pulso'] > 0) {
+                $data['timer'] = $dispositivo['duracion_pulso'] / 1000; // ms a segundos
+            }
+            
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlError = curl_error($ch);
+            curl_close($ch);
+            
+            // Log para debugging
+            error_log("Test Shelly Channel - Request: " . json_encode($data));
+            error_log("Test Shelly Channel - Response (HTTP $httpCode): " . $response);
+            
+            if ($httpCode == 200) {
+                $responseData = json_decode($response, true);
+                
+                if (isset($responseData['isok']) && $responseData['isok'] === true) {
+                    echo json_encode([
+                        'success' => true, 
+                        'message' => 'Canal activado correctamente. El dispositivo respondió exitosamente.'
+                    ]);
+                } elseif (isset($responseData['errors'])) {
+                    echo json_encode([
+                        'success' => false, 
+                        'message' => 'El dispositivo reportó un error: ' . json_encode($responseData['errors'])
+                    ]);
+                } else {
+                    echo json_encode([
+                        'success' => true, 
+                        'message' => 'Comando enviado correctamente'
+                    ]);
+                }
+            } else {
+                $errorMsg = !empty($curlError) ? $curlError : 'HTTP ' . $httpCode;
+                echo json_encode([
+                    'success' => false, 
+                    'message' => 'Error en la respuesta del dispositivo: ' . $errorMsg
+                ]);
+            }
+            
+        } catch (Exception $e) {
+            error_log('Error en testShellyChannel: ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Error al probar canal: ' . $e->getMessage()]);
         }
     }
 }
