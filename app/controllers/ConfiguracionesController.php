@@ -374,6 +374,12 @@ class ConfiguracionesController {
                 return;
             }
             
+            // Validar canal
+            if ($canal < 0 || $canal > 3) {
+                echo json_encode(['success' => false, 'message' => 'Canal inválido. Debe ser entre 0 y 3.']);
+                return;
+            }
+            
             // Activar canal
             $url = rtrim($dispositivo['servidor_cloud'], '/') . '/device/relay/control';
             
@@ -394,7 +400,10 @@ class ConfiguracionesController {
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
             curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            // Solo deshabilitar SSL verification en desarrollo
+            if (defined('DEVELOPMENT_MODE') && DEVELOPMENT_MODE === true) {
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            }
             
             $response = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);

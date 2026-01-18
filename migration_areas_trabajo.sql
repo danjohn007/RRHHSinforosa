@@ -45,8 +45,8 @@ BEGIN
     SELECT COUNT(*) INTO column_count
     FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME COLLATE utf8_general_ci = tableName COLLATE utf8_general_ci
-        AND COLUMN_NAME COLLATE utf8_general_ci = columnName COLLATE utf8_general_ci;
+        AND TABLE_NAME COLLATE utf8mb4_unicode_ci = tableName COLLATE utf8mb4_unicode_ci
+        AND COLUMN_NAME COLLATE utf8mb4_unicode_ci = columnName COLLATE utf8mb4_unicode_ci;
     
     IF column_count = 0 THEN
         SET @sql = CONCAT('ALTER TABLE ', tableName, ' ADD COLUMN ', columnName, ' ', columnDefinition);

@@ -418,7 +418,7 @@ class SucursalesController {
         $descripcion = $input['descripcion'] ?? '';
         $dispositivoId = $input['dispositivo_shelly_id'] ?? null;
         $canalAsignado = $input['canal_asignado'] ?? 0;
-        $activo = isset($input['activo']) ? 1 : 0;
+        $activo = !empty($input['activo']) && ($input['activo'] === 1 || $input['activo'] === '1' || $input['activo'] === true) ? 1 : 0;
         
         if (!$sucursalId || empty($nombre)) {
             echo json_encode(['success' => false, 'message' => 'Datos incompletos']);

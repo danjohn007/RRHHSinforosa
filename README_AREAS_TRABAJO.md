@@ -51,6 +51,19 @@ Se corrigió el problema donde al subir un logo, el nombre del sitio se cambiaba
 ### Requisitos Previos
 - Base de datos MySQL/MariaDB
 - Acceso de administrador al sistema
+- PHP 7.4 o superior
+- Servidor web (Apache/Nginx)
+
+### Configuración
+
+1. **Configurar modo de producción** (IMPORTANTE para seguridad)
+   
+   Editar `config/config.php` y cambiar:
+   ```php
+   define('DEVELOPMENT_MODE', false); // Cambiar a false en producción
+   ```
+   
+   Esto habilita la verificación de certificados SSL para conexiones con Shelly Cloud.
 
 ### Pasos de Migración
 

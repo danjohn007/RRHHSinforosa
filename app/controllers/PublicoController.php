@@ -415,6 +415,11 @@ class PublicoController {
             // Usar el canal especificado o el canal_entrada por defecto
             $canalActivo = ($canal !== null) ? $canal : ($dispositivo['canal_entrada'] ?? 0);
             
+            // Validar canal
+            if ($canal < 0 || $canal > 3) {
+                return ['activado' => false, 'mensaje' => 'Canal inválido (debe ser 0-3)'];
+            }
+            
             $data = [
                 'id' => $dispositivo['device_id'],
                 'auth_key' => $dispositivo['token_autenticacion'],
@@ -433,7 +438,10 @@ class PublicoController {
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
             curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Para desarrollo
+            // Solo deshabilitar SSL verification en desarrollo
+            if (defined('DEVELOPMENT_MODE') && DEVELOPMENT_MODE === true) {
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            }
             
             $response = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);

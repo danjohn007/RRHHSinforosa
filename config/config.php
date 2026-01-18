@@ -23,6 +23,10 @@ define('APP_VERSION', '1.0.0');
 // Zona horaria
 date_default_timezone_set('America/Mexico_City');
 
+// Modo de desarrollo (cambiar a false en producción)
+// En desarrollo, permite conexiones SSL sin verificar certificados
+define('DEVELOPMENT_MODE', true);
+
 // Configuración de sesiones
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_only_cookies', 1);
