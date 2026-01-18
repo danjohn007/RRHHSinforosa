@@ -13,53 +13,150 @@ USE recursos_humanos;
 -- Modificar el campo rol para incluir los nuevos tipos de usuario
 ALTER TABLE usuarios 
 MODIFY COLUMN rol ENUM('admin', 'rrhh', 'gerente', 'empleado', 'socio', 'empleado_confianza') DEFAULT 'empleado'
-COMMENT 'Roles: admin=Administrador, rrhh=RRHH, gerente=Gerente, empleado=Empleado, socio=Socio, empleado_confianza=Empleado de Confianza';
+COMMENT 'Roles:  admin=Administrador, rrhh=RRHH, gerente=Gerente, empleado=Empleado, socio=Socio, empleado_confianza=Empleado de Confianza';
 
--- Agregar columna para relación opcional con empleado
-ALTER TABLE usuarios 
-ADD COLUMN IF NOT EXISTS empleado_id INT NULL COMMENT 'Relación opcional con empleado' AFTER rol,
-ADD INDEX IF NOT EXISTS idx_empleado (empleado_id);
+-- ============================================================
+-- Agregar columna empleado_id si no existe
+-- ============================================================
 
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS add_empleado_id_column$$
+CREATE PROCEDURE add_empleado_id_column()
+BEGIN
+    DECLARE column_exists INT DEFAULT 0;
+    
+    SELECT COUNT(*) INTO column_exists
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = 'recursos_humanos'
+    AND TABLE_NAME = 'usuarios'
+    AND COLUMN_NAME = 'empleado_id';
+    
+    IF column_exists = 0 THEN
+        ALTER TABLE usuarios 
+        ADD COLUMN empleado_id INT NULL COMMENT 'Relación opcional con empleado' AFTER rol;
+        SELECT 'Columna empleado_id agregada correctamente' AS resultado;
+    ELSE
+        SELECT 'Columna empleado_id ya existe' AS resultado;
+    END IF;
+END$$
+
+DELIMITER ;
+
+CALL add_empleado_id_column();
+DROP PROCEDURE add_empleado_id_column;
+
+-- ============================================================
+-- Agregar índice idx_empleado si no existe
+-- ============================================================
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS add_idx_empleado$$
+CREATE PROCEDURE add_idx_empleado()
+BEGIN
+    DECLARE index_exists INT DEFAULT 0;
+    
+    SELECT COUNT(*) INTO index_exists
+    FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = 'recursos_humanos'
+    AND TABLE_NAME = 'usuarios'
+    AND INDEX_NAME = 'idx_empleado';
+    
+    IF index_exists = 0 THEN
+        ALTER TABLE usuarios ADD INDEX idx_empleado (empleado_id);
+        SELECT 'Índice idx_empleado agregado correctamente' AS resultado;
+    ELSE
+        SELECT 'Índice idx_empleado ya existe' AS resultado;
+    END IF;
+END$$
+
+DELIMITER ;
+
+CALL add_idx_empleado();
+DROP PROCEDURE add_idx_empleado;
+
+-- ============================================================
 -- Agregar foreign key si no existe
-SET @fk_exists = (SELECT COUNT(*) 
-                  FROM information_schema.TABLE_CONSTRAINTS 
-                  WHERE CONSTRAINT_SCHEMA = DATABASE() 
-                  AND TABLE_NAME = 'usuarios' 
-                  AND CONSTRAINT_NAME = 'fk_usuario_empleado');
+-- ============================================================
 
-SET @sql = IF(@fk_exists = 0,
-    'ALTER TABLE usuarios ADD CONSTRAINT fk_usuario_empleado FOREIGN KEY (empleado_id) REFERENCES empleados(id) ON DELETE SET NULL',
-    'SELECT "Foreign key ya existe" as mensaje');
+DELIMITER $$
 
-PREPARE stmt FROM @sql;
-EXECUTE stmt;
-DEALLOCATE PREPARE stmt;
+DROP PROCEDURE IF EXISTS add_fk_usuario_empleado$$
+CREATE PROCEDURE add_fk_usuario_empleado()
+BEGIN
+    DECLARE fk_exists INT DEFAULT 0;
+    
+    SELECT COUNT(*) INTO fk_exists
+    FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS
+    WHERE CONSTRAINT_SCHEMA = 'recursos_humanos'
+    AND TABLE_NAME = 'usuarios'
+    AND CONSTRAINT_NAME = 'fk_usuario_empleado'
+    AND CONSTRAINT_TYPE = 'FOREIGN KEY';
+    
+    IF fk_exists = 0 THEN
+        ALTER TABLE usuarios 
+        ADD CONSTRAINT fk_usuario_empleado 
+        FOREIGN KEY (empleado_id) REFERENCES empleados(id) ON DELETE SET NULL;
+        SELECT 'Foreign key fk_usuario_empleado agregada correctamente' AS resultado;
+    ELSE
+        SELECT 'Foreign key fk_usuario_empleado ya existe' AS resultado;
+    END IF;
+END$$
+
+DELIMITER ;
+
+CALL add_fk_usuario_empleado();
+DROP PROCEDURE add_fk_usuario_empleado;
 
 -- ============================================================
 -- ACTUALIZAR TABLA: empleados - Asegurar relación inversa
 -- ============================================================
 
--- El campo usuario_id ya existe en la tabla empleados
--- Solo verificamos que el índice exista
-ALTER TABLE empleados 
-ADD INDEX IF NOT EXISTS idx_usuario (usuario_id);
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS add_idx_usuario$$
+CREATE PROCEDURE add_idx_usuario()
+BEGIN
+    DECLARE index_exists INT DEFAULT 0;
+    
+    SELECT COUNT(*) INTO index_exists
+    FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = 'recursos_humanos'
+    AND TABLE_NAME = 'empleados'
+    AND INDEX_NAME = 'idx_usuario';
+    
+    IF index_exists = 0 THEN
+        ALTER TABLE empleados ADD INDEX idx_usuario (usuario_id);
+        SELECT 'Índice idx_usuario agregado correctamente' AS resultado;
+    ELSE
+        SELECT 'Índice idx_usuario ya existe' AS resultado;
+    END IF;
+END$$
+
+DELIMITER ;
+
+CALL add_idx_usuario();
+DROP PROCEDURE add_idx_usuario;
 
 -- ============================================================
 -- VISTA: Usuarios con información de empleado relacionado
 -- ============================================================
 
-CREATE OR REPLACE VIEW vista_usuarios_completo AS
+DROP VIEW IF EXISTS vista_usuarios_completo;
+
+CREATE VIEW vista_usuarios_completo AS
 SELECT 
     u.id,
     u.nombre as usuario_nombre,
     u.email,
     u.rol,
     u.activo,
-    u.ultimo_acceso,
+    u. ultimo_acceso,
     u.fecha_creacion,
     u.empleado_id,
     CASE 
-        WHEN u.empleado_id IS NOT NULL THEN CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', IFNULL(e.apellido_materno, ''))
+        WHEN u.empleado_id IS NOT NULL THEN CONCAT(e. nombres, ' ', e. apellido_paterno, ' ', IFNULL(e.apellido_materno, ''))
         ELSE NULL
     END as empleado_nombre_completo,
     e.numero_empleado,
@@ -74,7 +171,7 @@ SELECT
         WHEN 'empleado' THEN 'Empleado'
         WHEN 'socio' THEN 'Socio'
         WHEN 'empleado_confianza' THEN 'Empleado de Confianza'
-        ELSE u.rol
+        ELSE u. rol
     END as rol_texto
 FROM usuarios u
 LEFT JOIN empleados e ON u.empleado_id = e.id
@@ -86,8 +183,3 @@ ORDER BY u.nombre;
 
 -- Verificación de la migración
 SELECT 'Migración de usuarios completada exitosamente' as mensaje;
-SELECT COLUMN_TYPE 
-FROM information_schema.COLUMNS 
-WHERE TABLE_SCHEMA = DATABASE() 
-  AND TABLE_NAME = 'usuarios' 
-  AND COLUMN_NAME = 'rol' as tipo_rol;
