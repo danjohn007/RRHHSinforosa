@@ -42,8 +42,12 @@ class PublicoController {
         $data = [
             'sucursal' => $sucursal,
             'dispositivos' => $dispositivos,
-            'configs' => $configs
+            'configs' => $configs,
+            'url_publica' => $urlPublica
         ];
+        
+        // Extract variables for the view
+        extract($data);
         
         // Cargar vista pública (sin layout de admin)
         require_once BASE_PATH . 'app/views/publico/asistencia.php';
