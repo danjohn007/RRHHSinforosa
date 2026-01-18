@@ -262,6 +262,48 @@ if ($request === '' || $request === 'login') {
         http_response_code(404);
         die('Página no encontrada');
     }
+} elseif (strpos($request, 'catalogos') === 0) {
+    $controller = new CatalogosController();
+    $parts = explode('/', $request);
+    
+    if (count($parts) === 1) {
+        $controller->index();
+    } elseif ($parts[1] === 'departamentos') {
+        $controller->departamentos();
+    } elseif ($parts[1] === 'puestos') {
+        $controller->puestos();
+    } elseif ($parts[1] === 'guardar-departamento') {
+        $controller->guardarDepartamento();
+    } elseif ($parts[1] === 'eliminar-departamento') {
+        $controller->eliminarDepartamento();
+    } elseif ($parts[1] === 'obtener-departamento') {
+        $controller->obtenerDepartamento();
+    } elseif ($parts[1] === 'guardar-puesto') {
+        $controller->guardarPuesto();
+    } elseif ($parts[1] === 'eliminar-puesto') {
+        $controller->eliminarPuesto();
+    } elseif ($parts[1] === 'obtener-puesto') {
+        $controller->obtenerPuesto();
+    } else {
+        http_response_code(404);
+        die('Página no encontrada');
+    }
+} elseif (strpos($request, 'usuarios') === 0) {
+    $controller = new UsuariosController();
+    $parts = explode('/', $request);
+    
+    if (count($parts) === 1) {
+        $controller->index();
+    } elseif ($parts[1] === 'crear') {
+        $controller->crear();
+    } elseif ($parts[1] === 'editar') {
+        $controller->editar();
+    } elseif ($parts[1] === 'eliminar') {
+        $controller->eliminar();
+    } else {
+        http_response_code(404);
+        die('Página no encontrada');
+    }
 } elseif (strpos($request, 'configuraciones') === 0) {
     $controller = new ConfiguracionesController();
     $parts = explode('/', $request);

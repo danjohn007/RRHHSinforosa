@@ -118,22 +118,11 @@
                         </button>
                     </div>
                 </form>
-
-                <!-- Información de usuarios demo -->
-                <div class="mt-6 pt-6 border-t border-gray-200">
-                    <p class="text-xs text-gray-500 text-center mb-2">Usuarios de demostración:</p>
-                    <div class="text-xs text-gray-600 space-y-1">
-                        <p><strong>Admin:</strong> admin@sinforosa.com</p>
-                        <p><strong>RRHH:</strong> rrhh@sinforosa.com</p>
-                        <p><strong>Gerente:</strong> gerente@sinforosa.com</p>
-                        <p class="text-purple-600 font-medium mt-2">Contraseña: password</p>
-                    </div>
-                </div>
             </div>
 
             <!-- Footer -->
             <p class="text-center text-xs text-gray-500">
-                © 2024 Sinforosa Café. Sistema de RRHH v<?php echo APP_VERSION; ?>
+                © 2026 Sinforosa Café. Sistema de RRHH v<?php echo APP_VERSION; ?>, Sistema desarrollado por <a href="https://impactosdigitales.com" target="_blank" class="text-purple-600 hover:text-purple-800 font-medium">ID</a>
             </p>
         </div>
     </div>

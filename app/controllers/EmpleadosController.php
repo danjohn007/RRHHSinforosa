@@ -135,12 +135,22 @@ class EmpleadosController {
         $stmtTurnos = $db->query("SELECT id, nombre, hora_entrada, hora_salida FROM turnos WHERE activo = 1 ORDER BY nombre");
         $turnos = $stmtTurnos->fetchAll();
         
+        // Obtener departamentos activos
+        $stmtDepartamentos = $db->query("SELECT id, nombre FROM departamentos WHERE activo = 1 ORDER BY nombre");
+        $departamentos = $stmtDepartamentos->fetchAll();
+        
+        // Obtener puestos activos
+        $stmtPuestos = $db->query("SELECT id, nombre, departamento_id FROM puestos WHERE activo = 1 ORDER BY nombre");
+        $puestos = $stmtPuestos->fetchAll();
+        
         $data = [
             'title' => 'Nuevo Empleado',
             'error' => $error,
             'success' => $success,
             'sucursales' => $sucursales,
-            'turnos' => $turnos
+            'turnos' => $turnos,
+            'departamentos' => $departamentos,
+            'puestos' => $puestos
         ];
         
         ob_start();
@@ -236,11 +246,24 @@ class EmpleadosController {
             }
         }
         
+        // Obtener datos para los select
+        $db = Database::getInstance()->getConnection();
+        
+        // Obtener departamentos activos
+        $stmtDepartamentos = $db->query("SELECT id, nombre FROM departamentos WHERE activo = 1 ORDER BY nombre");
+        $departamentos = $stmtDepartamentos->fetchAll();
+        
+        // Obtener puestos activos
+        $stmtPuestos = $db->query("SELECT id, nombre, departamento_id FROM puestos WHERE activo = 1 ORDER BY nombre");
+        $puestos = $stmtPuestos->fetchAll();
+        
         $data = [
             'title' => 'Editar Empleado',
             'empleado' => $empleado,
             'error' => $error,
-            'success' => $success
+            'success' => $success,
+            'departamentos' => $departamentos,
+            'puestos' => $puestos
         ];
         
         ob_start();

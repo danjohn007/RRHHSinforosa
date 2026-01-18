@@ -65,12 +65,37 @@
             
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">URL Pública</label>
-                <input type="text" name="url_publica" 
-                       value="<?php echo htmlspecialchars($sucursal['url_publica'] ?? ''); ?>"
-                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="text-gray-500 sm:text-sm"><?php echo BASE_URL; ?>publico/asistencia/</span>
+                    </div>
+                    <input type="text" name="url_publica" 
+                           value="<?php echo htmlspecialchars($sucursal['url_publica'] ?? ''); ?>"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                           style="padding-left: <?php echo strlen(BASE_URL . 'publico/asistencia/') * 7; ?>px;"
+                           pattern="[a-zA-Z0-9\-_]+"
+                           title="Solo letras, números, guiones y guiones bajos">
+                </div>
+                <?php if (!empty($sucursal['url_publica'])): ?>
+                <p class="text-xs text-blue-600 mt-1 flex items-center">
+                    <i class="fas fa-link mr-1"></i>
+                    URL Completa: 
+                    <a href="<?php echo BASE_URL; ?>publico/asistencia/<?php echo htmlspecialchars($sucursal['url_publica']); ?>" 
+                       target="_blank" 
+                       class="ml-1 underline hover:text-blue-800">
+                        <?php echo BASE_URL; ?>publico/asistencia/<?php echo htmlspecialchars($sucursal['url_publica']); ?>
+                    </a>
+                    <button type="button" 
+                            onclick="navigator.clipboard.writeText('<?php echo BASE_URL; ?>publico/asistencia/<?php echo htmlspecialchars($sucursal['url_publica']); ?>')"
+                            class="ml-2 text-gray-600 hover:text-gray-900"
+                            title="Copiar URL">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </p>
+                <?php endif; ?>
                 <p class="text-xs text-gray-500 mt-1">
                     <i class="fas fa-info-circle"></i>
-                    Identificador único para el sistema de asistencia pública. Solo letras, números y guiones.
+                    Identificador único para el registro de asistencia pública. Solo letras, números, guiones y guiones bajos.
                 </p>
             </div>
         </div>
