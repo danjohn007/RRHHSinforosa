@@ -440,18 +440,20 @@ document.querySelectorAll('input[type="color"]').forEach(colorInput => {
 
 // Preview del logo antes de subir
 document.getElementById('logo-upload').addEventListener('change', function(e) {
+    const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
+    const VALID_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    
     const file = e.target.files[0];
     if (file) {
         // Validar tamaño
-        if (file.size > 2 * 1024 * 1024) {
+        if (file.size > MAX_FILE_SIZE_BYTES) {
             alert('El archivo es muy grande. El tamaño máximo es 2MB.');
             this.value = '';
             return;
         }
         
         // Validar tipo
-        const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        if (!validTypes.includes(file.type)) {
+        if (!VALID_FILE_TYPES.includes(file.type)) {
             alert('Tipo de archivo no permitido. Use JPG, PNG, GIF o WEBP.');
             this.value = '';
             return;

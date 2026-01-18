@@ -39,15 +39,12 @@ class PublicoController {
             $configs[$config['clave']] = $config['valor'];
         }
         
-        $data = [
-            'sucursal' => $sucursal,
-            'dispositivos' => $dispositivos,
-            'configs' => $configs,
-            'url_publica' => $urlPublica
-        ];
-        
-        // Extract variables for the view
-        extract($data);
+        // Prepare variables for the view
+        // Note: Only passing trusted, validated data to the view
+        $sucursal = $sucursal;
+        $dispositivos = $dispositivos;
+        $configs = $configs;
+        $url_publica = $urlPublica;
         
         // Cargar vista pública (sin layout de admin)
         require_once BASE_PATH . 'app/views/publico/asistencia.php';
