@@ -399,6 +399,10 @@ class ConfiguracionesController {
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Authorization: Bearer ' . $dispositivo['token_autenticacion'],
+                'Content-Type: application/x-www-form-urlencoded'
+            ]);
             curl_setopt($ch, CURLOPT_TIMEOUT, 10);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); // Seguir redirects HTTP 301/302
             curl_setopt($ch, CURLOPT_MAXREDIRS, 5); // Máximo 5 redirects
