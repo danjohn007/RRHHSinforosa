@@ -27,6 +27,9 @@ date_default_timezone_set('America/Mexico_City');
 // En desarrollo, permite conexiones SSL sin verificar certificados
 define('DEVELOPMENT_MODE', true);
 
+// Configuración de logs
+define('LOG_RESPONSE_MAX_LENGTH', 500); // Máximo de caracteres para logs de respuestas HTTP
+
 // Configuración de sesiones
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_only_cookies', 1);

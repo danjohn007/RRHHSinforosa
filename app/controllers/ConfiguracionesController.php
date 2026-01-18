@@ -414,7 +414,7 @@ class ConfiguracionesController {
             
             // Log para debugging
             error_log("Test Shelly Channel - Request: " . json_encode($data));
-            error_log("Test Shelly Channel - Response (HTTP $httpCode): " . substr($response, 0, 500));
+            error_log("Test Shelly Channel - Response (HTTP $httpCode): " . substr($response, 0, LOG_RESPONSE_MAX_LENGTH));
             
             if ($httpCode == 200) {
                 $responseData = json_decode($response, true);
@@ -447,19 +447,19 @@ class ConfiguracionesController {
                     ]);
                 }
             } else {
-                $errorMsg = !empty($curlError) ? $curlError : 'HTTP ' . $httpCode;
+                $errorMsg = !empty($curlError) ? $curlError : "HTTP {$httpCode}";
                 
                 // Intentar decodificar respuesta de error si existe
                 if (!empty($response)) {
                     $responseData = json_decode($response, true);
                     if (json_last_error() === JSON_ERROR_NONE && isset($responseData['error'])) {
-                        $errorMsg .= ': ' . $responseData['error'];
+                        $errorMsg = sprintf("%s: %s", $errorMsg, $responseData['error']);
                     }
                 }
                 
                 echo json_encode([
                     'success' => false, 
-                    'message' => 'Error en la respuesta del dispositivo: ' . $errorMsg . '. Verifica la URL del servidor cloud.'
+                    'message' => "Error en la respuesta del dispositivo: {$errorMsg}. Verifica la URL del servidor cloud."
                 ]);
             }
             

@@ -452,7 +452,7 @@ class PublicoController {
             
             // Log para debugging
             error_log("Shelly Cloud Request: " . json_encode($data));
-            error_log("Shelly Cloud Response (HTTP $httpCode): " . substr($response, 0, 500));
+            error_log("Shelly Cloud Response (HTTP $httpCode): " . substr($response, 0, LOG_RESPONSE_MAX_LENGTH));
             
             if ($httpCode == 200) {
                 $responseData = json_decode($response, true);
@@ -471,17 +471,17 @@ class PublicoController {
                 }
                 return ['activado' => true, 'mensaje' => 'Dispositivo activado'];
             } else {
-                $errorMsg = !empty($curlError) ? $curlError : 'HTTP ' . $httpCode;
+                $errorMsg = !empty($curlError) ? $curlError : "HTTP {$httpCode}";
                 
                 // Intentar decodificar respuesta de error si existe
                 if (!empty($response)) {
                     $responseData = json_decode($response, true);
                     if (json_last_error() === JSON_ERROR_NONE && isset($responseData['error'])) {
-                        $errorMsg .= ': ' . $responseData['error'];
+                        $errorMsg = sprintf("%s: %s", $errorMsg, $responseData['error']);
                     }
                 }
                 
-                return ['activado' => false, 'mensaje' => 'Error en respuesta del dispositivo: ' . $errorMsg];
+                return ['activado' => false, 'mensaje' => "Error en respuesta del dispositivo: {$errorMsg}"];
             }
             
         } catch (Exception $e) {
