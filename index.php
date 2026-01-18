@@ -262,6 +262,10 @@ if ($request === '' || $request === 'login') {
         $controller->asignarDispositivo();
     } elseif ($parts[1] === 'remover-dispositivo') {
         $controller->removerDispositivo();
+    } elseif ($parts[1] === 'guardar-area-trabajo') {
+        $controller->guardarAreaTrabajo();
+    } elseif ($parts[1] === 'eliminar-area-trabajo') {
+        $controller->eliminarAreaTrabajo();
     } else {
         http_response_code(404);
         die('Página no encontrada');
@@ -324,6 +328,8 @@ if ($request === '' || $request === 'login') {
         $controller->obtenerDispositivo();
     } elseif ($parts[1] === 'eliminar-dispositivo') {
         $controller->eliminarDispositivo();
+    } elseif ($parts[1] === 'test-shelly-channel') {
+        $controller->testShellyChannel();
     } else {
         http_response_code(404);
         die('Página no encontrada');
