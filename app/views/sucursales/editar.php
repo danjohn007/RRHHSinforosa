@@ -190,7 +190,7 @@
                             </div>
                             <div>
                                 <p class="font-medium text-gray-800"><?php echo htmlspecialchars($dispositivo['nombre']); ?></p>
-                                <p class="text-sm text-gray-600">IP: <?php echo htmlspecialchars($dispositivo['ip']); ?></p>
+                                <p class="text-sm text-gray-600">IP: <?php echo htmlspecialchars($dispositivo['ip'] ?? ''); ?></p>
                             </div>
                         </div>
                         <button type="button" onclick="eliminarDispositivo(<?php echo $dispositivo['id']; ?>)"
@@ -308,7 +308,7 @@
                     <?php if (!empty($dispositivosDisponibles)): ?>
                         <?php foreach ($dispositivosDisponibles as $disp): ?>
                             <option value="<?php echo $disp['id']; ?>">
-                                <?php echo htmlspecialchars($disp['nombre']); ?> - <?php echo htmlspecialchars($disp['ip']); ?>
+                                <?php echo htmlspecialchars($disp['nombre']); ?> - <?php echo htmlspecialchars($disp['ip'] ?? ''); ?>
                             </option>
                         <?php endforeach; ?>
                     <?php endif; ?>

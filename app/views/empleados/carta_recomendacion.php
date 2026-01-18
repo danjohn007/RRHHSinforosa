@@ -53,7 +53,12 @@
     </button>
 
     <div class="header">
-        <h1>Sinforosa Café</h1>
+        <?php if (!empty($configs['sitio_logo'])): ?>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="<?php echo htmlspecialchars($configs['sitio_logo']); ?>" alt="Logo" style="max-height: 80px; max-width: 200px; margin: 0 auto;">
+        </div>
+        <?php endif; ?>
+        <h1><?php echo htmlspecialchars($configs['sitio_nombre'] ?? 'Sinforosa Café'); ?></h1>
         <p>Sistema de Gestión de Recursos Humanos</p>
     </div>
 

@@ -91,17 +91,17 @@ class Empleado {
      */
     public function create($data) {
         $sql = "INSERT INTO empleados (
-                    numero_empleado, nombres, apellido_paterno, apellido_materno,
+                    numero_empleado, codigo_empleado, nombres, apellido_paterno, apellido_materno,
                     curp, rfc, nss, fecha_nacimiento, genero, estado_civil,
                     email_personal, telefono, celular,
                     calle, numero_exterior, numero_interior, colonia, codigo_postal, municipio, estado,
                     fecha_ingreso, tipo_contrato, departamento, puesto, 
                     salario_diario, salario_mensual, sucursal_id, turno_id, estatus
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
-            $data['numero_empleado'], $data['nombres'], $data['apellido_paterno'], $data['apellido_materno'] ?? null,
+            $data['numero_empleado'], $data['codigo_empleado'], $data['nombres'], $data['apellido_paterno'], $data['apellido_materno'] ?? null,
             $data['curp'] ?? null, $data['rfc'] ?? null, $data['nss'] ?? null, 
             $data['fecha_nacimiento'] ?? null, $data['genero'] ?? null, $data['estado_civil'] ?? null,
             $data['email_personal'] ?? null, $data['telefono'] ?? null, $data['celular'] ?? null,
@@ -119,16 +119,27 @@ class Empleado {
     public function update($id, $data) {
         $sql = "UPDATE empleados SET 
                 nombres = ?, apellido_paterno = ?, apellido_materno = ?,
+                curp = ?, rfc = ?, nss = ?, fecha_nacimiento = ?, genero = ?, estado_civil = ?,
                 email_personal = ?, telefono = ?, celular = ?,
-                departamento = ?, puesto = ?, salario_mensual = ?,
+                calle = ?, numero_exterior = ?, numero_interior = ?, colonia = ?, codigo_postal = ?, municipio = ?, estado = ?,
+                fecha_ingreso = ?, tipo_contrato = ?, departamento = ?, puesto = ?, 
+                salario_diario = ?, salario_mensual = ?, sucursal_id = ?, turno_id = ?,
+                banco = ?, numero_cuenta = ?, clabe_interbancaria = ?,
                 estatus = ?
                 WHERE id = ?";
         
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([
             $data['nombres'], $data['apellido_paterno'], $data['apellido_materno'] ?? null,
+            $data['curp'] ?? null, $data['rfc'] ?? null, $data['nss'] ?? null, 
+            $data['fecha_nacimiento'] ?? null, $data['genero'] ?? null, $data['estado_civil'] ?? null,
             $data['email_personal'] ?? null, $data['telefono'] ?? null, $data['celular'] ?? null,
-            $data['departamento'], $data['puesto'], $data['salario_mensual'],
+            $data['calle'] ?? null, $data['numero_exterior'] ?? null, $data['numero_interior'] ?? null,
+            $data['colonia'] ?? null, $data['codigo_postal'] ?? null, $data['municipio'] ?? null, $data['estado'] ?? null,
+            $data['fecha_ingreso'] ?? null, $data['tipo_contrato'] ?? null, $data['departamento'], $data['puesto'], 
+            $data['salario_diario'] ?? null, $data['salario_mensual'],
+            $data['sucursal_id'] ?? null, $data['turno_id'] ?? null,
+            $data['banco'] ?? null, $data['numero_cuenta'] ?? null, $data['clabe_interbancaria'] ?? null,
             $data['estatus'], $id
         ]);
     }
