@@ -149,9 +149,10 @@ class SucursalesController {
             }
         }
         
-        // Obtener gerentes, dispositivos y empleados de la sucursal
+        // Obtener gerentes, dispositivos, áreas de trabajo y empleados de la sucursal
         $gerentes = $sucursalModel->getGerentes($sucursalId);
         $dispositivos = $sucursalModel->getDispositivos($sucursalId);
+        $areasTrabajo = $sucursalModel->getAreasTrabajo($sucursalId);
         $empleados = $sucursalModel->getEmpleados($sucursalId);
         
         // Obtener lista de empleados disponibles para ser gerentes
@@ -177,6 +178,7 @@ class SucursalesController {
             'sucursal' => $sucursal,
             'gerentes' => $gerentes,
             'dispositivos' => $dispositivos,
+            'areasTrabajo' => $areasTrabajo,
             'empleados' => $empleados,
             'empleadosDisponibles' => $empleadosDisponibles,
             'dispositivosDisponibles' => $dispositivosDisponibles,
@@ -391,5 +393,90 @@ class SucursalesController {
         } else {
             echo json_encode(['success' => false, 'message' => 'Error al remover dispositivo']);
         }
+    }
+    
+    public function guardarAreaTrabajo() {
+        AuthController::check();
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            return;
+        }
+        
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+        $input = null;
+        
+        if (strpos($contentType, 'application/json') !== false) {
+            $input = json_decode(file_get_contents('php://input'), true);
+        } else {
+            $input = $_POST;
+        }
+        
+        $areaId = $input['area_id'] ?? null;
+        $sucursalId = $input['sucursal_id'] ?? null;
+        $nombre = $input['nombre'] ?? '';
+        $descripcion = $input['descripcion'] ?? '';
+        $dispositivoId = $input['dispositivo_shelly_id'] ?? null;
+        $canalAsignado = $input['canal_asignado'] ?? 0;
+        $activo = isset($input['activo']) ? 1 : 0;
+        
+        if (!$sucursalId || empty($nombre)) {
+            echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
+            return;
+        }
+        
+        $sucursalModel = new Sucursal();
+        $datos = [
+            'nombre' => $nombre,
+            'descripcion' => $descripcion,
+            'dispositivo_shelly_id' => $dispositivoId,
+            'canal_asignado' => $canalAsignado,
+            'activo' => $activo
+        ];
+        
+        if ($areaId) {
+            // Actualizar área existente
+            $result = $sucursalModel->actualizarAreaTrabajo($areaId, $datos);
+            $message = 'Área actualizada exitosamente';
+        } else {
+            // Crear nueva área
+            $result = $sucursalModel->crearAreaTrabajo($sucursalId, $datos);
+            $message = 'Área creada exitosamente';
+        }
+        
+        if ($result) {
+            echo json_encode(['success' => true, 'message' => $message]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Error al guardar área']);
+        }
+    }
+    
+    public function eliminarAreaTrabajo() {
+        AuthController::check();
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            return;
+        }
+        
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+        $areaId = null;
+        
+        if (strpos($contentType, 'application/json') !== false) {
+            $input = json_decode(file_get_contents('php://input'), true);
+            $areaId = $input['area_id'] ?? null;
+        } else {
+            $areaId = $_POST['area_id'] ?? null;
+        }
+        
+        if (!$areaId) {
+            echo json_encode(['success' => false, 'message' => 'ID de área no proporcionado']);
+            return;
+        }
+        
+        $sucursalModel = new Sucursal();
+        $result = $sucursalModel->eliminarAreaTrabajo($areaId);
+        
+        echo json_encode($result);
     }
 }
