@@ -438,6 +438,8 @@ class PublicoController {
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
             curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); // Seguir redirects HTTP 301/302
+            curl_setopt($ch, CURLOPT_MAXREDIRS, 5); // Máximo 5 redirects
             // Solo deshabilitar SSL verification en desarrollo
             if (defined('DEVELOPMENT_MODE') && DEVELOPMENT_MODE === true) {
                 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -450,10 +452,17 @@ class PublicoController {
             
             // Log para debugging
             error_log("Shelly Cloud Request: " . json_encode($data));
-            error_log("Shelly Cloud Response (HTTP $httpCode): " . $response);
+            error_log("Shelly Cloud Response (HTTP $httpCode): " . substr($response, 0, 500));
             
             if ($httpCode == 200) {
                 $responseData = json_decode($response, true);
+                
+                // Verificar si la respuesta es JSON válido
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    error_log("Shelly Cloud - Invalid JSON response: " . json_last_error_msg());
+                    return ['activado' => false, 'mensaje' => 'Respuesta inválida del dispositivo'];
+                }
+                
                 // Verificar si la respuesta contiene error
                 if (isset($responseData['isok']) && $responseData['isok'] === true) {
                     return ['activado' => true, 'mensaje' => 'Dispositivo activado correctamente'];
@@ -463,6 +472,15 @@ class PublicoController {
                 return ['activado' => true, 'mensaje' => 'Dispositivo activado'];
             } else {
                 $errorMsg = !empty($curlError) ? $curlError : 'HTTP ' . $httpCode;
+                
+                // Intentar decodificar respuesta de error si existe
+                if (!empty($response)) {
+                    $responseData = json_decode($response, true);
+                    if (json_last_error() === JSON_ERROR_NONE && isset($responseData['error'])) {
+                        $errorMsg .= ': ' . $responseData['error'];
+                    }
+                }
+                
                 return ['activado' => false, 'mensaje' => 'Error en respuesta del dispositivo: ' . $errorMsg];
             }
             

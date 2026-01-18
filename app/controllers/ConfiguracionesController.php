@@ -400,6 +400,8 @@ class ConfiguracionesController {
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
             curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); // Seguir redirects HTTP 301/302
+            curl_setopt($ch, CURLOPT_MAXREDIRS, 5); // Máximo 5 redirects
             // Solo deshabilitar SSL verification en desarrollo
             if (defined('DEVELOPMENT_MODE') && DEVELOPMENT_MODE === true) {
                 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -412,10 +414,21 @@ class ConfiguracionesController {
             
             // Log para debugging
             error_log("Test Shelly Channel - Request: " . json_encode($data));
-            error_log("Test Shelly Channel - Response (HTTP $httpCode): " . $response);
+            error_log("Test Shelly Channel - Response (HTTP $httpCode): " . substr($response, 0, 500));
             
             if ($httpCode == 200) {
                 $responseData = json_decode($response, true);
+                
+                // Verificar si la respuesta es JSON válido
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    // La respuesta no es JSON válido
+                    error_log("Test Shelly Channel - Invalid JSON response: " . json_last_error_msg());
+                    echo json_encode([
+                        'success' => false, 
+                        'message' => 'Respuesta inválida del dispositivo. Verifica la configuración del servidor cloud.'
+                    ]);
+                    return;
+                }
                 
                 if (isset($responseData['isok']) && $responseData['isok'] === true) {
                     echo json_encode([
@@ -435,9 +448,18 @@ class ConfiguracionesController {
                 }
             } else {
                 $errorMsg = !empty($curlError) ? $curlError : 'HTTP ' . $httpCode;
+                
+                // Intentar decodificar respuesta de error si existe
+                if (!empty($response)) {
+                    $responseData = json_decode($response, true);
+                    if (json_last_error() === JSON_ERROR_NONE && isset($responseData['error'])) {
+                        $errorMsg .= ': ' . $responseData['error'];
+                    }
+                }
+                
                 echo json_encode([
                     'success' => false, 
-                    'message' => 'Error en la respuesta del dispositivo: ' . $errorMsg
+                    'message' => 'Error en la respuesta del dispositivo: ' . $errorMsg . '. Verifica la URL del servidor cloud.'
                 ]);
             }
             
