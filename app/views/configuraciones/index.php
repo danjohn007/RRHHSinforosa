@@ -69,7 +69,9 @@
                             <img id="logo-preview-current" 
                                  src="<?php echo htmlspecialchars($logoUrl); ?>" 
                                  alt="Logo actual" 
-                                 class="h-16 object-contain border border-gray-200 rounded p-2">
+                                 class="h-16 object-contain border border-gray-200 rounded p-2 bg-white"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <p class="text-xs text-red-500 mt-1 hidden">No se pudo cargar la imagen del logo</p>
                         </div>
                     <?php endif; ?>
                     

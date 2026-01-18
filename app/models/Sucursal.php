@@ -230,4 +230,75 @@ class Sucursal {
         $stmt->execute([$sucursalId]);
         return $stmt->fetchAll();
     }
+    
+    /**
+     * Obtener áreas de trabajo de una sucursal
+     */
+    public function getAreasTrabajo($sucursalId) {
+        $sql = "SELECT sat.*, ds.nombre as dispositivo_nombre, ds.device_id
+                FROM sucursal_areas_trabajo sat
+                LEFT JOIN dispositivos_shelly ds ON sat.dispositivo_shelly_id = ds.id
+                WHERE sat.sucursal_id = ?
+                ORDER BY sat.es_predeterminada DESC, sat.nombre";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$sucursalId]);
+        return $stmt->fetchAll();
+    }
+    
+    /**
+     * Crear área de trabajo
+     */
+    public function crearAreaTrabajo($sucursalId, $datos) {
+        $sql = "INSERT INTO sucursal_areas_trabajo 
+                (sucursal_id, nombre, descripcion, dispositivo_shelly_id, canal_asignado, activo, es_predeterminada)
+                VALUES (?, ?, ?, ?, ?, ?, 0)";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            $sucursalId,
+            $datos['nombre'],
+            $datos['descripcion'] ?? null,
+            $datos['dispositivo_shelly_id'] ?? null,
+            $datos['canal_asignado'] ?? 0,
+            $datos['activo'] ?? 1
+        ]);
+    }
+    
+    /**
+     * Actualizar área de trabajo
+     */
+    public function actualizarAreaTrabajo($areaId, $datos) {
+        $sql = "UPDATE sucursal_areas_trabajo 
+                SET nombre = ?, descripcion = ?, dispositivo_shelly_id = ?, 
+                    canal_asignado = ?, activo = ?
+                WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            $datos['nombre'],
+            $datos['descripcion'] ?? null,
+            $datos['dispositivo_shelly_id'] ?? null,
+            $datos['canal_asignado'] ?? 0,
+            $datos['activo'] ?? 1,
+            $areaId
+        ]);
+    }
+    
+    /**
+     * Eliminar área de trabajo
+     */
+    public function eliminarAreaTrabajo($areaId) {
+        // No permitir eliminar áreas predeterminadas
+        $stmt = $this->db->prepare("SELECT es_predeterminada FROM sucursal_areas_trabajo WHERE id = ?");
+        $stmt->execute([$areaId]);
+        $area = $stmt->fetch();
+        
+        if ($area && $area['es_predeterminada']) {
+            return ['success' => false, 'message' => 'No se pueden eliminar áreas predeterminadas'];
+        }
+        
+        $stmt = $this->db->prepare("DELETE FROM sucursal_areas_trabajo WHERE id = ?");
+        if ($stmt->execute([$areaId])) {
+            return ['success' => true, 'message' => 'Área eliminada exitosamente'];
+        }
+        return ['success' => false, 'message' => 'Error al eliminar área'];
+    }
 }

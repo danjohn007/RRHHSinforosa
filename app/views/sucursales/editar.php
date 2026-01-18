@@ -165,6 +165,99 @@
     </div>
 </div>
 
+<!-- Áreas de Trabajo -->
+<div class="bg-white rounded-lg shadow-md p-6 mb-6">
+    <div class="flex items-center justify-between mb-4 border-b pb-2">
+        <h3 class="text-lg font-semibold text-gray-800">
+            <i class="fas fa-door-open text-indigo-600 mr-2"></i>
+            Áreas de Trabajo
+        </h3>
+        <button type="button" onclick="mostrarModalAreaTrabajo()" 
+                class="text-sm bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition">
+            <i class="fas fa-plus mr-2"></i>
+            Agregar Área
+        </button>
+    </div>
+    
+    <p class="text-sm text-gray-600 mb-4">
+        Configura áreas de trabajo con dispositivos Shelly y canales específicos para controlar accesos.
+    </p>
+    
+    <div id="lista-areas-trabajo">
+        <?php if (!empty($areasTrabajo)): ?>
+            <div class="space-y-3">
+                <?php foreach ($areasTrabajo as $area): ?>
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center mb-2">
+                                    <h4 class="font-semibold text-gray-800 text-lg"><?php echo htmlspecialchars($area['nombre']); ?></h4>
+                                    <?php if ($area['es_predeterminada']): ?>
+                                        <span class="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full">
+                                            Predeterminada
+                                        </span>
+                                    <?php endif; ?>
+                                    <?php if (!$area['activo']): ?>
+                                        <span class="ml-2 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
+                                            Inactiva
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                                
+                                <?php if (!empty($area['descripcion'])): ?>
+                                    <p class="text-sm text-gray-600 mb-3"><?php echo htmlspecialchars($area['descripcion']); ?></p>
+                                <?php endif; ?>
+                                
+                                <div class="grid grid-cols-2 gap-4 mt-3">
+                                    <div>
+                                        <label class="text-xs font-medium text-gray-600">Dispositivo Shelly</label>
+                                        <p class="text-sm text-gray-800 mt-1">
+                                            <?php if (!empty($area['dispositivo_nombre'])): ?>
+                                                <i class="fas fa-microchip text-green-600 mr-1"></i>
+                                                <?php echo htmlspecialchars($area['dispositivo_nombre']); ?>
+                                                <span class="text-xs text-gray-500 ml-1">(<?php echo htmlspecialchars($area['device_id']); ?>)</span>
+                                            <?php else: ?>
+                                                <span class="text-gray-400">No asignado</span>
+                                            <?php endif; ?>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-medium text-gray-600">Canal Asignado</label>
+                                        <p class="text-sm text-gray-800 mt-1">
+                                            <?php if (!empty($area['dispositivo_nombre'])): ?>
+                                                <i class="fas fa-plug text-indigo-600 mr-1"></i>
+                                                Canal <?php echo htmlspecialchars($area['canal_asignado']); ?>
+                                            <?php else: ?>
+                                                <span class="text-gray-400">-</span>
+                                            <?php endif; ?>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2 ml-4">
+                                <button type="button" onclick="editarAreaTrabajo(<?php echo htmlspecialchars(json_encode($area)); ?>)"
+                                        class="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition"
+                                        title="Editar área">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <?php if (!$area['es_predeterminada']): ?>
+                                    <button type="button" onclick="eliminarAreaTrabajo(<?php echo $area['id']; ?>)"
+                                            class="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition"
+                                            title="Eliminar área">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <p class="text-gray-500 text-center py-4">No hay áreas de trabajo configuradas</p>
+        <?php endif; ?>
+    </div>
+</div>
+
 <!-- Dispositivos Shelly Asignados -->
 <div class="bg-white rounded-lg shadow-md p-6 mb-6">
     <div class="flex items-center justify-between mb-4 border-b pb-2">
@@ -328,6 +421,82 @@
     </div>
 </div>
 
+<!-- Modal Área de Trabajo -->
+<div id="modal-area-trabajo" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-lg bg-white">
+        <div class="mt-3">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4" id="modal-area-titulo">Agregar Área de Trabajo</h3>
+            <form id="form-area-trabajo">
+                <input type="hidden" id="area-id" name="area_id">
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Área *</label>
+                    <input type="text" id="area-nombre" name="nombre" required
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500"
+                           placeholder="Ej: Entrada Principal, Salida Trasera">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                    <textarea id="area-descripcion" name="descripcion" rows="2"
+                              class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500"
+                              placeholder="Descripción del área de trabajo"></textarea>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Dispositivo Shelly</label>
+                        <select id="area-dispositivo" name="dispositivo_shelly_id"
+                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Sin dispositivo asignado</option>
+                            <?php if (!empty($dispositivosDisponibles)): ?>
+                                <?php foreach ($dispositivosDisponibles as $disp): ?>
+                                    <option value="<?php echo $disp['id']; ?>">
+                                        <?php echo htmlspecialchars($disp['nombre']); ?>
+                                        <?php if (!empty($disp['device_id'])): ?>
+                                            (<?php echo htmlspecialchars($disp['device_id']); ?>)
+                                        <?php endif; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Canal Asignado</label>
+                        <select id="area-canal" name="canal_asignado"
+                                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500">
+                            <option value="0">Canal 0</option>
+                            <option value="1">Canal 1</option>
+                            <option value="2">Canal 2</option>
+                            <option value="3">Canal 3</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" id="area-activo" name="activo" checked
+                               class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        <span class="text-sm font-medium text-gray-700">Área activa</span>
+                    </label>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4 border-t">
+                    <button type="button" onclick="cerrarModalAreaTrabajo()" 
+                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button type="button" onclick="guardarAreaTrabajo()" 
+                            class="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600">
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 const sucursalId = <?php echo $sucursal['id']; ?>;
 const baseUrl = '<?php echo BASE_URL; ?>';
@@ -471,6 +640,106 @@ function eliminarDispositivo(dispositivoId) {
     .catch(error => {
         console.error('Error:', error);
         alert('Error al eliminar dispositivo');
+    });
+}
+
+// Modal Área de Trabajo
+function mostrarModalAreaTrabajo() {
+    document.getElementById('modal-area-titulo').textContent = 'Agregar Área de Trabajo';
+    document.getElementById('form-area-trabajo').reset();
+    document.getElementById('area-id').value = '';
+    document.getElementById('area-activo').checked = true;
+    document.getElementById('modal-area-trabajo').classList.remove('hidden');
+}
+
+function cerrarModalAreaTrabajo() {
+    document.getElementById('modal-area-trabajo').classList.add('hidden');
+    document.getElementById('form-area-trabajo').reset();
+}
+
+function editarAreaTrabajo(area) {
+    document.getElementById('modal-area-titulo').textContent = 'Editar Área de Trabajo';
+    document.getElementById('area-id').value = area.id;
+    document.getElementById('area-nombre').value = area.nombre;
+    document.getElementById('area-descripcion').value = area.descripcion || '';
+    document.getElementById('area-dispositivo').value = area.dispositivo_shelly_id || '';
+    document.getElementById('area-canal').value = area.canal_asignado || 0;
+    document.getElementById('area-activo').checked = area.activo == 1;
+    document.getElementById('modal-area-trabajo').classList.remove('hidden');
+}
+
+function guardarAreaTrabajo() {
+    const areaId = document.getElementById('area-id').value;
+    const nombre = document.getElementById('area-nombre').value;
+    const descripcion = document.getElementById('area-descripcion').value;
+    const dispositivoId = document.getElementById('area-dispositivo').value;
+    const canal = document.getElementById('area-canal').value;
+    const activo = document.getElementById('area-activo').checked;
+    
+    if (!nombre) {
+        alert('Por favor ingrese el nombre del área');
+        return;
+    }
+    
+    const data = {
+        sucursal_id: sucursalId,
+        nombre: nombre,
+        descripcion: descripcion,
+        dispositivo_shelly_id: dispositivoId || null,
+        canal_asignado: parseInt(canal),
+        activo: activo ? 1 : 0
+    };
+    
+    if (areaId) {
+        data.area_id = parseInt(areaId);
+    }
+    
+    fetch(baseUrl + 'sucursales/guardar-area-trabajo', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Error al guardar área');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al guardar área');
+    });
+}
+
+function eliminarAreaTrabajo(areaId) {
+    if (!confirm('¿Está seguro de eliminar esta área de trabajo?')) {
+        return;
+    }
+    
+    fetch(baseUrl + 'sucursales/eliminar-area-trabajo', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            area_id: areaId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Error al eliminar área');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al eliminar área');
     });
 }
 </script>

@@ -167,7 +167,7 @@ class PublicoController {
                     $gerenteAutorizadorId
                 ]);
                 
-                // Activar dispositivo Shelly
+                // Activar dispositivo Shelly para Entrada
                 $activacionShelly = $this->activarDispositivoShelly($sucursalActual['id'], 'Entrada');
                 
                 // Log error si Shelly no se activa pero continuar con registro
@@ -237,7 +237,7 @@ class PublicoController {
                     $asistencia['id']
                 ]);
                 
-                // Activar dispositivo Shelly
+                // Activar dispositivo Shelly para Salida
                 $activacionShelly = $this->activarDispositivoShelly($sucursalActual['id'], 'Salida');
                 
                 // Log error si Shelly no se activa pero continuar con registro
@@ -344,51 +344,91 @@ class PublicoController {
         try {
             $db = Database::getInstance()->getConnection();
             
-            // Buscar dispositivos Shelly de la sucursal para este tipo de acción
+            // Buscar área de trabajo correspondiente al tipo de acción con dispositivo asignado
             $stmt = $db->prepare("
-                SELECT ds.* 
-                FROM dispositivos_shelly ds
-                INNER JOIN sucursal_dispositivos sd ON ds.id = sd.dispositivo_shelly_id
-                WHERE sd.sucursal_id = ? 
-                AND sd.activo = 1 
+                SELECT sat.*, ds.* 
+                FROM sucursal_areas_trabajo sat
+                INNER JOIN dispositivos_shelly ds ON sat.dispositivo_shelly_id = ds.id
+                WHERE sat.sucursal_id = ? 
+                AND sat.activo = 1
                 AND ds.habilitado = 1
-                AND (sd.tipo_accion = ? OR sd.tipo_accion = 'Ambos')
+                AND sat.nombre = ?
                 LIMIT 1
             ");
             $stmt->execute([$sucursalId, $tipoAccion]);
-            $dispositivo = $stmt->fetch();
+            $area = $stmt->fetch();
             
-            if (!$dispositivo) {
-                return ['activado' => false, 'mensaje' => 'No hay dispositivo configurado'];
+            if (!$area) {
+                // Fallback: Buscar dispositivo asignado directamente a la sucursal (compatibilidad con versión anterior)
+                $stmt = $db->prepare("
+                    SELECT ds.*, sd.tipo_accion 
+                    FROM dispositivos_shelly ds
+                    INNER JOIN sucursal_dispositivos sd ON ds.id = sd.dispositivo_shelly_id
+                    WHERE sd.sucursal_id = ? 
+                    AND sd.activo = 1 
+                    AND ds.habilitado = 1
+                    AND (sd.tipo_accion = ? OR sd.tipo_accion = 'Ambos')
+                    LIMIT 1
+                ");
+                $stmt->execute([$sucursalId, $tipoAccion]);
+                $dispositivo = $stmt->fetch();
+                
+                if (!$dispositivo) {
+                    return ['activado' => false, 'mensaje' => 'No hay dispositivo configurado para ' . $tipoAccion];
+                }
+                
+                // Determinar canal según tipo de acción
+                $canal = ($tipoAccion === 'Entrada') ? $dispositivo['canal_entrada'] : $dispositivo['canal_salida'];
+                
+                // Llamar a la API de Shelly Cloud para activar el dispositivo
+                $resultado = $this->activarShellyCloud($dispositivo, $canal);
+                
+                return $resultado;
             }
             
+            // Usar configuración del área de trabajo
+            $canal = $area['canal_asignado'];
+            
             // Llamar a la API de Shelly Cloud para activar el dispositivo
-            $resultado = $this->activarShellyCloud($dispositivo);
+            $resultado = $this->activarShellyCloud($area, $canal);
             
             return $resultado;
             
         } catch (Exception $e) {
             error_log('Error al activar Shelly: ' . $e->getMessage());
-            return ['activado' => false, 'mensaje' => 'Error al activar dispositivo'];
+            return ['activado' => false, 'mensaje' => 'Error al activar dispositivo: ' . $e->getMessage()];
         }
     }
     
     /**
      * Activar dispositivo Shelly via Cloud API
      */
-    private function activarShellyCloud($dispositivo) {
+    private function activarShellyCloud($dispositivo, $canal = null) {
         try {
+            // Validar datos requeridos
+            if (empty($dispositivo['device_id']) || empty($dispositivo['token_autenticacion']) || empty($dispositivo['servidor_cloud'])) {
+                return ['activado' => false, 'mensaje' => 'Configuración de dispositivo incompleta'];
+            }
+            
             $url = rtrim($dispositivo['servidor_cloud'], '/') . '/device/relay/control';
+            
+            // Usar el canal especificado o el canal_entrada por defecto
+            $canalActivo = ($canal !== null) ? $canal : ($dispositivo['canal_entrada'] ?? 0);
+            
+            // Validar canal
+            if ($canal < 0 || $canal > 3) {
+                return ['activado' => false, 'mensaje' => 'Canal inválido (debe ser 0-3)'];
+            }
             
             $data = [
                 'id' => $dispositivo['device_id'],
                 'auth_key' => $dispositivo['token_autenticacion'],
-                'channel' => $dispositivo['canal_entrada'],
+                'channel' => (int)$canalActivo,
                 'turn' => 'on'
             ];
             
             // Si tiene duración de pulso configurada
-            if ($dispositivo['duracion_pulso'] > 0) {
+            if (!empty($dispositivo['duracion_pulso']) && $dispositivo['duracion_pulso'] > 0) {
                 $data['turn'] = 'on';
                 $data['timer'] = $dispositivo['duracion_pulso'] / 1000; // Convertir ms a segundos
             }
@@ -398,20 +438,37 @@ class PublicoController {
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
             curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            // Solo deshabilitar SSL verification en desarrollo
+            if (defined('DEVELOPMENT_MODE') && DEVELOPMENT_MODE === true) {
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            }
             
             $response = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlError = curl_error($ch);
             curl_close($ch);
             
+            // Log para debugging
+            error_log("Shelly Cloud Request: " . json_encode($data));
+            error_log("Shelly Cloud Response (HTTP $httpCode): " . $response);
+            
             if ($httpCode == 200) {
-                return ['activado' => true, 'mensaje' => 'Dispositivo activado correctamente'];
+                $responseData = json_decode($response, true);
+                // Verificar si la respuesta contiene error
+                if (isset($responseData['isok']) && $responseData['isok'] === true) {
+                    return ['activado' => true, 'mensaje' => 'Dispositivo activado correctamente'];
+                } elseif (isset($responseData['errors'])) {
+                    return ['activado' => false, 'mensaje' => 'Error del dispositivo: ' . json_encode($responseData['errors'])];
+                }
+                return ['activado' => true, 'mensaje' => 'Dispositivo activado'];
             } else {
-                return ['activado' => false, 'mensaje' => 'Error en respuesta del dispositivo'];
+                $errorMsg = !empty($curlError) ? $curlError : 'HTTP ' . $httpCode;
+                return ['activado' => false, 'mensaje' => 'Error en respuesta del dispositivo: ' . $errorMsg];
             }
             
         } catch (Exception $e) {
             error_log('Error en activarShellyCloud: ' . $e->getMessage());
-            return ['activado' => false, 'mensaje' => 'Error al conectar con dispositivo'];
+            return ['activado' => false, 'mensaje' => 'Error al conectar con dispositivo: ' . $e->getMessage()];
         }
     }
 }

@@ -42,98 +42,123 @@
             <?php foreach ($dispositivos_shelly as $dispositivo): ?>
             <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition">
                 <div class="flex items-start justify-between mb-4">
-                    <div class="flex-1">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="grid grid-cols-2 gap-8 flex-1">
-                                <div>
-                                    <label class="text-xs text-gray-600 font-medium">Token de Autenticación</label>
-                                    <div class="flex items-center space-x-2 mt-1">
-                                        <input type="password" value="<?php echo htmlspecialchars($dispositivo['token_autenticacion']); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm font-mono">
-                                        <button class="text-gray-600 hover:text-gray-900">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-600 font-medium">Device ID</label>
-                                    <div class="mt-1">
-                                        <input type="text" value="<?php echo htmlspecialchars($dispositivo['device_id']); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm font-mono">
-                                    </div>
-                                </div>
-                            </div>
-                            <button onclick="deleteShellyDevice(<?php echo $dispositivo['id']; ?>)" class="ml-4 text-red-600 hover:text-red-800 bg-red-50 rounded-full p-2 w-8 h-8 flex items-center justify-center">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-8 mb-4">
-                            <div>
-                                <label class="text-xs text-gray-600 font-medium">Servidor Cloud</label>
-                                <div class="mt-1">
-                                    <input type="text" value="<?php echo htmlspecialchars($dispositivo['servidor_cloud']); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
-                                    <p class="text-xs text-gray-500 mt-1">Sin https:// ni puerto</p>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-600 font-medium">Acción</label>
-                                <div class="mt-1 relative">
-                                    <select disabled class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm appearance-none">
-                                        <option><?php echo htmlspecialchars($dispositivo['accion']); ?></option>
-                                    </select>
-                                    <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-                                </div>
+                    <h3 class="text-lg font-semibold text-gray-800">
+                        <?php echo htmlspecialchars($dispositivo['nombre']); ?>
+                    </h3>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="editShellyDevice(<?php echo htmlspecialchars(json_encode($dispositivo)); ?>)" 
+                                class="text-blue-600 hover:text-blue-800 bg-blue-50 rounded-full p-2 w-8 h-8 flex items-center justify-center"
+                                title="Editar dispositivo">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteShellyDevice(<?php echo $dispositivo['id']; ?>)" 
+                                class="text-red-600 hover:text-red-800 bg-red-50 rounded-full p-2 w-8 h-8 flex items-center justify-center"
+                                title="Eliminar dispositivo">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="flex-1">
+                    <div class="grid grid-cols-2 gap-8 mb-4">
+                        <div>
+                            <label class="text-xs text-gray-600 font-medium">Token de Autenticación</label>
+                            <div class="flex items-center space-x-2 mt-1">
+                                <input type="password" value="<?php echo htmlspecialchars($dispositivo['token_autenticacion']); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm font-mono">
+                                <button onclick="togglePasswordVisibility(this)" class="text-gray-600 hover:text-gray-900" title="Mostrar/Ocultar">
+                                    <i class="fas fa-eye"></i>
+                                </button>
                             </div>
                         </div>
-
-                        <div class="mb-4">
-                            <label class="text-xs text-gray-600 font-medium">Área</label>
+                        <div>
+                            <label class="text-xs text-gray-600 font-medium">Device ID</label>
                             <div class="mt-1">
-                                <input type="text" value="<?php echo htmlspecialchars($dispositivo['area']); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
+                                <input type="text" value="<?php echo htmlspecialchars($dispositivo['device_id']); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm font-mono">
                             </div>
                         </div>
+                    </div>
 
-                        <div class="grid grid-cols-3 gap-6 mb-4">
-                            <div>
-                                <label class="text-xs text-gray-600 font-medium">Canal de Entrada (Apertura)</label>
-                                <div class="mt-1">
-                                    <select disabled class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
+                    <div class="grid grid-cols-2 gap-8 mb-4">
+                        <div>
+                            <label class="text-xs text-gray-600 font-medium">Servidor Cloud</label>
+                            <div class="mt-1">
+                                <input type="text" value="<?php echo htmlspecialchars($dispositivo['servidor_cloud']); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
+                                <p class="text-xs text-gray-500 mt-1">Sin https:// ni puerto</p>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-600 font-medium">Acción</label>
+                            <div class="mt-1 relative">
+                                <select disabled class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm appearance-none">
+                                    <option><?php echo htmlspecialchars($dispositivo['accion']); ?></option>
+                                </select>
+                                <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="text-xs text-gray-600 font-medium">Área</label>
+                        <div class="mt-1">
+                            <input type="text" value="<?php echo htmlspecialchars($dispositivo['area']); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-6 mb-4">
+                        <div>
+                            <label class="text-xs text-gray-600 font-medium">Canal de Entrada (Apertura)</label>
+                            <div class="mt-1">
+                                <div class="flex items-center space-x-2">
+                                    <select disabled class="flex-1 px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
                                         <option>Canal <?php echo $dispositivo['canal_entrada']; ?></option>
                                     </select>
-                                    <p class="text-xs text-gray-500 mt-1">Pulso de 5 segundos al entrar</p>
+                                    <button onclick="testShellyChannel(<?php echo $dispositivo['id']; ?>, <?php echo $dispositivo['canal_entrada']; ?>)" 
+                                            class="px-3 py-2 bg-green-500 text-white text-xs rounded hover:bg-green-600 whitespace-nowrap"
+                                            title="Probar canal">
+                                        <i class="fas fa-bolt mr-1"></i>Probar
+                                    </button>
                                 </div>
+                                <p class="text-xs text-gray-500 mt-1">Pulso de 5 segundos al entrar</p>
                             </div>
-                            <div>
-                                <label class="text-xs text-gray-600 font-medium">Canal de Salida (Cierre)</label>
-                                <div class="mt-1">
-                                    <select disabled class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-600 font-medium">Canal de Salida (Cierre)</label>
+                            <div class="mt-1">
+                                <div class="flex items-center space-x-2">
+                                    <select disabled class="flex-1 px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
                                         <option>Canal <?php echo $dispositivo['canal_salida']; ?></option>
                                     </select>
-                                    <p class="text-xs text-gray-500 mt-1">Activación al salir</p>
+                                    <button onclick="testShellyChannel(<?php echo $dispositivo['id']; ?>, <?php echo $dispositivo['canal_salida']; ?>)" 
+                                            class="px-3 py-2 bg-green-500 text-white text-xs rounded hover:bg-green-600 whitespace-nowrap"
+                                            title="Probar canal">
+                                        <i class="fas fa-bolt mr-1"></i>Probar
+                                    </button>
                                 </div>
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-600 font-medium">Duración Pulso (ms)</label>
-                                <div class="mt-1">
-                                    <input type="text" value="<?php echo htmlspecialchars($dispositivo['duracion_pulso']); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
-                                    <p class="text-xs text-gray-500 mt-1">Por defecto: 5000 ms. Máximo: 10 seg</p>
-                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Activación al salir</p>
                             </div>
                         </div>
+                        <div>
+                            <label class="text-xs text-gray-600 font-medium">Duración Pulso (ms)</label>
+                            <div class="mt-1">
+                                <input type="text" value="<?php echo htmlspecialchars($dispositivo['duracion_pulso']); ?>" readonly class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm">
+                                <p class="text-xs text-gray-500 mt-1">Por defecto: 5000 ms. Máximo: 10 seg</p>
+                            </div>
+                        </div>
+                    </div>
 
-                        <div class="flex items-center space-x-6">
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" <?php echo $dispositivo['habilitado'] ? 'checked' : ''; ?> disabled class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
-                                <span class="text-sm text-gray-700">Dispositivo habilitado</span>
-                            </label>
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" <?php echo $dispositivo['invertido'] ? 'checked' : ''; ?> disabled class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
-                                <span class="text-sm text-gray-700">Invertido (off → on)</span>
-                            </label>
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" <?php echo $dispositivo['simultaneo'] ? 'checked' : ''; ?> disabled class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
-                                <span class="text-sm text-gray-700">Dispositivo simultáneo</span>
-                            </label>
-                        </div>
+                    <div class="flex items-center space-x-6">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" <?php echo $dispositivo['habilitado'] ? 'checked' : ''; ?> disabled class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                            <span class="text-sm text-gray-700">Dispositivo habilitado</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" <?php echo $dispositivo['invertido'] ? 'checked' : ''; ?> disabled class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                            <span class="text-sm text-gray-700">Invertido (off → on)</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" <?php echo $dispositivo['simultaneo'] ? 'checked' : ''; ?> disabled class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                            <span class="text-sm text-gray-700">Dispositivo simultáneo</span>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -538,10 +563,87 @@ function openShellyModal() {
     document.getElementById('modal-shelly').classList.remove('hidden');
     document.getElementById('form-shelly').reset();
     document.getElementById('shelly-id').value = '';
+    document.querySelector('#modal-shelly h3').textContent = 'Configurar Dispositivo Shelly';
+}
+
+function editShellyDevice(device) {
+    document.getElementById('modal-shelly').classList.remove('hidden');
+    document.querySelector('#modal-shelly h3').textContent = 'Editar Dispositivo Shelly';
+    
+    document.getElementById('shelly-id').value = device.id;
+    document.getElementById('shelly-token').value = device.token_autenticacion;
+    document.getElementById('shelly-device-id').value = device.device_id;
+    document.getElementById('shelly-servidor').value = device.servidor_cloud;
+    document.getElementById('shelly-accion').value = device.accion;
+    document.getElementById('shelly-area').value = device.area || '';
+    document.getElementById('shelly-nombre').value = device.nombre || '';
+    document.getElementById('shelly-canal-entrada').value = device.canal_entrada;
+    document.getElementById('shelly-canal-salida').value = device.canal_salida;
+    document.getElementById('shelly-duracion').value = device.duracion_pulso;
+    document.getElementById('shelly-habilitado').checked = device.habilitado == 1;
+    document.getElementById('shelly-invertido').checked = device.invertido == 1;
+    document.getElementById('shelly-simultaneo').checked = device.simultaneo == 1;
 }
 
 function closeShellyModal() {
     document.getElementById('modal-shelly').classList.add('hidden');
+}
+
+function togglePasswordVisibility(button) {
+    const input = button.previousElementSibling;
+    const icon = button.querySelector('i');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+function testShellyChannel(deviceId, channel) {
+    const button = event.target.closest('button');
+    const originalContent = button.innerHTML;
+    
+    // Disable button and show loading
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Probando...';
+    
+    const formData = new FormData();
+    formData.append('dispositivo_id', deviceId);
+    formData.append('canal', channel);
+    
+    fetch(BASE_URL + 'configuraciones/test-shelly-channel', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        button.disabled = false;
+        button.innerHTML = originalContent;
+        
+        if (data.success) {
+            // Show success feedback
+            button.classList.remove('bg-green-500', 'hover:bg-green-600');
+            button.classList.add('bg-green-700');
+            setTimeout(() => {
+                button.classList.remove('bg-green-700');
+                button.classList.add('bg-green-500', 'hover:bg-green-600');
+            }, 2000);
+            alert('✓ Canal activado exitosamente\n\n' + (data.message || 'El dispositivo respondió correctamente'));
+        } else {
+            alert('✗ Error al probar canal\n\n' + (data.message || 'No se pudo activar el dispositivo'));
+        }
+    })
+    .catch(error => {
+        button.disabled = false;
+        button.innerHTML = originalContent;
+        console.error('Error:', error);
+        alert('Error al probar el canal: ' + error.message);
+    });
 }
 
 document.getElementById('form-shelly').addEventListener('submit', async function(e) {
