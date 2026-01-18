@@ -395,12 +395,15 @@ class ConfiguracionesController {
                 $data['timer'] = $dispositivo['duracion_pulso'] / 1000; // ms a segundos
             }
             
+            // Sanitizar token para prevenir inyección de encabezados
+            $authToken = str_replace(["\r", "\n"], '', $dispositivo['token_autenticacion']);
+            
             $ch = curl_init($url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POST, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
             curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Authorization: Bearer ' . $dispositivo['token_autenticacion'],
+                'Authorization: Bearer ' . $authToken,
                 'Content-Type: application/x-www-form-urlencoded'
             ]);
             curl_setopt($ch, CURLOPT_TIMEOUT, 10);
