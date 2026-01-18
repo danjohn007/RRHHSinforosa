@@ -441,7 +441,7 @@ document.querySelectorAll('input[type="color"]').forEach(colorInput => {
 // Preview del logo antes de subir
 document.getElementById('logo-upload').addEventListener('change', function(e) {
     const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
-    const VALID_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const VALID_FILE_TYPES = Object.freeze(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
     
     const file = e.target.files[0];
     if (file) {

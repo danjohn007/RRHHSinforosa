@@ -312,14 +312,14 @@ class SucursalesController {
         $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
         $sucursalId = null;
         $dispositivoId = null;
-        $tipoAccion = 'Ambos';
+        $tipoAccion = null;
         
         if (strpos($contentType, 'application/json') !== false) {
             $input = json_decode(file_get_contents('php://input'), true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($input)) {
                 $sucursalId = $input['sucursal_id'] ?? null;
                 $dispositivoId = $input['dispositivo_id'] ?? null;
-                $tipoAccion = $input['tipo_accion'] ?? 'Ambos';
+                $tipoAccion = $input['tipo_accion'] ?? null;
             }
         }
         
@@ -330,7 +330,7 @@ class SucursalesController {
         if ($dispositivoId === null) {
             $dispositivoId = $_POST['dispositivo_id'] ?? null;
         }
-        if ($tipoAccion === 'Ambos') {
+        if ($tipoAccion === null) {
             $tipoAccion = $_POST['tipo_accion'] ?? 'Ambos';
         }
         

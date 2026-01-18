@@ -39,11 +39,7 @@ class PublicoController {
             $configs[$config['clave']] = $config['valor'];
         }
         
-        // Prepare variables for the view
-        // Note: Only passing trusted, validated data to the view
-        $sucursal = $sucursal;
-        $dispositivos = $dispositivos;
-        $configs = $configs;
+        // Make url_publica available to the view
         $url_publica = $urlPublica;
         
         // Cargar vista pública (sin layout de admin)
