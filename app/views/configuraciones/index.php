@@ -47,10 +47,12 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Sitio</label>
-                    <input type="text" name="configuraciones[sitio_nombre]" 
-                        value="<?php echo htmlspecialchars($configs['sitio'][0]['valor'] ?? ''); ?>"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        placeholder="Sistema RRHH Sinforosa Café">
+                    <input type="text" 
+                           name="configuraciones[sitio_nombre]" 
+                           id="sitio-nombre-input"
+                           value="<?php echo htmlspecialchars($configs['sitio'][0]['valor'] ?? ''); ?>"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                           placeholder="Sistema RRHH Sinforosa Café">
                 </div>
                 
                 <div>
@@ -60,15 +62,25 @@
                         <div class="mb-3">
                             <p class="text-sm text-gray-600 mb-2">Logo actual:</p>
                             <?php 
-                            $logoUrl = (strpos($configs['sitio'][1]['valor'], 'http') === 0) 
+                            $logoUrl = (strpos($configs['sitio'][1]['valor'], 'http') === 0 || strpos($configs['sitio'][1]['valor'], '//') === 0) 
                                 ? $configs['sitio'][1]['valor'] 
-                                : BASE_URL . $configs['sitio'][1]['valor'];
+                                : BASE_URL . ltrim($configs['sitio'][1]['valor'], '/');
                             ?>
-                            <img src="<?php echo htmlspecialchars($logoUrl); ?>" 
+                            <img id="logo-preview-current" 
+                                 src="<?php echo htmlspecialchars($logoUrl); ?>" 
                                  alt="Logo actual" 
-                                 class="h-16 w-16 object-contain border border-gray-200 rounded p-2">
+                                 class="h-16 object-contain border border-gray-200 rounded p-2">
                         </div>
                     <?php endif; ?>
+                    
+                    <!-- Preview for new logo -->
+                    <div id="logo-preview-new-container" class="mb-3 hidden">
+                        <p class="text-sm text-gray-600 mb-2">Vista previa del nuevo logo:</p>
+                        <img id="logo-preview-new" 
+                             src="" 
+                             alt="Vista previa" 
+                             class="h-16 object-contain border border-gray-200 rounded p-2">
+                    </div>
                     
                     <input type="file" 
                            name="logo" 
@@ -82,6 +94,7 @@
                     <!-- Campo oculto para mantener el valor actual si no se sube nuevo archivo -->
                     <input type="hidden" 
                            name="configuraciones[sitio_logo]" 
+                           id="sitio-logo-hidden"
                            value="<?php echo htmlspecialchars($configs['sitio'][1]['valor'] ?? ''); ?>">
                 </div>
             </div>
@@ -423,5 +436,38 @@ document.querySelectorAll('input[type="color"]').forEach(colorInput => {
             textInput.value = this.value;
         }
     });
+});
+
+// Preview del logo antes de subir
+document.getElementById('logo-upload').addEventListener('change', function(e) {
+    const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
+    const VALID_FILE_TYPES = Object.freeze(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+    
+    const file = e.target.files[0];
+    if (file) {
+        // Validar tamaño
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+            alert('El archivo es muy grande. El tamaño máximo es 2MB.');
+            this.value = '';
+            return;
+        }
+        
+        // Validar tipo
+        if (!VALID_FILE_TYPES.includes(file.type)) {
+            alert('Tipo de archivo no permitido. Use JPG, PNG, GIF o WEBP.');
+            this.value = '';
+            return;
+        }
+        
+        // Mostrar preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewImg = document.getElementById('logo-preview-new');
+            const previewContainer = document.getElementById('logo-preview-new-container');
+            previewImg.src = e.target.result;
+            previewContainer.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
 });
 </script>

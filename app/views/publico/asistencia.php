@@ -81,7 +81,15 @@
             <!-- Logo -->
             <?php if (!empty($configs['sitio_logo'])): ?>
             <div class="text-center mb-8">
-                <img src="<?php echo htmlspecialchars($configs['sitio_logo']); ?>" 
+                <?php 
+                // Build correct logo URL
+                $logoUrl = $configs['sitio_logo'];
+                if (strpos($logoUrl, 'http') !== 0 && strpos($logoUrl, '//') !== 0) {
+                    // It's a relative path, prepend BASE_URL
+                    $logoUrl = BASE_URL . ltrim($logoUrl, '/');
+                }
+                ?>
+                <img src="<?php echo htmlspecialchars($logoUrl); ?>" 
                      alt="Logo" 
                      class="mx-auto h-20 md:h-24 object-contain">
             </div>
