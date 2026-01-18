@@ -38,6 +38,7 @@
             </div>
             <h3 class="text-lg font-semibold text-gray-800"><?php echo htmlspecialchars($empleado['nombre_completo']); ?></h3>
             <p class="text-gray-600"><?php echo htmlspecialchars($empleado['puesto']); ?></p>
+            <p class="text-sm text-gray-500 mt-1">Código: <?php echo htmlspecialchars($empleado['codigo_empleado'] ?? $empleado['numero_empleado']); ?></p>
             <div class="mt-4">
                 <?php
                 $statusColors = [
@@ -213,7 +214,7 @@
             <i class="fas fa-folder text-blue-600 mr-2"></i>
             Documentos
         </h3>
-        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
+        <button onclick="openUploadModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
             <i class="fas fa-upload mr-2"></i>Subir Documento
         </button>
     </div>
@@ -226,11 +227,15 @@
                 <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
                     <div class="flex items-center justify-between mb-2">
                         <i class="fas fa-file-alt text-3xl text-blue-500"></i>
-                        <button class="text-blue-600 hover:text-blue-800">
+                        <a href="<?php echo BASE_URL; ?>empleados/descargar-documento?id=<?php echo $doc['id']; ?>" class="text-blue-600 hover:text-blue-800">
                             <i class="fas fa-download"></i>
-                        </button>
+                        </a>
                     </div>
                     <p class="font-medium text-gray-800 text-sm"><?php echo htmlspecialchars($doc['tipo_documento']); ?></p>
+                    <p class="text-xs text-gray-600 mt-1"><?php echo htmlspecialchars($doc['nombre_archivo']); ?></p>
+                    <?php if (!empty($doc['descripcion'])): ?>
+                        <p class="text-xs text-gray-500 mt-1"><?php echo htmlspecialchars($doc['descripcion']); ?></p>
+                    <?php endif; ?>
                     <p class="text-xs text-gray-500 mt-1"><?php echo date('d/m/Y', strtotime($doc['fecha_subida'])); ?></p>
                 </div>
                 <?php endforeach; ?>
@@ -238,3 +243,118 @@
         <?php endif; ?>
     </div>
 </div>
+
+<!-- Modal para subir documento -->
+<div id="uploadModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg max-w-md w-full p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800">Subir Documento</h3>
+            <button onclick="closeUploadModal()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <form id="uploadForm" enctype="multipart/form-data" class="space-y-4">
+            <input type="hidden" name="empleado_id" value="<?php echo $empleado['id']; ?>">
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Documento *</label>
+                <input type="text" name="tipo_documento" required 
+                       placeholder="Ej: INE, Comprobante de Domicilio, Título..."
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Descripción (opcional)</label>
+                <textarea name="descripcion" rows="3" 
+                          placeholder="Descripción adicional del documento..."
+                          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Archivo *</label>
+                <input type="file" name="documento" required accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <p class="text-xs text-gray-500 mt-1">Formatos permitidos: PDF, DOC, DOCX, JPG, PNG. Máximo 10MB</p>
+            </div>
+            
+            <div id="uploadError" class="hidden bg-red-50 border-l-4 border-red-400 p-4 rounded">
+                <p class="text-red-700 text-sm"></p>
+            </div>
+            
+            <div id="uploadSuccess" class="hidden bg-green-50 border-l-4 border-green-400 p-4 rounded">
+                <p class="text-green-700 text-sm"></p>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="closeUploadModal()" 
+                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                    Cancelar
+                </button>
+                <button type="submit" 
+                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    <i class="fas fa-upload mr-2"></i>Subir
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openUploadModal() {
+    document.getElementById('uploadModal').classList.remove('hidden');
+}
+
+function closeUploadModal() {
+    document.getElementById('uploadModal').classList.add('hidden');
+    document.getElementById('uploadForm').reset();
+    document.getElementById('uploadError').classList.add('hidden');
+    document.getElementById('uploadSuccess').classList.add('hidden');
+}
+
+document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const errorDiv = document.getElementById('uploadError');
+    const successDiv = document.getElementById('uploadSuccess');
+    
+    // Hide previous messages
+    errorDiv.classList.add('hidden');
+    successDiv.classList.add('hidden');
+    
+    // Disable submit button
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Subiendo...';
+    
+    try {
+        const response = await fetch('<?php echo BASE_URL; ?>empleados/subir-documento', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            successDiv.querySelector('p').textContent = data.message;
+            successDiv.classList.remove('hidden');
+            
+            // Reload page after 2 seconds
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            errorDiv.querySelector('p').textContent = data.message;
+            errorDiv.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-upload mr-2"></i>Subir';
+        }
+    } catch (error) {
+        errorDiv.querySelector('p').textContent = 'Error de conexión. Por favor intente nuevamente.';
+        errorDiv.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-upload mr-2"></i>Subir';
+    }
+});
+</script>

@@ -67,7 +67,12 @@
     </button>
 
     <div class="header">
-        <h1>Sinforosa Café</h1>
+        <?php if (!empty($configs['sitio_logo'])): ?>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="<?php echo htmlspecialchars($configs['sitio_logo']); ?>" alt="Logo" style="max-height: 80px; max-width: 200px; margin: 0 auto;">
+        </div>
+        <?php endif; ?>
+        <h1><?php echo htmlspecialchars($configs['sitio_nombre'] ?? 'Sinforosa Café'); ?></h1>
         <p>Sistema de Gestión de Recursos Humanos</p>
         <h2 style="color: #764ba2;">CONSTANCIA DE TRABAJO</h2>
     </div>
@@ -93,7 +98,7 @@
         <table class="table-info">
             <tr>
                 <td>Número de Empleado:</td>
-                <td><?php echo htmlspecialchars($empleado['numero_empleado']); ?></td>
+                <td><?php echo htmlspecialchars($empleado['numero_empleado']); ?><?php if (!empty($empleado['codigo_empleado'])): ?> (<?php echo htmlspecialchars($empleado['codigo_empleado']); ?>)<?php endif; ?></td>
             </tr>
             <tr>
                 <td>Puesto:</td>
