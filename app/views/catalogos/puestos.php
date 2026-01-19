@@ -1,6 +1,6 @@
 <div class="fade-in">
     <!-- Header con tabs -->
-    <div class="mb-6">
+    <div class="mb-6" data-aos="fade-down">
         <h1 class="text-2xl font-bold text-gray-900 mb-4">Catálogos</h1>
         
         <!-- Tabs -->
@@ -17,7 +17,7 @@
     </div>
 
     <!-- Botón Agregar -->
-    <div class="mb-4 flex justify-end">
+    <div class="mb-4 flex justify-end" data-aos="fade-left" data-aos-delay="100">
         <button onclick="abrirModal()" 
                 class="bg-gradient-sinforosa text-white px-4 py-2 rounded-lg hover:opacity-90 transition">
             <i class="fas fa-plus mr-2"></i>Nuevo Puesto
@@ -25,7 +25,7 @@
     </div>
 
     <!-- Tabla -->
-    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden" data-aos="fade-up" data-aos-delay="200">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>

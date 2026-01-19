@@ -58,7 +58,7 @@ ob_start();
 
 <!-- Header -->
 <div class="mb-6">
-    <div class="flex justify-between items-center mb-4">
+    <div class="flex justify-between items-center mb-4" data-aos="fade-down">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">
                 <i class="fas fa-bug text-red-500 mr-2"></i>
@@ -95,7 +95,7 @@ ob_start();
 
     <!-- Estadísticas -->
     <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-gray-500">
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-gray-500" data-aos="fade-up" data-aos-delay="0">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-gray-600 text-sm">Total Errores</p>
@@ -105,7 +105,7 @@ ob_start();
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-red-600">
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-red-600" data-aos="fade-up" data-aos-delay="100">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-gray-600 text-sm">Fatal / Parse</p>
@@ -115,7 +115,7 @@ ob_start();
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-orange-500">
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-orange-500" data-aos="fade-up" data-aos-delay="200">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-gray-600 text-sm">Warnings</p>
@@ -125,7 +125,7 @@ ob_start();
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-yellow-500">
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-yellow-500" data-aos="fade-up" data-aos-delay="300">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-gray-600 text-sm">Notice / Deprecated</p>
@@ -135,7 +135,7 @@ ob_start();
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
+        <div class="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500" data-aos="fade-up" data-aos-delay="400">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-gray-600 text-sm">Tamaño Log</p>
@@ -147,7 +147,7 @@ ob_start();
     </div>
 
     <!-- Filtros -->
-    <div class="bg-white rounded-lg shadow p-4 mb-6">
+    <div class="bg-white rounded-lg shadow p-4 mb-6" data-aos="fade-up" data-aos-delay="500">
         <div class="flex flex-wrap gap-2 items-center">
             <button onclick="filtrarTipo('todos')" class="filtro-btn active px-4 py-2 rounded-lg transition" data-tipo="todos">
                 <i class="fas fa-list mr-1"></i> Todos (<?= $estadisticas['total'] ?>)
