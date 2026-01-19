@@ -21,6 +21,10 @@ $siteName = $configHelper->getSiteName();
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- AOS (Animate On Scroll) -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
     <!-- Scripts del sistema -->
     <script>
         // Definir BASE_URL para JavaScript
@@ -66,7 +70,7 @@ $siteName = $configHelper->getSiteName();
         <!-- Sidebar -->
         <aside id="sidebar" class="w-64 bg-gradient-sinforosa text-white flex-shrink-0 fixed md:static inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out md:flex flex-col">
             <!-- Logo -->
-            <div class="p-6 border-b border-white border-opacity-20">
+            <div class="p-6 border-b border-white border-opacity-20" data-aos="fade-down">
                 <div class="flex items-center space-x-3">
                     <?php echo $configHelper->renderLogo('h-10 w-10'); ?>
                     <div>
@@ -77,7 +81,7 @@ $siteName = $configHelper->getSiteName();
             </div>
 
             <!-- Navigation -->
-            <nav class="flex-1 overflow-y-auto p-4">
+            <nav class="flex-1 overflow-y-auto p-4" data-aos="fade-up" data-aos-delay="100">
                 <div class="space-y-1">
                     <a href="<?php echo BASE_URL; ?>dashboard" class="sidebar-item flex items-center px-4 py-3 rounded-lg transition">
                         <i class="fas fa-home w-5"></i>
@@ -190,7 +194,7 @@ $siteName = $configHelper->getSiteName();
             </nav>
 
             <!-- User info -->
-            <div class="p-4 border-t border-white border-opacity-20">
+            <div class="p-4 border-t border-white border-opacity-20" data-aos="fade-up" data-aos-delay="200">
                 <div class="flex items-center space-x-3">
                     <div class="h-10 w-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
                         <i class="fas fa-user"></i>
@@ -206,7 +210,7 @@ $siteName = $configHelper->getSiteName();
         <!-- Main content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Top bar -->
-            <header class="bg-white shadow-sm z-10">
+            <header class="bg-white shadow-sm z-10" data-aos="fade-down">
                 <div class="px-6 py-4 flex items-center justify-between">
                     <div class="flex items-center space-x-4">
                         <button id="mobile-menu-button" class="md:hidden text-gray-600 hover:text-gray-900 focus:outline-none">
@@ -416,6 +420,16 @@ $siteName = $configHelper->getSiteName();
             // Escuchar cambios desde otras vistas
             window.addEventListener('notificacionesActualizadas', function() {
                 cargarNotificaciones();
+            });
+        });
+        
+        // Initialize AOS (Animate On Scroll)
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true,
+                offset: 100
             });
         });
         

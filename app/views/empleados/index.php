@@ -1,6 +1,6 @@
 <!-- Listado de Empleados -->
 
-<div class="mb-6">
+<div class="mb-6" data-aos="fade-down">
     <div class="flex justify-between items-center">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Gestión de Empleados</h1>
@@ -13,7 +13,7 @@
 </div>
 
 <!-- Filtros -->
-<div class="bg-white rounded-lg shadow-md p-4 mb-6">
+<div class="bg-white rounded-lg shadow-md p-4 mb-6" data-aos="fade-up" data-aos-delay="100">
     <form method="GET" action="<?php echo BASE_URL; ?>empleados" class="flex flex-wrap gap-4">
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Estatus</label>
@@ -54,7 +54,7 @@
 </div>
 
 <!-- Tabla de Empleados -->
-<div class="bg-white rounded-lg shadow-md overflow-hidden">
+<div class="bg-white rounded-lg shadow-md overflow-hidden" data-aos="fade-up" data-aos-delay="200">
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -157,23 +157,23 @@
 
 <!-- Estadísticas rápidas -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-    <div class="bg-white rounded-lg shadow p-4">
+    <div class="bg-white rounded-lg shadow p-4" data-aos="flip-left" data-aos-delay="300">
         <p class="text-sm text-gray-600">Total Empleados</p>
         <p class="text-2xl font-bold text-gray-800"><?php echo count($empleados); ?></p>
     </div>
-    <div class="bg-white rounded-lg shadow p-4">
+    <div class="bg-white rounded-lg shadow p-4" data-aos="flip-left" data-aos-delay="400">
         <p class="text-sm text-gray-600">Activos</p>
         <p class="text-2xl font-bold text-green-600">
             <?php echo count(array_filter($empleados, fn($e) => $e['estatus'] === 'Activo')); ?>
         </p>
     </div>
-    <div class="bg-white rounded-lg shadow p-4">
+    <div class="bg-white rounded-lg shadow p-4" data-aos="flip-left" data-aos-delay="500">
         <p class="text-sm text-gray-600">De Baja</p>
         <p class="text-2xl font-bold text-red-600">
             <?php echo count(array_filter($empleados, fn($e) => $e['estatus'] === 'Baja')); ?>
         </p>
     </div>
-    <div class="bg-white rounded-lg shadow p-4">
+    <div class="bg-white rounded-lg shadow p-4" data-aos="flip-left" data-aos-delay="600">
         <p class="text-sm text-gray-600">Departamentos</p>
         <p class="text-2xl font-bold text-blue-600"><?php echo count($departamentos); ?></p>
     </div>

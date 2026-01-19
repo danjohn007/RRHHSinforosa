@@ -3,7 +3,7 @@
 <!-- Stats Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
     <!-- Total Empleados -->
-    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500" data-aos="fade-up" data-aos-delay="0">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-600 font-medium mb-1">Total Empleados</p>
@@ -19,7 +19,7 @@
     </div>
     
     <!-- Nóminas -->
-    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500" data-aos="fade-up" data-aos-delay="100">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-600 font-medium mb-1">Períodos de Nómina</p>
@@ -35,7 +35,7 @@
     </div>
     
     <!-- Vacaciones Pendientes -->
-    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500" data-aos="fade-up" data-aos-delay="200">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-600 font-medium mb-1">Solicitudes Pendientes</p>
@@ -51,7 +51,7 @@
     </div>
     
     <!-- Candidatos -->
-    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500" data-aos="fade-up" data-aos-delay="300">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-600 font-medium mb-1">Candidatos en Proceso</p>
@@ -70,7 +70,7 @@
 <!-- Charts Row -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
     <!-- Empleados por Departamento -->
-    <div class="bg-white rounded-lg shadow-md p-6 fade-in">
+    <div class="bg-white rounded-lg shadow-md p-6 fade-in" data-aos="fade-right" data-aos-delay="400">
         <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
             <i class="fas fa-chart-pie text-purple-600 mr-2"></i>
             Distribución por Departamento
@@ -88,7 +88,7 @@
     </div>
     
     <!-- Asistencia Semanal -->
-    <div class="bg-white rounded-lg shadow-md p-6 fade-in">
+    <div class="bg-white rounded-lg shadow-md p-6 fade-in" data-aos="fade-left" data-aos-delay="400">
         <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
             <i class="fas fa-chart-line text-blue-600 mr-2"></i>
             Asistencia Semanal (Proyección)
@@ -109,7 +109,7 @@
 <!-- Cumpleaños y Alertas -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <!-- Cumpleaños del Mes -->
-    <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="bg-white rounded-lg shadow-md p-6" data-aos="zoom-in" data-aos-delay="500">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">
             <i class="fas fa-birthday-cake text-pink-600 mr-2"></i>
             Cumpleaños del Mes
@@ -141,7 +141,7 @@
     </div>
     
     <!-- Accesos Rápidos -->
-    <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="bg-white rounded-lg shadow-md p-6" data-aos="zoom-in" data-aos-delay="600">
         <h3 class="text-lg font-semibold text-gray-800 mb-4">
             <i class="fas fa-bolt text-yellow-600 mr-2"></i>
             Accesos Rápidos
