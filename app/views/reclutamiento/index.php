@@ -1,6 +1,6 @@
 <!-- Vista de Reclutamiento -->
 
-<div class="mb-6">
+<div class="mb-6" data-aos="fade-down">
     <div class="flex justify-between items-center">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Gestión de Candidatos</h1>
@@ -24,21 +24,24 @@
         'Rechazado' => ['color' => 'red', 'icon' => 'times-circle']
     ];
     
+    $delay = 0;
     foreach ($statusInfo as $status => $info):
         $count = $statusStats[$status] ?? 0;
     ?>
-    <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-<?php echo $info['color']; ?>-500">
+    <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-<?php echo $info['color']; ?>-500" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
         <p class="text-sm text-gray-600 mb-1"><?php echo $status; ?></p>
         <div class="flex items-center justify-between">
             <p class="text-2xl font-bold text-<?php echo $info['color']; ?>-600"><?php echo $count; ?></p>
             <i class="fas fa-<?php echo $info['icon']; ?> text-<?php echo $info['color']; ?>-500 text-xl"></i>
         </div>
     </div>
-    <?php endforeach; ?>
+    <?php 
+        $delay += 100;
+    endforeach; ?>
 </div>
 
 <!-- Tabla de Candidatos -->
-<div class="bg-white rounded-lg shadow-md overflow-hidden">
+<div class="bg-white rounded-lg shadow-md overflow-hidden" data-aos="fade-up" data-aos-delay="500">
     <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h2 class="text-lg font-semibold text-gray-800">Candidatos Recientes</h2>
         <div class="flex space-x-2">

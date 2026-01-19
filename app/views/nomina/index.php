@@ -1,13 +1,13 @@
 <!-- Vista de Nómina -->
 
-<div class="mb-6">
+<div class="mb-6" data-aos="fade-down">
     <h1 class="text-2xl font-bold text-gray-800">Administración de Nómina</h1>
     <p class="text-gray-600 mt-1">Gestión y procesamiento de nómina</p>
 </div>
 
 <!-- Stats Cards -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-    <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="bg-white rounded-lg shadow-md p-6" data-aos="fade-up" data-aos-delay="0">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-600">Períodos Registrados</p>
@@ -17,7 +17,7 @@
         </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="bg-white rounded-lg shadow-md p-6" data-aos="fade-up" data-aos-delay="100">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-600">Período Activo</p>
@@ -32,7 +32,7 @@
         </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="bg-white rounded-lg shadow-md p-6" data-aos="fade-up" data-aos-delay="200">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-600">En Proceso</p>
@@ -44,7 +44,7 @@
         </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow-md p-6">
+    <div class="bg-white rounded-lg shadow-md p-6" data-aos="fade-up" data-aos-delay="300">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-600">Procesados</p>
@@ -59,19 +59,19 @@
 
 <!-- Acciones Rápidas -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <a href="<?php echo BASE_URL; ?>nomina/procesar" class="bg-gradient-sinforosa text-white rounded-lg p-6 hover:opacity-90 transition">
+    <a href="<?php echo BASE_URL; ?>nomina/procesar" class="bg-gradient-sinforosa text-white rounded-lg p-6 hover:opacity-90 transition" data-aos="zoom-in" data-aos-delay="400">
         <i class="fas fa-calculator text-3xl mb-3"></i>
         <h3 class="text-lg font-semibold">Procesar Nómina</h3>
         <p class="text-sm text-purple-100 mt-2">Calcular y procesar período de nómina</p>
     </a>
     
-    <a href="<?php echo BASE_URL; ?>nomina/recibos" class="bg-blue-600 text-white rounded-lg p-6 hover:bg-blue-700 transition">
+    <a href="<?php echo BASE_URL; ?>nomina/recibos" class="bg-blue-600 text-white rounded-lg p-6 hover:bg-blue-700 transition" data-aos="zoom-in" data-aos-delay="500">
         <i class="fas fa-file-invoice text-3xl mb-3"></i>
         <h3 class="text-lg font-semibold">Recibos de Nómina</h3>
         <p class="text-sm text-blue-100 mt-2">Generar y consultar recibos</p>
     </a>
     
-    <a href="<?php echo BASE_URL; ?>nomina/configuracion" class="bg-green-600 text-white rounded-lg p-6 hover:bg-green-700 transition">
+    <a href="<?php echo BASE_URL; ?>nomina/configuracion" class="bg-green-600 text-white rounded-lg p-6 hover:bg-green-700 transition" data-aos="zoom-in" data-aos-delay="600">
         <i class="fas fa-cog text-3xl mb-3"></i>
         <h3 class="text-lg font-semibold">Configuración</h3>
         <p class="text-sm text-green-100 mt-2">Percepciones y deducciones</p>
@@ -79,7 +79,7 @@
 </div>
 
 <!-- Tabla de Períodos -->
-<div class="bg-white rounded-lg shadow-md overflow-hidden">
+<div class="bg-white rounded-lg shadow-md overflow-hidden" data-aos="fade-up" data-aos-delay="700">
     <div class="px-6 py-4 border-b border-gray-200">
         <h2 class="text-lg font-semibold text-gray-800">Períodos de Nómina Recientes</h2>
     </div>

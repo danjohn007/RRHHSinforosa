@@ -1,6 +1,6 @@
 <!-- Vista de Lista de Sucursales -->
 
-<div class="mb-6">
+<div class="mb-6" data-aos="fade-down">
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Gestión de Sucursales</h1>
@@ -17,7 +17,7 @@
 <!-- Lista de Sucursales -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <?php if (empty($sucursales)): ?>
-        <div class="col-span-full bg-white rounded-lg shadow-md p-8 text-center">
+        <div class="col-span-full bg-white rounded-lg shadow-md p-8 text-center" data-aos="fade-up">
             <i class="fas fa-building text-gray-300 text-6xl mb-4"></i>
             <p class="text-gray-500 text-lg">No hay sucursales registradas</p>
             <a href="<?php echo BASE_URL; ?>sucursales/crear" class="text-purple-600 hover:text-purple-800 font-medium mt-2 inline-block">
@@ -25,8 +25,10 @@
             </a>
         </div>
     <?php else: ?>
-        <?php foreach ($sucursales as $sucursal): ?>
-            <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition overflow-hidden">
+        <?php 
+        $delay = 0;
+        foreach ($sucursales as $sucursal): ?>
+            <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition overflow-hidden" data-aos="fade-up" data-aos-delay="<?php echo $delay; ?>">
                 <div class="bg-gradient-to-r from-purple-500 to-purple-600 p-4">
                     <h3 class="text-white text-xl font-bold"><?php echo htmlspecialchars($sucursal['nombre']); ?></h3>
                     <p class="text-purple-100 text-sm"><?php echo htmlspecialchars($sucursal['codigo']); ?></p>
@@ -101,7 +103,9 @@
                     </div>
                 </div>
             </div>
-        <?php endforeach; ?>
+        <?php 
+            $delay += 100;
+        endforeach; ?>
     <?php endif; ?>
 </div>
 

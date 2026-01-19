@@ -5,7 +5,7 @@ ob_start();
 
 <div class="max-w-4xl mx-auto">
     <!-- Header -->
-    <div class="mb-6">
+    <div class="mb-6" data-aos="fade-down">
         <h1 class="text-3xl font-bold text-gray-900">
             <i class="fas fa-bell text-purple-600 mr-2"></i>
             Notificaciones
@@ -14,7 +14,7 @@ ob_start();
     </div>
 
     <!-- Filtros rápidos -->
-    <div class="bg-white rounded-lg shadow p-4 mb-6">
+    <div class="bg-white rounded-lg shadow p-4 mb-6" data-aos="fade-up" data-aos-delay="100">
         <div class="flex gap-2 flex-wrap">
             <button onclick="filtrarNotificaciones('todas')" class="filtro-notif-btn active px-4 py-2 rounded-lg transition" data-filtro="todas">
                 <i class="fas fa-list mr-1"></i> Todas
@@ -35,7 +35,9 @@ ob_start();
 
     <!-- Lista de notificaciones -->
     <div class="space-y-3">
-        <?php foreach ($notificaciones as $notif): ?>
+        <?php 
+        $delay = 200;
+        foreach ($notificaciones as $notif): ?>
             <?php
                 $colorClasses = [
                     'blue' => 'bg-blue-50 text-blue-600',
@@ -58,7 +60,8 @@ ob_start();
             ?>
             
             <div class="notif-item bg-white rounded-lg shadow hover:shadow-md transition p-4 <?= !$notif['leida'] ? 'border-l-4 border-blue-500' : '' ?>"
-                 data-leida="<?= $notif['leida'] ? 'true' : 'false' ?>">
+                 data-leida="<?= $notif['leida'] ? 'true' : 'false' ?>"
+                 data-aos="fade-up" data-aos-delay="<?= $delay ?>">
                 <div class="flex items-start gap-4">
                     <!-- Icono -->
                     <div class="flex-shrink-0">
@@ -93,7 +96,9 @@ ob_start();
                     </div>
                 </div>
             </div>
-        <?php endforeach; ?>
+        <?php 
+            $delay += 50;
+        endforeach; ?>
     </div>
 
     <!-- Mensaje vacío -->

@@ -1,6 +1,6 @@
 <!-- Vista de Centro de Reportes -->
 
-<div class="mb-6">
+<div class="mb-6" data-aos="fade-down">
     <h1 class="text-2xl font-bold text-gray-800">Centro de Reportes y Análisis</h1>
     <p class="text-gray-600 mt-1">Genera y consulta reportes del sistema de RRHH</p>
 </div>
@@ -9,7 +9,7 @@
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     
     <!-- Reportes de Personal -->
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden" data-aos="fade-up" data-aos-delay="0">
         <div class="bg-gradient-sinforosa p-4">
             <i class="fas fa-users text-white text-3xl mb-2"></i>
             <h3 class="text-white text-xl font-semibold">Reportes de Personal</h3>
@@ -45,7 +45,7 @@
     </div>
 
     <!-- Reportes de Nómina -->
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden" data-aos="fade-up" data-aos-delay="100">
         <div class="bg-green-600 p-4">
             <i class="fas fa-money-bill-wave text-white text-3xl mb-2"></i>
             <h3 class="text-white text-xl font-semibold">Reportes de Nómina</h3>

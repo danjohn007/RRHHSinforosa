@@ -1,13 +1,13 @@
 <!-- Vista de Control de Asistencia -->
 
-<div class="mb-6">
+<div class="mb-6" data-aos="fade-down">
     <h1 class="text-2xl font-bold text-gray-800">Control de Asistencia</h1>
     <p class="text-gray-600 mt-1">Registro y seguimiento de asistencia del día <?php echo date('d/m/Y'); ?></p>
 </div>
 
 <!-- Stats del Día -->
 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500" data-aos="fade-up" data-aos-delay="0">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-600">Presentes</p>
@@ -19,7 +19,7 @@
         </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500" data-aos="fade-up" data-aos-delay="100">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-600">Retardos</p>
@@ -31,7 +31,7 @@
         </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500" data-aos="fade-up" data-aos-delay="200">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-600">Faltas</p>
@@ -43,7 +43,7 @@
         </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+    <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500" data-aos="fade-up" data-aos-delay="300">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm text-gray-600">Total Registros</p>

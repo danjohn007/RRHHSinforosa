@@ -1,12 +1,12 @@
 <!-- Vista de Beneficios -->
 
-<div class="mb-6">
+<div class="mb-6" data-aos="fade-down">
     <h1 class="text-2xl font-bold text-gray-800">Gestión de Beneficios</h1>
     <p class="text-gray-600 mt-1">Administra préstamos, bonos y apoyos especiales</p>
 </div>
 
 <!-- Tabs -->
-<div class="mb-6">
+<div class="mb-6" data-aos="fade-up" data-aos-delay="100">
     <div class="border-b border-gray-200">
         <nav class="-mb-px flex space-x-8">
             <button onclick="showTab('prestamos')" id="tab-prestamos" class="tab-button active border-b-2 border-purple-500 py-4 px-1 text-center font-medium text-sm text-purple-600">
@@ -24,17 +24,17 @@
 <!-- Préstamos -->
 <div id="content-prestamos" class="tab-content">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="bg-white rounded-lg shadow-md p-6" data-aos="zoom-in" data-aos-delay="200">
             <p class="text-sm text-gray-600">Préstamos Activos</p>
             <p class="text-3xl font-bold text-blue-600"><?php echo count(array_filter($prestamos, fn($p) => $p['estatus'] === 'Activo')); ?></p>
         </div>
-        <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="bg-white rounded-lg shadow-md p-6" data-aos="zoom-in" data-aos-delay="300">
             <p class="text-sm text-gray-600">Total Prestado</p>
             <p class="text-3xl font-bold text-purple-600">
                 $<?php echo number_format(array_sum(array_column($prestamos, 'monto_total')), 2); ?>
             </p>
         </div>
-        <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="bg-white rounded-lg shadow-md p-6" data-aos="zoom-in" data-aos-delay="400">
             <p class="text-sm text-gray-600">Total Pendiente</p>
             <p class="text-3xl font-bold text-yellow-600">
                 $<?php echo number_format(array_sum(array_column($prestamos, 'monto_pendiente')), 2); ?>
@@ -42,7 +42,7 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden" data-aos="fade-up" data-aos-delay="500">
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h2 class="text-lg font-semibold text-gray-800">Préstamos Activos</h2>
             <button onclick="openPrestamoModal()" class="bg-gradient-sinforosa text-white px-4 py-2 rounded-lg hover:opacity-90">

@@ -1,6 +1,6 @@
 <div class="fade-in">
     <!-- Header -->
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-6 flex items-center justify-between" data-aos="fade-down">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Gestión de Usuarios</h1>
             <p class="mt-1 text-sm text-gray-600">Administra los usuarios del sistema</p>
@@ -13,7 +13,7 @@
     </div>
 
     <!-- Tabla de usuarios -->
-    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden" data-aos="fade-up" data-aos-delay="100">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">

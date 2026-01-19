@@ -1,6 +1,6 @@
 <!-- Vista de Configuraciones Globales -->
 
-<div class="mb-6">
+<div class="mb-6" data-aos="fade-down">
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Configuraciones Globales</h1>
@@ -10,7 +10,7 @@
 </div>
 
 <!-- Tabs -->
-<div class="mb-6">
+<div class="mb-6" data-aos="fade-up" data-aos-delay="100">
     <div class="border-b border-gray-200">
         <nav class="-mb-px flex space-x-8 overflow-x-auto">
             <button onclick="showConfigTab('sitio')" id="tab-sitio" class="config-tab active border-b-2 border-purple-500 py-4 px-1 text-center font-medium text-sm text-purple-600 whitespace-nowrap">
@@ -37,7 +37,7 @@
 
 <form id="form-configuraciones" enctype="multipart/form-data">
     <!-- Sitio -->
-    <div id="content-sitio" class="config-content">
+    <div id="content-sitio" class="config-content" data-aos="fade-up" data-aos-delay="200">
         <div class="bg-white rounded-lg shadow-md p-6">
             <h2 class="text-lg font-semibold text-gray-800 mb-4">
                 <i class="fas fa-globe text-purple-600 mr-2"></i>Configuración del Sitio
