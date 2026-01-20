@@ -16,8 +16,10 @@ class Empleado {
     public function getAll($filters = []) {
         $sql = "SELECT e.*, 
                 CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', IFNULL(e.apellido_materno, '')) as nombre_completo,
-                TIMESTAMPDIFF(YEAR, e.fecha_ingreso, CURDATE()) as anios_antiguedad
+                TIMESTAMPDIFF(YEAR, e.fecha_ingreso, CURDATE()) as anios_antiguedad,
+                s.nombre as sucursal_nombre
                 FROM empleados e 
+                LEFT JOIN sucursales s ON e.sucursal_id = s.id
                 WHERE 1=1";
         
         $params = [];
@@ -30,6 +32,24 @@ class Empleado {
         if (!empty($filters['departamento'])) {
             $sql .= " AND e.departamento = ?";
             $params[] = $filters['departamento'];
+        }
+        
+        if (!empty($filters['sucursal'])) {
+            $sql .= " AND e.sucursal_id = ?";
+            $params[] = $filters['sucursal'];
+        }
+        
+        if (!empty($filters['search'])) {
+            $sql .= " AND (e.nombres LIKE ? OR e.apellido_paterno LIKE ? OR e.apellido_materno LIKE ? 
+                      OR e.email_personal LIKE ? OR e.numero_empleado LIKE ? OR e.celular LIKE ? OR e.telefono LIKE ?)";
+            $searchTerm = '%' . $filters['search'] . '%';
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
         }
         
         $sql .= " ORDER BY e.nombres, e.apellido_paterno";
@@ -45,8 +65,11 @@ class Empleado {
     public function getById($id) {
         $sql = "SELECT e.*,
                 CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', IFNULL(e.apellido_materno, '')) as nombre_completo,
-                TIMESTAMPDIFF(YEAR, e.fecha_ingreso, CURDATE()) as anios_antiguedad
+                TIMESTAMPDIFF(YEAR, e.fecha_ingreso, CURDATE()) as anios_antiguedad,
+                s.nombre as sucursal_nombre,
+                s.codigo as sucursal_codigo
                 FROM empleados e 
+                LEFT JOIN sucursales s ON e.sucursal_id = s.id
                 WHERE e.id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);

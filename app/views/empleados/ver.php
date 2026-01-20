@@ -69,6 +69,12 @@
                     <i class="fas fa-building w-5"></i>
                     <span class="ml-3 text-sm"><?php echo htmlspecialchars($empleado['departamento']); ?></span>
                 </div>
+                <?php if (!empty($empleado['sucursal_nombre'])): ?>
+                <div class="flex items-center text-gray-600">
+                    <i class="fas fa-store w-5"></i>
+                    <span class="ml-3 text-sm"><?php echo htmlspecialchars($empleado['sucursal_nombre']); ?></span>
+                </div>
+                <?php endif; ?>
                 <div class="flex items-center text-gray-600">
                     <i class="fas fa-calendar w-5"></i>
                     <span class="ml-3 text-sm">Ingreso: <?php echo date('d/m/Y', strtotime($empleado['fecha_ingreso'])); ?></span>
