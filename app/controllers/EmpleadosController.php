@@ -587,37 +587,39 @@ class EmpleadosController {
             
             // Obtener incidencias
             $stmt = $db->prepare("
-                SELECT tipo_incidencia, motivo, fecha, monto
-                FROM incidencias
+                SELECT tipo_incidencia, motivo, fecha_incidencia as fecha, monto
+                FROM incidencias_nomina
                 WHERE empleado_id = ? 
-                AND fecha BETWEEN ? AND ?
-                ORDER BY fecha DESC
+                AND fecha_incidencia BETWEEN ? AND ?
+                AND estatus = 'Aprobado'
+                ORDER BY fecha_incidencia DESC
             ");
             $stmt->execute([$empleadoId, $fechaInicio, $fechaFin]);
             $incidencias = $stmt->fetchAll();
             
-            // Obtener deducciones activas
-            $stmt = $db->prepare("
-                SELECT concepto, monto, fecha_inicio, fecha_fin
-                FROM deducciones_empleado
-                WHERE empleado_id = ? 
-                AND activo = 1
-                AND (fecha_fin IS NULL OR fecha_fin >= ?)
-                ORDER BY fecha_inicio DESC
-            ");
-            $stmt->execute([$empleadoId, $fechaFin]);
-            $deducciones = $stmt->fetchAll();
+            // Obtener deducciones activas (si existe tabla deducciones_empleado)
+            $deducciones = [];
             
             // Calcular montos
             $salarioDiario = floatval($empleado['salario_diario']);
             $salarioMensual = floatval($empleado['salario_mensual']);
             $salarioBase = $diasTrabajados * $salarioDiario;
             
-            // Calcular pago de horas extras (doble)
+            // Calcular pago de horas extras (doble) y bonos/descuentos desde incidencias
             $valorHoraExtra = ($salarioDiario / 8) * 2;
             $pagoHorasExtras = $horasExtras * $valorHoraExtra;
+            $bonos = 0;
+            $descuentos = 0;
             
-            $totalPercepciones = $salarioBase + $pagoHorasExtras;
+            foreach ($incidencias as $inc) {
+                if ($inc['tipo_incidencia'] === 'Bono') {
+                    $bonos += floatval($inc['monto']);
+                } elseif ($inc['tipo_incidencia'] === 'Descuento') {
+                    $descuentos += floatval($inc['monto']);
+                }
+            }
+            
+            $totalPercepciones = $salarioBase + $pagoHorasExtras + $bonos;
             
             // Calcular deducciones estimadas
             require_once BASE_PATH . 'app/services/NominaService.php';
@@ -629,10 +631,7 @@ class EmpleadosController {
             
             $cuotasIMSS = $nominaService->calcularIMSS($salarioMensual);
             
-            $totalDeducciones = $isrNeto + $cuotasIMSS['total'];
-            foreach ($deducciones as $ded) {
-                $totalDeducciones += floatval($ded['monto']);
-            }
+            $totalDeducciones = $isrNeto + $cuotasIMSS['total'] + $descuentos;
             
             $totalNeto = $totalPercepciones - $totalDeducciones;
             
@@ -658,9 +657,11 @@ class EmpleadosController {
                 'calculos' => [
                     'salario_base' => round($salarioBase, 2),
                     'pago_horas_extras' => round($pagoHorasExtras, 2),
+                    'bonos' => round($bonos, 2),
                     'total_percepciones' => round($totalPercepciones, 2),
                     'isr' => round($isrNeto, 2),
                     'imss' => round($cuotasIMSS['total'], 2),
+                    'descuentos' => round($descuentos, 2),
                     'total_deducciones' => round($totalDeducciones, 2),
                     'total_neto' => round($totalNeto, 2)
                 ]

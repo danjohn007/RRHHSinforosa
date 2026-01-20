@@ -299,6 +299,10 @@
                         <span class="text-gray-700">Pago Horas Extras:</span>
                         <span id="pagoHorasExtras" class="font-semibold text-gray-800">$0.00</span>
                     </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-700">Bonos:</span>
+                        <span id="bonos" class="font-semibold text-gray-800">$0.00</span>
+                    </div>
                     <div class="flex justify-between border-t pt-2">
                         <span class="font-semibold text-gray-700">Total Percepciones:</span>
                         <span id="totalPercepciones" class="font-bold text-green-600">$0.00</span>
@@ -310,6 +314,10 @@
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-600">IMSS:</span>
                         <span id="imssCalc" class="text-gray-700">$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Otros Descuentos:</span>
+                        <span id="descuentosCalc" class="text-gray-700">$0.00</span>
                     </div>
                     <div class="flex justify-between border-t pt-2">
                         <span class="font-semibold text-gray-700">Total Deducciones:</span>
@@ -384,9 +392,11 @@ async function abrirCalculoRapido(empleadoId) {
             // Cálculos
             document.getElementById('salarioBase').textContent = '$' + parseFloat(data.calculos.salario_base).toFixed(2);
             document.getElementById('pagoHorasExtras').textContent = '$' + parseFloat(data.calculos.pago_horas_extras).toFixed(2);
+            document.getElementById('bonos').textContent = '$' + parseFloat(data.calculos.bonos).toFixed(2);
             document.getElementById('totalPercepciones').textContent = '$' + parseFloat(data.calculos.total_percepciones).toFixed(2);
             document.getElementById('isrCalc').textContent = '$' + parseFloat(data.calculos.isr).toFixed(2);
             document.getElementById('imssCalc').textContent = '$' + parseFloat(data.calculos.imss).toFixed(2);
+            document.getElementById('descuentosCalc').textContent = '$' + parseFloat(data.calculos.descuentos).toFixed(2);
             document.getElementById('totalDeducciones').textContent = '$' + parseFloat(data.calculos.total_deducciones).toFixed(2);
             document.getElementById('totalNeto').textContent = '$' + parseFloat(data.calculos.total_neto).toFixed(2);
             
