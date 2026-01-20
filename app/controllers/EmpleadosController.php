@@ -559,7 +559,7 @@ class EmpleadosController {
             
             // Calcular días trabajados desde último periodo
             $stmt = $db->prepare("
-                SELECT DATE(fecha) as fecha, entrada, salida, horas_trabajadas, estatus
+                SELECT DATE(fecha) as fecha, hora_entrada, hora_salida, horas_trabajadas, estatus
                 FROM asistencias 
                 WHERE empleado_id = ? 
                 AND fecha BETWEEN ? AND ?
