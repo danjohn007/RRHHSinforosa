@@ -7,6 +7,9 @@
 class NominaService {
     private $db;
     
+    // Constante para días base mensual (estándar en cálculos laborales México)
+    const DIAS_MES_BASE = 30;
+    
     public function __construct() {
         $this->db = Database::getInstance()->getConnection();
     }
@@ -226,38 +229,51 @@ class NominaService {
      */
     private function procesarNominaEmpleado($periodoId, $empleado) {
         $salarioMensual = $empleado['salario_mensual'];
+        $salarioDiario = $empleado['salario_diario'];
         $empleadoId = $empleado['id'];
         
         // Validar que el salario sea válido
-        if (!$salarioMensual || $salarioMensual <= 0) {
+        if ((!$salarioMensual || $salarioMensual <= 0) && (!$salarioDiario || $salarioDiario <= 0)) {
             throw new Exception("El empleado {$empleado['numero_empleado']} no tiene un salario válido");
         }
         
-        // Obtener días trabajados (por defecto 30)
+        // Obtener días trabajados según el periodo
         $diasTrabajados = $this->calcularDiasTrabajados($empleadoId, $periodoId);
+        
+        // Calcular salario base proporcional a los días trabajados
+        if ($salarioDiario > 0) {
+            $salarioBase = $salarioDiario * $diasTrabajados;
+        } else {
+            // Si no hay salario diario, calcular desde el mensual
+            $salarioDiario = $salarioMensual / self::DIAS_MES_BASE;
+            $salarioBase = $salarioDiario * $diasTrabajados;
+        }
         
         // Calcular incidencias
         $incidencias = $this->obtenerIncidencias($empleadoId, $periodoId);
         
         // Calcular percepciones
         $percepciones = [
-            'sueldo_base' => $salarioMensual,
+            'sueldo_base' => $salarioBase,
             'horas_extra' => $incidencias['horas_extra'] ?? 0,
             'bonos' => $incidencias['bonos'] ?? 0
         ];
         
         $totalPercepciones = array_sum($percepciones);
         
-        // Calcular deducciones
+        // Calcular deducciones proporcionalmente
+        // ISR se calcula sobre el total de percepciones
         $isr = $this->calcularISR($totalPercepciones);
         $subsidio = $this->calcularSubsidioEmpleo($totalPercepciones);
         $isrNeto = max(0, $isr - $subsidio);
         
-        $cuotasIMSS = $this->calcularIMSS($salarioMensual);
+        // IMSS se calcula proporcionalmente según días trabajados
+        $cuotasIMSSMensual = $this->calcularIMSS($salarioMensual);
+        $imssProporcionado = ($cuotasIMSSMensual['total'] / self::DIAS_MES_BASE) * $diasTrabajados;
         
         $deducciones = [
             'isr' => $isrNeto,
-            'imss' => $cuotasIMSS['total'],
+            'imss' => $imssProporcionado,
             'prestamos' => $incidencias['prestamos'] ?? 0,
             'otros_descuentos' => $incidencias['descuentos'] ?? 0
         ];
@@ -293,12 +309,12 @@ class NominaService {
             ");
             $stmt->execute([
                 $diasTrabajados,
-                $salarioMensual,
+                $salarioBase,
                 $totalPercepciones,
                 $totalDeducciones,
                 $subtotal,
                 $isrNeto,
-                $cuotasIMSS['total'],
+                $imssProporcionado,
                 $totalNeto,
                 $existe['id']
             ]);
@@ -316,12 +332,12 @@ class NominaService {
                 $periodoId,
                 $empleadoId,
                 $diasTrabajados,
-                $salarioMensual,
+                $salarioBase,
                 $totalPercepciones,
                 $totalDeducciones,
                 $subtotal,
                 $isrNeto,
-                $cuotasIMSS['total'],
+                $imssProporcionado,
                 $totalNeto
             ]);
             $nominaDetalleId = $this->db->lastInsertId();
@@ -336,10 +352,19 @@ class NominaService {
      */
     private function calcularDiasTrabajados($empleadoId, $periodoId) {
         $stmt = $this->db->prepare("
-            SELECT fecha_inicio, fecha_fin FROM periodos_nomina WHERE id = ?
+            SELECT fecha_inicio, fecha_fin, tipo FROM periodos_nomina WHERE id = ?
         ");
         $stmt->execute([$periodoId]);
         $periodo = $stmt->fetch();
+        
+        if (!$periodo) {
+            return 0;
+        }
+        
+        // Calcular días totales del periodo
+        $fechaInicio = new DateTime($periodo['fecha_inicio']);
+        $fechaFin = new DateTime($periodo['fecha_fin']);
+        $diasPeriodo = $fechaInicio->diff($fechaFin)->days + 1; // +1 para incluir ambos días
         
         // Contar días de asistencia
         $stmt = $this->db->prepare("
@@ -350,9 +375,16 @@ class NominaService {
         ");
         $stmt->execute([$empleadoId, $periodo['fecha_inicio'], $periodo['fecha_fin']]);
         $result = $stmt->fetch();
+        $diasAsistidos = $result['dias'];
         
-        // Si no hay registros de asistencia, asumir 30 días
-        return $result['dias'] > 0 ? $result['dias'] : 30;
+        // Si hay registros de asistencia, usar esos días
+        // Si no hay registros, asumir días completos del periodo
+        if ($diasAsistidos > 0) {
+            return $diasAsistidos;
+        } else {
+            // Si no hay registros de asistencia, asumir días según tipo de periodo
+            return $diasPeriodo;
+        }
     }
     
     /**

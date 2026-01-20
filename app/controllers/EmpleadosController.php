@@ -21,14 +21,26 @@ class EmpleadosController {
         if (isset($_GET['departamento'])) {
             $filters['departamento'] = $_GET['departamento'];
         }
+        if (isset($_GET['sucursal'])) {
+            $filters['sucursal'] = $_GET['sucursal'];
+        }
+        if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
+            $filters['search'] = trim($_GET['search']);
+        }
         
         $empleados = $empleadoModel->getAll($filters);
         $departamentos = $empleadoModel->getDepartments();
+        
+        // Obtener sucursales activas
+        $db = Database::getInstance()->getConnection();
+        $stmt = $db->query("SELECT id, nombre FROM sucursales WHERE activo = 1 ORDER BY nombre");
+        $sucursales = $stmt->fetchAll();
         
         $data = [
             'title' => 'Gestión de Empleados',
             'empleados' => $empleados,
             'departamentos' => $departamentos,
+            'sucursales' => $sucursales,
             'filters' => $filters
         ];
         
@@ -502,5 +514,168 @@ class EmpleadosController {
         
         header('Content-Type: text/html; charset=utf-8');
         require_once BASE_PATH . 'app/views/empleados/constancia.php';
+    }
+    
+    /**
+     * Cálculo rápido de nómina de un empleado
+     */
+    public function calculoRapidoNomina() {
+        AuthController::check();
+        header('Content-Type: application/json');
+        
+        $empleadoId = $_GET['id'] ?? null;
+        
+        if (!$empleadoId) {
+            echo json_encode(['success' => false, 'message' => 'ID de empleado no proporcionado']);
+            exit;
+        }
+        
+        try {
+            $db = Database::getInstance()->getConnection();
+            
+            // Obtener empleado
+            $empleadoModel = new Empleado();
+            $empleado = $empleadoModel->getById($empleadoId);
+            
+            if (!$empleado) {
+                echo json_encode(['success' => false, 'message' => 'Empleado no encontrado']);
+                exit;
+            }
+            
+            // Obtener último periodo calculado
+            $stmt = $db->prepare("
+                SELECT MAX(pn.fecha_fin) as ultima_fecha 
+                FROM periodos_nomina pn
+                INNER JOIN nomina_detalle nd ON pn.id = nd.periodo_id
+                WHERE nd.empleado_id = ? AND pn.estatus IN ('Procesado', 'Pagado', 'Cerrado')
+            ");
+            $stmt->execute([$empleadoId]);
+            $ultimoPeriodo = $stmt->fetch();
+            
+            $fechaInicio = $ultimoPeriodo && $ultimoPeriodo['ultima_fecha'] 
+                ? date('Y-m-d', strtotime($ultimoPeriodo['ultima_fecha'] . ' +1 day'))
+                : $empleado['fecha_ingreso'];
+            $fechaFin = date('Y-m-d');
+            
+            // Calcular días trabajados desde último periodo
+            $stmt = $db->prepare("
+                SELECT DATE(fecha) as fecha, hora_entrada, hora_salida, horas_trabajadas, estatus
+                FROM asistencias 
+                WHERE empleado_id = ? 
+                AND fecha BETWEEN ? AND ?
+                ORDER BY fecha DESC
+            ");
+            $stmt->execute([$empleadoId, $fechaInicio, $fechaFin]);
+            $asistencias = $stmt->fetchAll();
+            
+            $diasTrabajados = 0;
+            $horasNormales = 0;
+            $horasExtras = 0;
+            
+            foreach ($asistencias as $asistencia) {
+                if (in_array($asistencia['estatus'], ['Presente', 'Retardo'])) {
+                    $diasTrabajados++;
+                    $horas = floatval($asistencia['horas_trabajadas']);
+                    if ($horas > 8) {
+                        $horasNormales += 8;
+                        $horasExtras += ($horas - 8);
+                    } else {
+                        $horasNormales += $horas;
+                    }
+                }
+            }
+            
+            // Obtener incidencias
+            $stmt = $db->prepare("
+                SELECT tipo_incidencia, descripcion, fecha_incidencia as fecha, monto
+                FROM incidencias_nomina
+                WHERE empleado_id = ? 
+                AND fecha_incidencia BETWEEN ? AND ?
+                AND estatus = 'Aprobado'
+                ORDER BY fecha_incidencia DESC
+            ");
+            $stmt->execute([$empleadoId, $fechaInicio, $fechaFin]);
+            $incidencias = $stmt->fetchAll();
+            
+            // Obtener deducciones activas (si existe tabla deducciones_empleado)
+            $deducciones = [];
+            
+            // Calcular montos
+            $salarioDiario = floatval($empleado['salario_diario']);
+            $salarioMensual = floatval($empleado['salario_mensual']);
+            $salarioBase = $diasTrabajados * $salarioDiario;
+            
+            // Calcular pago de horas extras (doble) y bonos/descuentos desde incidencias
+            $valorHoraExtra = ($salarioDiario / 8) * 2;
+            $pagoHorasExtras = $horasExtras * $valorHoraExtra;
+            $bonos = 0;
+            $descuentos = 0;
+            
+            foreach ($incidencias as $inc) {
+                if ($inc['tipo_incidencia'] === 'Bono') {
+                    $bonos += floatval($inc['monto']);
+                } elseif ($inc['tipo_incidencia'] === 'Descuento') {
+                    $descuentos += floatval($inc['monto']);
+                }
+            }
+            
+            $totalPercepciones = $salarioBase + $pagoHorasExtras + $bonos;
+            
+            // Calcular deducciones estimadas
+            require_once BASE_PATH . 'app/services/NominaService.php';
+            $nominaService = new NominaService();
+            
+            $isr = $nominaService->calcularISR($totalPercepciones);
+            $subsidio = $nominaService->calcularSubsidioEmpleo($totalPercepciones);
+            $isrNeto = max(0, $isr - $subsidio);
+            
+            $cuotasIMSS = $nominaService->calcularIMSS($salarioMensual);
+            
+            // IMSS proporcional a días trabajados del periodo actual
+            $diasEnPeriodo = (new DateTime($fechaFin))->diff(new DateTime($fechaInicio))->days + 1;
+            $diasMensual = 30; // Base mensual estándar para cálculos
+            $factorProporcion = $diasEnPeriodo / $diasMensual;
+            $imssProporcionado = $cuotasIMSS['total'] * $factorProporcion;
+            
+            $totalDeducciones = $isrNeto + $imssProporcionado + $descuentos;
+            
+            $totalNeto = $totalPercepciones - $totalDeducciones;
+            
+            echo json_encode([
+                'success' => true,
+                'empleado' => [
+                    'nombre' => $empleado['nombre_completo'],
+                    'numero' => $empleado['numero_empleado'],
+                    'puesto' => $empleado['puesto']
+                ],
+                'periodo' => [
+                    'fecha_inicio' => $fechaInicio,
+                    'fecha_fin' => $fechaFin
+                ],
+                'asistencias' => [
+                    'dias_trabajados' => $diasTrabajados,
+                    'horas_normales' => round($horasNormales, 2),
+                    'horas_extras' => round($horasExtras, 2),
+                    'detalle' => $asistencias
+                ],
+                'incidencias' => $incidencias,
+                'deducciones' => $deducciones,
+                'calculos' => [
+                    'salario_base' => round($salarioBase, 2),
+                    'pago_horas_extras' => round($pagoHorasExtras, 2),
+                    'bonos' => round($bonos, 2),
+                    'total_percepciones' => round($totalPercepciones, 2),
+                    'isr' => round($isrNeto, 2),
+                    'imss' => round($imssProporcionado, 2),
+                    'descuentos' => round($descuentos, 2),
+                    'total_deducciones' => round($totalDeducciones, 2),
+                    'total_neto' => round($totalNeto, 2)
+                ]
+            ]);
+            
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+        exit;
     }
 }

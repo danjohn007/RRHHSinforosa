@@ -108,6 +108,8 @@ if ($request === '' || $request === 'login') {
         $controller->subirDocumento();
     } elseif ($parts[1] === 'descargar-documento') {
         $controller->descargarDocumento();
+    } elseif ($parts[1] === 'calculo-rapido-nomina') {
+        $controller->calculoRapidoNomina();
     } else {
         http_response_code(404);
         die('Página no encontrada');
