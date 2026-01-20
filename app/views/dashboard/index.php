@@ -67,6 +67,26 @@
     </div>
 </div>
 
+<!-- Nómina Acumulada Card -->
+<div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow-lg p-6 mb-6 text-white">
+    <div class="flex items-center justify-between">
+        <div>
+            <h3 class="text-lg font-semibold mb-2 flex items-center">
+                <i class="fas fa-money-bill-wave mr-2"></i>
+                Nómina Acumulada desde Último Corte
+            </h3>
+            <p class="text-4xl font-bold mb-1">$<?php echo number_format($nominaAcumulada, 2); ?></p>
+            <p class="text-sm opacity-90">
+                <i class="fas fa-info-circle mr-1"></i>
+                Total de nóminas procesadas y pagadas desde el último cierre
+            </p>
+        </div>
+        <div class="h-20 w-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+            <i class="fas fa-calculator text-4xl"></i>
+        </div>
+    </div>
+</div>
+
 <!-- Charts Row -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
     <!-- Empleados por Departamento -->
@@ -103,6 +123,60 @@
             </div>
         </div>
         <p class="text-xs text-gray-500 text-center mt-3">Datos estimados de la semana actual</p>
+    </div>
+</div>
+
+<!-- New Charts Row 1 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Distribución por Género -->
+    <div class="bg-white rounded-lg shadow-md p-6 fade-in">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-venus-mars text-pink-600 mr-2"></i>
+            Distribución por Género
+        </h3>
+        <div class="relative flex items-center justify-center" style="height: 300px;">
+            <canvas id="genderChart"></canvas>
+        </div>
+        <p class="text-xs text-gray-500 text-center mt-3">Empleados activos por género</p>
+    </div>
+    
+    <!-- Contrataciones por Mes -->
+    <div class="bg-white rounded-lg shadow-md p-6 fade-in">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-user-plus text-indigo-600 mr-2"></i>
+            Contrataciones Mensuales
+        </h3>
+        <div class="relative" style="height: 300px;">
+            <canvas id="hiringChart"></canvas>
+        </div>
+        <p class="text-xs text-gray-500 text-center mt-3">Nuevas contrataciones últimos 6 meses</p>
+    </div>
+</div>
+
+<!-- New Charts Row 2 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Resumen de Asistencias -->
+    <div class="bg-white rounded-lg shadow-md p-6 fade-in">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-clipboard-check text-teal-600 mr-2"></i>
+            Resumen de Asistencias
+        </h3>
+        <div class="relative" style="height: 300px;">
+            <canvas id="incidenciasChart"></canvas>
+        </div>
+        <p class="text-xs text-gray-500 text-center mt-3">Incidencias del último mes</p>
+    </div>
+    
+    <!-- Distribución Salarial -->
+    <div class="bg-white rounded-lg shadow-md p-6 fade-in">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-dollar-sign text-green-600 mr-2"></i>
+            Distribución Salarial
+        </h3>
+        <div class="relative" style="height: 300px;">
+            <canvas id="salaryChart"></canvas>
+        </div>
+        <p class="text-xs text-gray-500 text-center mt-3">Rangos de salario mensual</p>
     </div>
 </div>
 
@@ -410,5 +484,245 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     console.log('✅ Dashboard inicializado correctamente');
+    
+    // === NUEVAS GRÁFICAS ===
+    
+    // Chart: Distribución por Género
+    const genderCtx = document.getElementById('genderChart');
+    if (genderCtx) {
+        const genderLabels = <?php echo json_encode($genderLabels); ?>;
+        const genderCounts = <?php echo json_encode($genderCounts); ?>;
+        
+        console.log('Datos de género:', genderLabels, genderCounts);
+        
+        if (genderLabels.length > 0 && genderCounts.some(val => val > 0)) {
+            new Chart(genderCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: genderLabels,
+                    datasets: [{
+                        data: genderCounts,
+                        backgroundColor: ['#3b82f6', '#ec4899', '#8b5cf6'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: { size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return label + ': ' + value + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            console.log('✅ Gráfica de género creada');
+        } else {
+            console.log('No hay datos de género');
+        }
+    }
+    
+    // Chart: Contrataciones Mensuales
+    const hiringCtx = document.getElementById('hiringChart');
+    if (hiringCtx) {
+        const hiringLabels = <?php echo json_encode($hiringLabels); ?>;
+        const hiringCounts = <?php echo json_encode($hiringCounts); ?>;
+        
+        console.log('Datos de contrataciones:', hiringLabels, hiringCounts);
+        
+        new Chart(hiringCtx, {
+            type: 'line',
+            data: {
+                labels: hiringLabels.length > 0 ? hiringLabels : ['Sin datos'],
+                datasets: [{
+                    label: 'Contrataciones',
+                    data: hiringCounts.length > 0 ? hiringCounts : [0],
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#6366f1',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 13 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            stepSize: 1
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+        console.log('✅ Gráfica de contrataciones creada');
+    }
+    
+    // Chart: Resumen de Asistencias
+    const incidenciasCtx = document.getElementById('incidenciasChart');
+    if (incidenciasCtx) {
+        const incidenciasLabels = <?php echo json_encode($incidenciasLabels); ?>;
+        const incidenciasCounts = <?php echo json_encode($incidenciasCounts); ?>;
+        
+        console.log('Datos de incidencias:', incidenciasLabels, incidenciasCounts);
+        
+        // Colores según el tipo de incidencia
+        const incidenciasColors = incidenciasLabels.map(label => {
+            switch(label) {
+                case 'Presente': return '#10b981';
+                case 'Retardo': return '#f59e0b';
+                case 'Falta': return '#ef4444';
+                case 'Permiso': return '#3b82f6';
+                case 'Vacaciones': return '#8b5cf6';
+                case 'Incapacidad': return '#ec4899';
+                default: return '#6b7280';
+            }
+        });
+        
+        new Chart(incidenciasCtx, {
+            type: 'bar',
+            data: {
+                labels: incidenciasLabels.length > 0 ? incidenciasLabels : ['Sin datos'],
+                datasets: [{
+                    label: 'Incidencias',
+                    data: incidenciasCounts.length > 0 ? incidenciasCounts : [0],
+                    backgroundColor: incidenciasColors,
+                    borderWidth: 0,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 13 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+        console.log('✅ Gráfica de incidencias creada');
+    }
+    
+    // Chart: Distribución Salarial
+    const salaryCtx = document.getElementById('salaryChart');
+    if (salaryCtx) {
+        const salaryLabels = <?php echo json_encode($salaryLabels); ?>;
+        const salaryCounts = <?php echo json_encode($salaryCounts); ?>;
+        
+        console.log('Datos de salarios:', salaryLabels, salaryCounts);
+        
+        new Chart(salaryCtx, {
+            type: 'bar',
+            data: {
+                labels: salaryLabels.length > 0 ? salaryLabels : ['Sin datos'],
+                datasets: [{
+                    label: 'Empleados',
+                    data: salaryCounts.length > 0 ? salaryCounts : [0],
+                    backgroundColor: '#10b981',
+                    borderWidth: 0,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 13 }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            stepSize: 1
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+        console.log('✅ Gráfica de salarios creada');
+    }
 });
 </script>
