@@ -587,7 +587,7 @@ class EmpleadosController {
             
             // Obtener incidencias
             $stmt = $db->prepare("
-                SELECT tipo_incidencia, motivo, fecha_incidencia as fecha, monto
+                SELECT tipo_incidencia, descripcion, fecha_incidencia as fecha, monto
                 FROM incidencias_nomina
                 WHERE empleado_id = ? 
                 AND fecha_incidencia BETWEEN ? AND ?

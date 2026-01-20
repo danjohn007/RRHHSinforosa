@@ -370,7 +370,7 @@ async function abrirCalculoRapido(empleadoId) {
                 incidenciasList.innerHTML = '<ul class="space-y-1">' + 
                     data.incidencias.map(inc => 
                         '<li>• ' + inc.fecha + ' - ' + inc.tipo_incidencia + 
-                        (inc.motivo ? ': ' + inc.motivo : '') + 
+                        (inc.descripcion ? ': ' + inc.descripcion : '') + 
                         (inc.monto ? ' ($' + parseFloat(inc.monto).toFixed(2) + ')' : '') + '</li>'
                     ).join('') + '</ul>';
             } else {
