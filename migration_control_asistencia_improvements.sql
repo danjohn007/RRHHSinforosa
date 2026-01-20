@@ -154,7 +154,7 @@ SET @preparedStatement = (SELECT IF(
       AND COLUMN_NAME = @columnname
   ) > 0,
   'SELECT 1',
-  'ALTER TABLE periodos_nomina ADD COLUMN tipo ENUM("Semanal", "Quincenal", "Mensual") DEFAULT "Quincenal" AFTER id'
+  'ALTER TABLE periodos_nomina ADD COLUMN tipo ENUM(''Semanal'', ''Quincenal'', ''Mensual'') DEFAULT ''Quincenal'' AFTER id'
 ));
 PREPARE alterIfNotExists FROM @preparedStatement;
 EXECUTE alterIfNotExists;

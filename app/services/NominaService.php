@@ -7,6 +7,9 @@
 class NominaService {
     private $db;
     
+    // Constante para días base mensual (estándar en cálculos laborales México)
+    const DIAS_MES_BASE = 30;
+    
     public function __construct() {
         $this->db = Database::getInstance()->getConnection();
     }
@@ -242,7 +245,7 @@ class NominaService {
             $salarioBase = $salarioDiario * $diasTrabajados;
         } else {
             // Si no hay salario diario, calcular desde el mensual
-            $salarioDiario = $salarioMensual / 30;
+            $salarioDiario = $salarioMensual / self::DIAS_MES_BASE;
             $salarioBase = $salarioDiario * $diasTrabajados;
         }
         
@@ -266,7 +269,7 @@ class NominaService {
         
         // IMSS se calcula proporcionalmente según días trabajados
         $cuotasIMSSMensual = $this->calcularIMSS($salarioMensual);
-        $imssProporcionado = ($cuotasIMSSMensual['total'] / 30) * $diasTrabajados;
+        $imssProporcionado = ($cuotasIMSSMensual['total'] / self::DIAS_MES_BASE) * $diasTrabajados;
         
         $deducciones = [
             'isr' => $isrNeto,

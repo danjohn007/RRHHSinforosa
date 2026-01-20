@@ -631,7 +631,13 @@ class EmpleadosController {
             
             $cuotasIMSS = $nominaService->calcularIMSS($salarioMensual);
             
-            $totalDeducciones = $isrNeto + $cuotasIMSS['total'] + $descuentos;
+            // IMSS proporcional a días trabajados del periodo actual
+            $diasEnPeriodo = (new DateTime($fechaFin))->diff(new DateTime($fechaInicio))->days + 1;
+            $diasMensual = 30; // Base mensual estándar para cálculos
+            $factorProporcion = $diasEnPeriodo / $diasMensual;
+            $imssProporcionado = $cuotasIMSS['total'] * $factorProporcion;
+            
+            $totalDeducciones = $isrNeto + $imssProporcionado + $descuentos;
             
             $totalNeto = $totalPercepciones - $totalDeducciones;
             
@@ -660,7 +666,7 @@ class EmpleadosController {
                     'bonos' => round($bonos, 2),
                     'total_percepciones' => round($totalPercepciones, 2),
                     'isr' => round($isrNeto, 2),
-                    'imss' => round($cuotasIMSS['total'], 2),
+                    'imss' => round($imssProporcionado, 2),
                     'descuentos' => round($descuentos, 2),
                     'total_deducciones' => round($totalDeducciones, 2),
                     'total_neto' => round($totalNeto, 2)
