@@ -495,47 +495,51 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('Datos de género:', genderLabels, genderCounts);
         
-        if (genderLabels.length > 0 && genderCounts.some(val => val > 0)) {
-            new Chart(genderCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: genderLabels,
-                    datasets: [{
-                        data: genderCounts,
-                        backgroundColor: ['#3b82f6', '#ec4899', '#8b5cf6'],
-                        borderWidth: 2,
-                        borderColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'bottom',
-                            labels: {
-                                padding: 15,
-                                font: { size: 12 }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.parsed || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((value / total) * 100).toFixed(1);
-                                    return label + ': ' + value + ' (' + percentage + '%)';
+        try {
+            if (genderLabels.length > 0 && genderCounts.some(val => val > 0)) {
+                new Chart(genderCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: genderLabels,
+                        datasets: [{
+                            data: genderCounts,
+                            backgroundColor: ['#3b82f6', '#ec4899', '#8b5cf6'],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    font: { size: 12 }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return label + ': ' + value + ' (' + percentage + '%)';
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
-            console.log('✅ Gráfica de género creada');
-        } else {
-            console.log('No hay datos de género');
+                });
+                console.log('✅ Gráfica de género creada');
+            } else {
+                console.log('No hay datos de género');
+            }
+        } catch (error) {
+            console.error('❌ Error al crear gráfica de género:', error);
         }
     }
     
@@ -547,58 +551,62 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('Datos de contrataciones:', hiringLabels, hiringCounts);
         
-        new Chart(hiringCtx, {
-            type: 'line',
-            data: {
-                labels: hiringLabels.length > 0 ? hiringLabels : ['Sin datos'],
-                datasets: [{
-                    label: 'Contrataciones',
-                    data: hiringCounts.length > 0 ? hiringCounts : [0],
-                    borderColor: '#6366f1',
-                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                    tension: 0.4,
-                    fill: true,
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
-                    pointBackgroundColor: '#6366f1',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        padding: 12,
-                        titleFont: { size: 14 },
-                        bodyFont: { size: 13 }
-                    }
+        try {
+            new Chart(hiringCtx, {
+                type: 'line',
+                data: {
+                    labels: hiringLabels.length > 0 ? hiringLabels : ['Sin datos'],
+                    datasets: [{
+                        label: 'Contrataciones',
+                        data: hiringCounts.length > 0 ? hiringCounts : [0],
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: '#6366f1',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0,
-                            stepSize: 1
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
                         },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.05)'
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 13 }
                         }
                     },
-                    x: {
-                        grid: {
-                            display: false
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                stepSize: 1
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
                         }
                     }
                 }
-            }
-        });
-        console.log('✅ Gráfica de contrataciones creada');
+            });
+            console.log('✅ Gráfica de contrataciones creada');
+        } catch (error) {
+            console.error('❌ Error al crear gráfica de contrataciones:', error);
+        }
     }
     
     // Chart: Resumen de Asistencias
@@ -609,64 +617,68 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('Datos de incidencias:', incidenciasLabels, incidenciasCounts);
         
-        // Colores según el tipo de incidencia
-        const incidenciasColors = incidenciasLabels.map(label => {
-            switch(label) {
-                case 'Presente': return '#10b981';
-                case 'Retardo': return '#f59e0b';
-                case 'Falta': return '#ef4444';
-                case 'Permiso': return '#3b82f6';
-                case 'Vacaciones': return '#8b5cf6';
-                case 'Incapacidad': return '#ec4899';
-                default: return '#6b7280';
-            }
-        });
-        
-        new Chart(incidenciasCtx, {
-            type: 'bar',
-            data: {
-                labels: incidenciasLabels.length > 0 ? incidenciasLabels : ['Sin datos'],
-                datasets: [{
-                    label: 'Incidencias',
-                    data: incidenciasCounts.length > 0 ? incidenciasCounts : [0],
-                    backgroundColor: incidenciasColors,
-                    borderWidth: 0,
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        padding: 12,
-                        titleFont: { size: 14 },
-                        bodyFont: { size: 13 }
-                    }
+        try {
+            // Colores según el tipo de incidencia
+            const incidenciasColors = incidenciasLabels.map(label => {
+                switch(label) {
+                    case 'Presente': return '#10b981';
+                    case 'Retardo': return '#f59e0b';
+                    case 'Falta': return '#ef4444';
+                    case 'Permiso': return '#3b82f6';
+                    case 'Vacaciones': return '#8b5cf6';
+                    case 'Incapacidad': return '#ec4899';
+                    default: return '#6b7280';
+                }
+            });
+            
+            new Chart(incidenciasCtx, {
+                type: 'bar',
+                data: {
+                    labels: incidenciasLabels.length > 0 ? incidenciasLabels : ['Sin datos'],
+                    datasets: [{
+                        label: 'Incidencias',
+                        data: incidenciasCounts.length > 0 ? incidenciasCounts : [0],
+                        backgroundColor: incidenciasColors,
+                        borderWidth: 0,
+                        borderRadius: 5
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
                         },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.05)'
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 13 }
                         }
                     },
-                    x: {
-                        grid: {
-                            display: false
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
                         }
                     }
                 }
-            }
-        });
-        console.log('✅ Gráfica de incidencias creada');
+            });
+            console.log('✅ Gráfica de incidencias creada');
+        } catch (error) {
+            console.error('❌ Error al crear gráfica de incidencias:', error);
+        }
     }
     
     // Chart: Distribución Salarial
@@ -677,52 +689,56 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('Datos de salarios:', salaryLabels, salaryCounts);
         
-        new Chart(salaryCtx, {
-            type: 'bar',
-            data: {
-                labels: salaryLabels.length > 0 ? salaryLabels : ['Sin datos'],
-                datasets: [{
-                    label: 'Empleados',
-                    data: salaryCounts.length > 0 ? salaryCounts : [0],
-                    backgroundColor: '#10b981',
-                    borderWidth: 0,
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        padding: 12,
-                        titleFont: { size: 14 },
-                        bodyFont: { size: 13 }
-                    }
+        try {
+            new Chart(salaryCtx, {
+                type: 'bar',
+                data: {
+                    labels: salaryLabels.length > 0 ? salaryLabels : ['Sin datos'],
+                    datasets: [{
+                        label: 'Empleados',
+                        data: salaryCounts.length > 0 ? salaryCounts : [0],
+                        backgroundColor: '#10b981',
+                        borderWidth: 0,
+                        borderRadius: 5
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0,
-                            stepSize: 1
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
                         },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.05)'
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 13 }
                         }
                     },
-                    x: {
-                        grid: {
-                            display: false
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                stepSize: 1
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
                         }
                     }
                 }
-            }
-        });
-        console.log('✅ Gráfica de salarios creada');
+            });
+            console.log('✅ Gráfica de salarios creada');
+        } catch (error) {
+            console.error('❌ Error al crear gráfica de salarios:', error);
+        }
     }
 });
 </script>
