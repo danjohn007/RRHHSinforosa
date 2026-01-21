@@ -70,7 +70,7 @@
 <!-- Stats Cards Grid - Nómina y Horas Extras -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
     <!-- Nómina Acumulada Card -->
-    <a href="/nomina/procesamiento" class="block bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow-lg p-6 text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+    <a href="<?php echo BASE_URL; ?>nomina/procesar" class="block bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow-lg p-6 text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
         <div class="flex items-center justify-between mb-4">
             <div class="h-12 w-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
                 <i class="fas fa-calculator text-2xl"></i>
@@ -95,7 +95,7 @@
     </a>
     
     <!-- Horas Extras Acumuladas Card -->
-    <a href="/asistencia/incidencias?tipo=Hora Extra" class="block bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg shadow-lg p-6 text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+    <a href="<?php echo BASE_URL; ?>asistencia/incidencias?tipo=Hora%20Extra" class="block bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg shadow-lg p-6 text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
         <div class="flex items-center justify-between mb-4">
             <div class="h-12 w-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
                 <i class="fas fa-clock text-2xl"></i>
@@ -120,7 +120,7 @@
     </a>
     
     <!-- Costo Horas Extras Card -->
-    <a href="/asistencia/incidencias?tipo=Hora Extra" class="block bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg shadow-lg p-6 text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+    <a href="<?php echo BASE_URL; ?>asistencia/incidencias?tipo=Hora%20Extra" class="block bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg shadow-lg p-6 text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
         <div class="flex items-center justify-between mb-4">
             <div class="h-12 w-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
                 <i class="fas fa-dollar-sign text-2xl"></i>
