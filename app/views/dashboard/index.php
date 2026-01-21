@@ -67,24 +67,82 @@
     </div>
 </div>
 
-<!-- Nómina Acumulada Card -->
-<div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow-lg p-6 mb-6 text-white">
-    <div class="flex items-center justify-between">
-        <div>
-            <h3 class="text-lg font-semibold mb-2 flex items-center">
-                <i class="fas fa-money-bill-wave mr-2"></i>
-                Nómina Acumulada desde Último Corte
-            </h3>
-            <p class="text-4xl font-bold mb-1">$<?php echo number_format($nominaAcumulada, 2); ?></p>
-            <p class="text-sm opacity-90">
-                <i class="fas fa-info-circle mr-1"></i>
-                Total de nóminas procesadas y pagadas desde el último cierre
-            </p>
+<!-- Stats Cards Grid - Nómina y Horas Extras -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <!-- Nómina Acumulada Card -->
+    <a href="/nomina/procesamiento" class="block bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow-lg p-6 text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+        <div class="flex items-center justify-between mb-4">
+            <div class="h-12 w-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <i class="fas fa-calculator text-2xl"></i>
+            </div>
+            <div class="h-8 w-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <i class="fas fa-arrow-right text-sm"></i>
+            </div>
         </div>
-        <div class="h-20 w-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-            <i class="fas fa-calculator text-4xl"></i>
+        <h3 class="text-sm font-semibold mb-2 flex items-center">
+            <i class="fas fa-money-bill-wave mr-2"></i>
+            Nómina Acumulada desde Último Corte
+        </h3>
+        <p class="text-3xl font-bold mb-2">$<?php echo number_format($nominaAcumulada, 2); ?></p>
+        <p class="text-xs opacity-90">
+            <i class="fas fa-info-circle mr-1"></i>
+            Total de nóminas procesadas y pagadas
+        </p>
+        <!-- Mini Chart -->
+        <div class="mt-4" style="height: 80px;">
+            <canvas id="miniNominaChart"></canvas>
         </div>
-    </div>
+    </a>
+    
+    <!-- Horas Extras Acumuladas Card -->
+    <a href="/asistencia/incidencias?tipo=Hora Extra" class="block bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg shadow-lg p-6 text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+        <div class="flex items-center justify-between mb-4">
+            <div class="h-12 w-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <i class="fas fa-clock text-2xl"></i>
+            </div>
+            <div class="h-8 w-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <i class="fas fa-arrow-right text-sm"></i>
+            </div>
+        </div>
+        <h3 class="text-sm font-semibold mb-2 flex items-center">
+            <i class="fas fa-business-time mr-2"></i>
+            Horas Extras Acumuladas desde Último Corte
+        </h3>
+        <p class="text-3xl font-bold mb-2"><?php echo number_format($horasExtrasAcumuladas, 2); ?> hrs</p>
+        <p class="text-xs opacity-90">
+            <i class="fas fa-info-circle mr-1"></i>
+            Total de horas extras aprobadas y procesadas
+        </p>
+        <!-- Mini Chart -->
+        <div class="mt-4" style="height: 80px;">
+            <canvas id="miniHorasChart"></canvas>
+        </div>
+    </a>
+    
+    <!-- Costo Horas Extras Card -->
+    <a href="/asistencia/incidencias?tipo=Hora Extra" class="block bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg shadow-lg p-6 text-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+        <div class="flex items-center justify-between mb-4">
+            <div class="h-12 w-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <i class="fas fa-dollar-sign text-2xl"></i>
+            </div>
+            <div class="h-8 w-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <i class="fas fa-arrow-right text-sm"></i>
+            </div>
+        </div>
+        <h3 class="text-sm font-semibold mb-2 flex items-center">
+            <i class="fas fa-hand-holding-usd mr-2"></i>
+            Costo de Horas Extras Acumuladas
+        </h3>
+        <p class="text-3xl font-bold mb-2">$<?php echo number_format($costoHorasExtras, 2); ?></p>
+        <p class="text-xs opacity-90">
+            <i class="fas fa-info-circle mr-1"></i>
+            Costo total de horas extras en el periodo
+        </p>
+        <!-- Mini Chart -->
+        <div class="mt-4" style="height: 80px;">
+            <canvas id="miniCostoChart"></canvas>
+        </div>
+    </a>
 </div>
 
 <!-- Charts Row -->
@@ -738,6 +796,153 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('✅ Gráfica de salarios creada');
         } catch (error) {
             console.error('❌ Error al crear gráfica de salarios:', error);
+        }
+    }
+    
+    // Mini Chart: Nómina Acumulada (últimos 3 meses)
+    const miniNominaCtx = document.getElementById('miniNominaChart');
+    if (miniNominaCtx) {
+        try {
+            new Chart(miniNominaCtx, {
+                type: 'line',
+                data: {
+                    labels: <?php echo json_encode($historicoNominaLabels); ?>,
+                    datasets: [{
+                        data: <?php echo json_encode($historicoNominaCounts); ?>,
+                        borderColor: 'rgba(255, 255, 255, 0.8)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointBackgroundColor: 'rgba(255, 255, 255, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '$' + context.parsed.y.toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            display: false,
+                            beginAtZero: true
+                        },
+                        x: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            console.log('✅ Mini gráfica de nómina creada');
+        } catch (error) {
+            console.error('❌ Error al crear mini gráfica de nómina:', error);
+        }
+    }
+    
+    // Mini Chart: Horas Extras (últimos 3 meses)
+    const miniHorasCtx = document.getElementById('miniHorasChart');
+    if (miniHorasCtx) {
+        try {
+            new Chart(miniHorasCtx, {
+                type: 'line',
+                data: {
+                    labels: <?php echo json_encode($historicoHorasLabels); ?>,
+                    datasets: [{
+                        data: <?php echo json_encode($historicoHorasCounts); ?>,
+                        borderColor: 'rgba(255, 255, 255, 0.8)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointBackgroundColor: 'rgba(255, 255, 255, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y.toFixed(2) + ' hrs';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            display: false,
+                            beginAtZero: true
+                        },
+                        x: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            console.log('✅ Mini gráfica de horas extras creada');
+        } catch (error) {
+            console.error('❌ Error al crear mini gráfica de horas extras:', error);
+        }
+    }
+    
+    // Mini Chart: Costo Horas Extras (últimos 3 meses)
+    const miniCostoCtx = document.getElementById('miniCostoChart');
+    if (miniCostoCtx) {
+        try {
+            new Chart(miniCostoCtx, {
+                type: 'line',
+                data: {
+                    labels: <?php echo json_encode($historicoCostoLabels); ?>,
+                    datasets: [{
+                        data: <?php echo json_encode($historicoCostoCounts); ?>,
+                        borderColor: 'rgba(255, 255, 255, 0.8)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointBackgroundColor: 'rgba(255, 255, 255, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '$' + context.parsed.y.toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            display: false,
+                            beginAtZero: true
+                        },
+                        x: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            console.log('✅ Mini gráfica de costo extras creada');
+        } catch (error) {
+            console.error('❌ Error al crear mini gráfica de costo extras:', error);
         }
     }
 });
