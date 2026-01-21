@@ -158,10 +158,11 @@ class DashboardController {
             $salaryCounts[] = (int)$row['total'];
         }
         
-        // 6. Horas extras acumuladas desde último corte
+        // 6. Horas extras y costo acumulados desde último corte (consulta combinada)
         $horasExtrasStmt = $db->query("
             SELECT 
-                COALESCE(SUM(i.cantidad), 0) as total_horas
+                COALESCE(SUM(i.cantidad), 0) as total_horas,
+                COALESCE(SUM(i.monto), 0) as costo_total
             FROM incidencias_nomina i
             WHERE i.tipo_incidencia = 'Hora Extra'
             AND i.estatus IN ('Aprobado', 'Procesado')
@@ -173,24 +174,9 @@ class DashboardController {
         ");
         $horasExtrasResult = $horasExtrasStmt->fetch();
         $horasExtrasAcumuladas = $horasExtrasResult ? (float)$horasExtrasResult['total_horas'] : 0;
+        $costoHorasExtras = $horasExtrasResult ? (float)$horasExtrasResult['costo_total'] : 0;
         
-        // 7. Costo de horas extras acumuladas desde último corte
-        $costoExtrasStmt = $db->query("
-            SELECT 
-                COALESCE(SUM(i.monto), 0) as costo_total
-            FROM incidencias_nomina i
-            WHERE i.tipo_incidencia = 'Hora Extra'
-            AND i.estatus IN ('Aprobado', 'Procesado')
-            AND i.fecha_incidencia >= (
-                SELECT COALESCE(MAX(fecha_fin), DATE_SUB(NOW(), INTERVAL 3 MONTH))
-                FROM periodos_nomina
-                WHERE estatus = 'Cerrado'
-            )
-        ");
-        $costoExtrasResult = $costoExtrasStmt->fetch();
-        $costoHorasExtras = $costoExtrasResult ? (float)$costoExtrasResult['costo_total'] : 0;
-        
-        // 8. Histórico de nómina (últimos 3 meses para gráfica)
+        // 7. Histórico de nómina (últimos 3 meses para gráfica)
         $historicoNominaStmt = $db->query("
             SELECT 
                 DATE_FORMAT(fecha_fin, '%Y-%m') as mes,
@@ -210,12 +196,13 @@ class DashboardController {
             $historicoNominaCounts[] = (float)$row['total'];
         }
         
-        // 9. Histórico de horas extras (últimos 3 meses para gráfica)
+        // 8. Histórico de horas extras y costo (últimos 3 meses para gráficas - consulta combinada)
         $historicoHorasStmt = $db->query("
             SELECT 
                 DATE_FORMAT(fecha_incidencia, '%Y-%m') as mes,
                 DATE_FORMAT(fecha_incidencia, '%b') as mes_nombre,
-                COALESCE(SUM(cantidad), 0) as total_horas
+                COALESCE(SUM(cantidad), 0) as total_horas,
+                COALESCE(SUM(monto), 0) as total_costo
             FROM incidencias_nomina
             WHERE tipo_incidencia = 'Hora Extra'
             AND estatus IN ('Aprobado', 'Procesado')
@@ -226,28 +213,11 @@ class DashboardController {
         $historicoHorasData = $historicoHorasStmt->fetchAll();
         $historicoHorasLabels = [];
         $historicoHorasCounts = [];
+        $historicoCostoLabels = [];
+        $historicoCostoCounts = [];
         foreach ($historicoHorasData as $row) {
             $historicoHorasLabels[] = ucfirst($row['mes_nombre']);
             $historicoHorasCounts[] = (float)$row['total_horas'];
-        }
-        
-        // 10. Histórico de costo de horas extras (últimos 3 meses para gráfica)
-        $historicoCostoStmt = $db->query("
-            SELECT 
-                DATE_FORMAT(fecha_incidencia, '%Y-%m') as mes,
-                DATE_FORMAT(fecha_incidencia, '%b') as mes_nombre,
-                COALESCE(SUM(monto), 0) as total_costo
-            FROM incidencias_nomina
-            WHERE tipo_incidencia = 'Hora Extra'
-            AND estatus IN ('Aprobado', 'Procesado')
-            AND fecha_incidencia >= DATE_SUB(NOW(), INTERVAL 3 MONTH)
-            GROUP BY mes, mes_nombre
-            ORDER BY mes ASC
-        ");
-        $historicoCostoData = $historicoCostoStmt->fetchAll();
-        $historicoCostoLabels = [];
-        $historicoCostoCounts = [];
-        foreach ($historicoCostoData as $row) {
             $historicoCostoLabels[] = ucfirst($row['mes_nombre']);
             $historicoCostoCounts[] = (float)$row['total_costo'];
         }
