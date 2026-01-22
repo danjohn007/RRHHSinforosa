@@ -10,21 +10,59 @@ class AsistenciaController {
         
         $db = Database::getInstance()->getConnection();
         
-        // Obtener asistencias de hoy
-        $stmt = $db->query("
+        // Obtener filtros desde la URL
+        $fechaInicio = $_GET['fecha_inicio'] ?? date('Y-m-d');
+        $fechaFin = $_GET['fecha_fin'] ?? date('Y-m-d');
+        $busqueda = $_GET['busqueda'] ?? '';
+        
+        // Construir query con filtros
+        $query = "
             SELECT a.*, 
-                   CONCAT(e.nombres, ' ', e.apellido_paterno) as nombre_empleado,
+                   e.numero_empleado,
+                   CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', COALESCE(e.apellido_materno, '')) as nombre_empleado,
+                   e.email,
+                   e.telefono,
                    e.departamento
             FROM asistencias a
             INNER JOIN empleados e ON a.empleado_id = e.id
-            WHERE a.fecha = CURDATE()
-            ORDER BY a.hora_entrada DESC
-        ");
+            WHERE a.fecha BETWEEN ? AND ?
+        ";
+        
+        $params = [$fechaInicio, $fechaFin];
+        
+        // Aplicar búsqueda si existe
+        if ($busqueda) {
+            $query .= " AND (
+                e.nombres LIKE ? OR 
+                e.apellido_paterno LIKE ? OR 
+                e.apellido_materno LIKE ? OR
+                e.numero_empleado LIKE ? OR 
+                e.email LIKE ? OR 
+                e.telefono LIKE ?
+            )";
+            $busquedaParam = "%$busqueda%";
+            $params[] = $busquedaParam;
+            $params[] = $busquedaParam;
+            $params[] = $busquedaParam;
+            $params[] = $busquedaParam;
+            $params[] = $busquedaParam;
+            $params[] = $busquedaParam;
+        }
+        
+        $query .= " ORDER BY a.fecha DESC, a.hora_entrada DESC LIMIT 500";
+        
+        $stmt = $db->prepare($query);
+        $stmt->execute($params);
         $asistencias = $stmt->fetchAll();
         
         $data = [
             'title' => 'Control de Asistencia',
-            'asistencias' => $asistencias
+            'asistencias' => $asistencias,
+            'filtros' => [
+                'fecha_inicio' => $fechaInicio,
+                'fecha_fin' => $fechaFin,
+                'busqueda' => $busqueda
+            ]
         ];
         
         ob_start();
@@ -597,6 +635,103 @@ class AsistenciaController {
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
         }
+        exit;
+    }
+    
+    public function exportar() {
+        AuthController::check();
+        
+        $db = Database::getInstance()->getConnection();
+        
+        // Obtener filtros desde la URL
+        $fechaInicio = $_GET['fecha_inicio'] ?? date('Y-m-d');
+        $fechaFin = $_GET['fecha_fin'] ?? date('Y-m-d');
+        $busqueda = $_GET['busqueda'] ?? '';
+        
+        // Construir query con filtros
+        $query = "
+            SELECT a.*, 
+                   e.numero_empleado,
+                   CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', COALESCE(e.apellido_materno, '')) as nombre_empleado,
+                   e.email,
+                   e.telefono,
+                   e.departamento
+            FROM asistencias a
+            INNER JOIN empleados e ON a.empleado_id = e.id
+            WHERE a.fecha BETWEEN ? AND ?
+        ";
+        
+        $params = [$fechaInicio, $fechaFin];
+        
+        // Aplicar búsqueda si existe
+        if ($busqueda) {
+            $query .= " AND (
+                e.nombres LIKE ? OR 
+                e.apellido_paterno LIKE ? OR 
+                e.apellido_materno LIKE ? OR
+                e.numero_empleado LIKE ? OR 
+                e.email LIKE ? OR 
+                e.telefono LIKE ?
+            )";
+            $busquedaParam = "%$busqueda%";
+            $params[] = $busquedaParam;
+            $params[] = $busquedaParam;
+            $params[] = $busquedaParam;
+            $params[] = $busquedaParam;
+            $params[] = $busquedaParam;
+            $params[] = $busquedaParam;
+        }
+        
+        $query .= " ORDER BY a.fecha DESC, a.hora_entrada DESC";
+        
+        $stmt = $db->prepare($query);
+        $stmt->execute($params);
+        $asistencias = $stmt->fetchAll();
+        
+        // Generar reporte CSV
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="reporte_asistencias_' . $fechaInicio . '_' . $fechaFin . '.csv"');
+        
+        $output = fopen('php://output', 'w');
+        
+        // BOM para UTF-8
+        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+        
+        // Encabezados
+        fputcsv($output, [
+            'Fecha',
+            'No. Empleado',
+            'Nombre',
+            'Email',
+            'Teléfono',
+            'Departamento',
+            'Hora Entrada',
+            'Hora Salida',
+            'Horas Trabajadas',
+            'Horas Extras',
+            'Estatus',
+            'Notas'
+        ]);
+        
+        // Datos
+        foreach ($asistencias as $asistencia) {
+            fputcsv($output, [
+                $asistencia['fecha'],
+                $asistencia['numero_empleado'] ?? '',
+                $asistencia['nombre_empleado'],
+                $asistencia['email'] ?? '',
+                $asistencia['telefono'] ?? '',
+                $asistencia['departamento'] ?? '',
+                $asistencia['hora_entrada'] ? date('H:i', strtotime($asistencia['hora_entrada'])) : '',
+                $asistencia['hora_salida'] ? date('H:i', strtotime($asistencia['hora_salida'])) : '',
+                $asistencia['horas_trabajadas'] ?? '0',
+                $asistencia['horas_extra'] ?? '0',
+                $asistencia['estatus'],
+                $asistencia['notas'] ?? ''
+            ]);
+        }
+        
+        fclose($output);
         exit;
     }
 }
