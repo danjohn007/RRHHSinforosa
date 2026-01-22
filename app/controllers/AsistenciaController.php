@@ -20,7 +20,7 @@ class AsistenciaController {
             SELECT a.*, 
                    e.numero_empleado,
                    CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', COALESCE(e.apellido_materno, '')) as nombre_empleado,
-                   e.email,
+                   e.email_personal,
                    e.telefono,
                    e.departamento
             FROM asistencias a
@@ -37,7 +37,7 @@ class AsistenciaController {
                 e.apellido_paterno LIKE ? OR 
                 e.apellido_materno LIKE ? OR
                 e.numero_empleado LIKE ? OR 
-                e.email LIKE ? OR 
+                e.email_personal LIKE ? OR 
                 e.telefono LIKE ?
             )";
             $busquedaParam = "%$busqueda%";
@@ -653,7 +653,7 @@ class AsistenciaController {
             SELECT a.*, 
                    e.numero_empleado,
                    CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', COALESCE(e.apellido_materno, '')) as nombre_empleado,
-                   e.email,
+                   e.email_personal,
                    e.telefono,
                    e.departamento
             FROM asistencias a
@@ -670,7 +670,7 @@ class AsistenciaController {
                 e.apellido_paterno LIKE ? OR 
                 e.apellido_materno LIKE ? OR
                 e.numero_empleado LIKE ? OR 
-                e.email LIKE ? OR 
+                e.email_personal LIKE ? OR 
                 e.telefono LIKE ?
             )";
             $busquedaParam = "%$busqueda%";
@@ -719,7 +719,7 @@ class AsistenciaController {
                 $asistencia['fecha'],
                 $asistencia['numero_empleado'] ?? '',
                 $asistencia['nombre_empleado'],
-                $asistencia['email'] ?? '',
+                $asistencia['email_personal'] ?? '',
                 $asistencia['telefono'] ?? '',
                 $asistencia['departamento'] ?? '',
                 $asistencia['hora_entrada'] ? date('H:i', strtotime($asistencia['hora_entrada'])) : '',
