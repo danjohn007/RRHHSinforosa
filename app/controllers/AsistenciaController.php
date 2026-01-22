@@ -65,6 +65,8 @@ class AsistenciaController {
             ]
         ];
         
+        extract($data);
+        
         ob_start();
         require_once BASE_PATH . 'app/views/asistencia/index.php';
         $content = ob_get_clean();
@@ -92,6 +94,8 @@ class AsistenciaController {
             'title' => 'Registro de Asistencia',
             'empleados' => $empleados
         ];
+        
+        extract($data);
         
         ob_start();
         require_once BASE_PATH . 'app/views/asistencia/registro.php';
@@ -195,6 +199,8 @@ class AsistenciaController {
             $data['error'] = $error;
         }
         
+        extract($data);
+        
         ob_start();
         require_once BASE_PATH . 'app/views/asistencia/registro.php';
         $content = ob_get_clean();
@@ -234,6 +240,8 @@ class AsistenciaController {
             'empleados' => $empleados
         ];
         
+        extract($data);
+        
         ob_start();
         require_once BASE_PATH . 'app/views/asistencia/vacaciones.php';
         $content = ob_get_clean();
@@ -254,6 +262,8 @@ class AsistenciaController {
             'title' => 'Gestión de Turnos',
             'turnos' => $turnos
         ];
+        
+        extract($data);
         
         ob_start();
         require_once BASE_PATH . 'app/views/asistencia/turnos.php';
@@ -345,6 +355,8 @@ class AsistenciaController {
                 'busqueda' => $busqueda
             ]
         ];
+        
+        extract($data);
         
         ob_start();
         require_once BASE_PATH . 'app/views/asistencia/incidencias.php';
