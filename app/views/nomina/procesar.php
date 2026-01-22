@@ -127,6 +127,79 @@
     </div>
     <?php endif; ?>
     
+    <!-- Ver Períodos Procesados -->
+    <?php if (!empty($periodosProcesados)): ?>
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+            <i class="fas fa-list text-blue-600 mr-2"></i>
+            Períodos Procesados
+        </h3>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Período</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha Pago</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Empleados</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Pagado</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estatus</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <?php foreach ($periodosProcesados as $periodo): ?>
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm text-gray-900"><?php echo $periodo['tipo']; ?></td>
+                        <td class="px-4 py-3 text-sm text-gray-900">
+                            <?php echo date('d/m/Y', strtotime($periodo['fecha_inicio'])); ?> - 
+                            <?php echo date('d/m/Y', strtotime($periodo['fecha_fin'])); ?>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-900">
+                            <?php echo date('d/m/Y', strtotime($periodo['fecha_pago'])); ?>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-900"><?php echo $periodo['num_empleados'] ?? 0; ?></td>
+                        <td class="px-4 py-3 text-sm text-gray-900">
+                            $<?php echo number_format($periodo['total_pagado'] ?? 0, 2); ?>
+                        </td>
+                        <td class="px-4 py-3">
+                            <?php
+                            $statusColors = [
+                                'Procesado' => 'bg-blue-100 text-blue-800',
+                                'Pagado' => 'bg-green-100 text-green-800',
+                                'Cerrado' => 'bg-gray-100 text-gray-800'
+                            ];
+                            $color = $statusColors[$periodo['estatus']] ?? 'bg-gray-100 text-gray-800';
+                            ?>
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $color; ?>">
+                                <?php echo $periodo['estatus']; ?>
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            <div class="flex space-x-2">
+                                <a href="<?php echo BASE_URL; ?>nomina?id=<?php echo $periodo['id']; ?>" 
+                                   class="text-blue-600 hover:text-blue-900"
+                                   title="Ver detalle">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <?php if ($periodo['estatus'] === 'Procesado'): ?>
+                                <button onclick="reprocesarPeriodo(<?php echo $periodo['id']; ?>)" 
+                                        class="text-orange-600 hover:text-orange-900"
+                                        title="Reprocesar">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                                <?php endif; ?>
+                            </div>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <?php endif; ?>
+    
     <!-- Resultado del procesamiento -->
     <?php if ($resultado && $resultado['success']): ?>
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -208,4 +281,37 @@ document.getElementById('formNuevoPeriodo')?.addEventListener('submit', function
         }
     }
 });
+
+// Función para reprocesar un período
+function reprocesarPeriodo(periodoId) {
+    if (!confirm('¿Está seguro de reprocesar este período de nómina?\n\nEsta acción:\n- Eliminará los cálculos anteriores\n- Volverá a calcular la nómina de todos los empleados\n- Considerará incidencias, bonos y préstamos actualizados\n\n¿Desea continuar?')) {
+        return;
+    }
+    
+    // Crear formulario y enviarlo
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '<?php echo BASE_URL; ?>nomina/procesar';
+    
+    const inputProcesar = document.createElement('input');
+    inputProcesar.type = 'hidden';
+    inputProcesar.name = 'procesar_nomina';
+    inputProcesar.value = '1';
+    form.appendChild(inputProcesar);
+    
+    const inputPeriodo = document.createElement('input');
+    inputPeriodo.type = 'hidden';
+    inputPeriodo.name = 'periodo_id';
+    inputPeriodo.value = periodoId;
+    form.appendChild(inputPeriodo);
+    
+    const inputReprocesar = document.createElement('input');
+    inputReprocesar.type = 'hidden';
+    inputReprocesar.name = 'reprocesar';
+    inputReprocesar.value = '1';
+    form.appendChild(inputReprocesar);
+    
+    document.body.appendChild(form);
+    form.submit();
+}
 </script>
