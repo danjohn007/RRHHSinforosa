@@ -542,12 +542,14 @@ class EmpleadosController {
                 exit;
             }
             
-            // Obtener último periodo calculado
+            // Obtener último periodo calculado (solo periodos hasta la fecha actual)
             $stmt = $db->prepare("
                 SELECT MAX(pn.fecha_fin) as ultima_fecha 
                 FROM periodos_nomina pn
                 INNER JOIN nomina_detalle nd ON pn.id = nd.periodo_id
-                WHERE nd.empleado_id = ? AND pn.estatus IN ('Procesado', 'Pagado', 'Cerrado')
+                WHERE nd.empleado_id = ? 
+                AND pn.estatus IN ('Procesado', 'Pagado', 'Cerrado')
+                AND pn.fecha_fin <= CURDATE()
             ");
             $stmt->execute([$empleadoId]);
             $ultimoPeriodo = $stmt->fetch();
@@ -555,11 +557,16 @@ class EmpleadosController {
             $fechaInicio = $ultimoPeriodo && $ultimoPeriodo['ultima_fecha'] 
                 ? date('Y-m-d', strtotime($ultimoPeriodo['ultima_fecha'] . ' +1 day'))
                 : $empleado['fecha_ingreso'];
-            $fechaFin = date('Y-m-d');
+            $fechaFin = date('Y-m-d'); // Fecha actual
+            
+            // Asegurar que la fecha de inicio no sea posterior a la fecha fin
+            if (strtotime($fechaInicio) > strtotime($fechaFin)) {
+                $fechaInicio = $fechaFin;
+            }
             
             // Calcular días trabajados desde último periodo
             $stmt = $db->prepare("
-                SELECT DATE(fecha) as fecha, hora_entrada, hora_salida, horas_trabajadas, estatus
+                SELECT DATE(fecha) as fecha, hora_entrada, hora_salida, horas_trabajadas, horas_extra, estatus
                 FROM asistencias 
                 WHERE empleado_id = ? 
                 AND fecha BETWEEN ? AND ?
@@ -575,8 +582,14 @@ class EmpleadosController {
             foreach ($asistencias as $asistencia) {
                 if (in_array($asistencia['estatus'], ['Presente', 'Retardo'])) {
                     $diasTrabajados++;
-                    $horas = floatval($asistencia['horas_trabajadas']);
-                    if ($horas > 8) {
+                    $horas = floatval($asistencia['horas_trabajadas'] ?? 0);
+                    $extra = floatval($asistencia['horas_extra'] ?? 0);
+                    
+                    // Si no hay horas extra registradas directamente, calcular en base a horas trabajadas
+                    if ($extra > 0) {
+                        $horasExtras += $extra;
+                        $horasNormales += min($horas, 8);
+                    } else if ($horas > 8) {
                         $horasNormales += 8;
                         $horasExtras += ($horas - 8);
                     } else {
@@ -601,8 +614,8 @@ class EmpleadosController {
             $deducciones = [];
             
             // Calcular montos
-            $salarioDiario = floatval($empleado['salario_diario']);
-            $salarioMensual = floatval($empleado['salario_mensual']);
+            $salarioDiario = floatval($empleado['salario_diario'] ?? 0);
+            $salarioMensual = floatval($empleado['salario_mensual'] ?? 0);
             $salarioBase = $diasTrabajados * $salarioDiario;
             
             // Calcular pago de horas extras (doble) y bonos/descuentos desde incidencias

@@ -140,9 +140,24 @@ class NominaController {
         ");
         $periodosDisponibles = $stmt->fetchAll();
         
+        // Obtener períodos procesados para visualización y reprocesamiento
+        $stmt = $db->query("
+            SELECT p.*, 
+                   COUNT(nd.id) as num_empleados,
+                   SUM(nd.total_neto) as total_pagado
+            FROM periodos_nomina p
+            LEFT JOIN nomina_detalle nd ON p.id = nd.periodo_id
+            WHERE p.estatus IN ('Procesado', 'Pagado', 'Cerrado')
+            GROUP BY p.id
+            ORDER BY p.fecha_inicio DESC
+            LIMIT 20
+        ");
+        $periodosProcesados = $stmt->fetchAll();
+        
         $data = [
             'title' => 'Procesar Nómina',
             'periodosDisponibles' => $periodosDisponibles,
+            'periodosProcesados' => $periodosProcesados,
             'success' => $success,
             'error' => $error,
             'resultado' => $resultado
