@@ -799,9 +799,13 @@ class EmpleadosController {
             exit;
         }
         
+        $db = null;
+        $transactionStarted = false;
+        
         try {
             $db = Database::getInstance()->getConnection();
             $db->beginTransaction();
+            $transactionStarted = true;
             
             // Registrar importación
             $stmt = $db->prepare("
@@ -834,7 +838,6 @@ class EmpleadosController {
             while (($datos = fgetcsv($handle)) !== false) {
                 $linea++;
                 
-                $lockAcquired = false;
                 try {
                     // Validar que tenga suficientes columnas
                     if (count($datos) < 15) {
@@ -867,17 +870,15 @@ class EmpleadosController {
                         throw new Exception("Campos requeridos faltantes");
                     }
                     
-                    // Generar número de empleado con lock para evitar race conditions
-                    $db->exec("LOCK TABLES empleados WRITE");
-                    $lockAcquired = true;
-                    
-                    $stmt = $db->query("SELECT MAX(CAST(SUBSTRING(numero_empleado, 4) AS UNSIGNED)) as max_num FROM empleados");
+                    // Generar número de empleado usando SELECT FOR UPDATE para evitar race conditions
+                    // Nota: LOCK TABLES causa commit implícito y no es compatible con transacciones
+                    $stmt = $db->query("SELECT MAX(CAST(SUBSTRING(numero_empleado, 4) AS UNSIGNED)) as max_num FROM empleados FOR UPDATE");
                     $result = $stmt->fetch();
                     $nextNum = ($result['max_num'] ?? 0) + 1;
                     $datosEmpleado['numero_empleado'] = 'EMP' . str_pad($nextNum, 3, '0', STR_PAD_LEFT);
                     
-                    // Generar código de empleado con el mismo lock
-                    $stmtCodigo = $db->query("SELECT MAX(CAST(codigo_empleado AS UNSIGNED)) as max_codigo FROM empleados WHERE codigo_empleado LIKE '183%'");
+                    // Generar código de empleado
+                    $stmtCodigo = $db->query("SELECT MAX(CAST(codigo_empleado AS UNSIGNED)) as max_codigo FROM empleados WHERE codigo_empleado LIKE '183%' FOR UPDATE");
                     $resultCodigo = $stmtCodigo->fetch();
                     $nextCodigo = ($resultCodigo['max_codigo'] ?? 183000) + 1;
                     $datosEmpleado['codigo_empleado'] = str_pad($nextCodigo, 6, '0', STR_PAD_LEFT);
@@ -895,15 +896,6 @@ class EmpleadosController {
                 } catch (Exception $e) {
                     $registrosErrores++;
                     $erroresDetalle[] = "Línea $linea: " . $e->getMessage();
-                } finally {
-                    // Asegurar que el lock se libere siempre
-                    if ($lockAcquired) {
-                        try {
-                            $db->exec("UNLOCK TABLES");
-                        } catch (Exception $e) {
-                            // Log error but continue processing
-                        }
-                    }
                 }
             }
             
@@ -939,7 +931,14 @@ class EmpleadosController {
             ]);
             
         } catch (Exception $e) {
-            $db->rollBack();
+            if ($db && $transactionStarted) {
+                try {
+                    $db->rollBack();
+                } catch (Exception $rollbackException) {
+                    // Log rollback error but continue with error response
+                    error_log('Error al hacer rollback: ' . $rollbackException->getMessage());
+                }
+            }
             echo json_encode(['success' => false, 'message' => 'Error al procesar importación: ' . $e->getMessage()]);
         }
         
