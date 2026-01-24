@@ -166,8 +166,8 @@ class ConfiguracionesController {
                 mkdir($uploadDir, 0755, true);
             }
             
-            // Generar nombre único
-            $filename = 'efirma_' . $tipo . '_' . uniqid(time() . '_', true) . '.' . $extension;
+            // Generar nombre único con alta entropía para evitar colisiones y ataques de enumeración
+            $filename = 'efirma_' . $tipo . '_' . uniqid('', true) . '.' . $extension;
             $filepath = $uploadDir . '/' . $filename;
             
             // Mover archivo
