@@ -40,16 +40,28 @@ class Empleado {
         }
         
         if (!empty($filters['search'])) {
-            $sql .= " AND (e.nombres LIKE ? OR e.apellido_paterno LIKE ? OR e.apellido_materno LIKE ? 
-                      OR e.email_personal LIKE ? OR e.numero_empleado LIKE ? OR e.celular LIKE ? OR e.telefono LIKE ?)";
             $searchTerm = '%' . $filters['search'] . '%';
-            $params[] = $searchTerm;
-            $params[] = $searchTerm;
-            $params[] = $searchTerm;
-            $params[] = $searchTerm;
-            $params[] = $searchTerm;
-            $params[] = $searchTerm;
-            $params[] = $searchTerm;
+            // Mejorar búsqueda para que funcione con nombre completo (nombre + apellidos)
+            // Buscar en: nombre completo, nombre solo, apellidos, email, número, teléfonos
+            $sql .= " AND (
+                      CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', IFNULL(e.apellido_materno, '')) LIKE ?
+                      OR CONCAT(e.apellido_paterno, ' ', IFNULL(e.apellido_materno, ''), ' ', e.nombres) LIKE ?
+                      OR e.nombres LIKE ? 
+                      OR e.apellido_paterno LIKE ? 
+                      OR e.apellido_materno LIKE ? 
+                      OR e.email_personal LIKE ? 
+                      OR e.numero_empleado LIKE ? 
+                      OR e.celular LIKE ? 
+                      OR e.telefono LIKE ?)";
+            $params[] = $searchTerm;  // nombre completo (nombre + apellidos)
+            $params[] = $searchTerm;  // nombre completo inverso (apellidos + nombre)
+            $params[] = $searchTerm;  // nombres
+            $params[] = $searchTerm;  // apellido_paterno
+            $params[] = $searchTerm;  // apellido_materno
+            $params[] = $searchTerm;  // email
+            $params[] = $searchTerm;  // numero_empleado
+            $params[] = $searchTerm;  // celular
+            $params[] = $searchTerm;  // telefono
         }
         
         $sql .= " ORDER BY e.nombres, e.apellido_paterno";

@@ -446,13 +446,15 @@ class NominaController {
             // BOM para UTF-8
             fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
             
-            // Encabezados
+            // Encabezados - Agregar Horas Trabajadas y Horas Extras
             fputcsv($output, [
                 'No. Empleado',
                 'Nombre',
                 'RFC',
                 'CURP',
                 'Días Trabajados',
+                'Horas Trabajadas',
+                'Horas Extras',
                 'Salario Base',
                 'Total Percepciones',
                 'ISR',
@@ -469,6 +471,8 @@ class NominaController {
                     $emp['rfc'] ?? '',
                     $emp['curp'] ?? '',
                     $emp['dias_trabajados'],
+                    number_format($emp['horas_trabajadas'] ?? 0, 2),
+                    number_format($emp['horas_extras'] ?? 0, 2),
                     number_format($emp['salario_base'], 2),
                     number_format($emp['total_percepciones'], 2),
                     number_format($emp['isr'], 2),

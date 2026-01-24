@@ -240,6 +240,11 @@ class NominaService {
         // Obtener días trabajados según el periodo
         $diasTrabajados = $this->calcularDiasTrabajados($empleadoId, $periodoId);
         
+        // Calcular horas trabajadas y horas extras
+        $horasData = $this->calcularHorasTrabajadas($empleadoId, $periodoId, $diasTrabajados);
+        $horasTrabajadas = $horasData['horas_trabajadas'];
+        $horasExtras = $horasData['horas_extras'];
+        
         // Calcular salario base proporcional a los días trabajados
         if ($salarioDiario > 0) {
             $salarioBase = $salarioDiario * $diasTrabajados;
@@ -249,13 +254,16 @@ class NominaService {
             $salarioBase = $salarioDiario * $diasTrabajados;
         }
         
+        // Calcular pago de horas extras
+        $pagoHorasExtras = $this->calcularPagoHorasExtras($horasExtras, $salarioDiario);
+        
         // Calcular incidencias
         $incidencias = $this->obtenerIncidencias($empleadoId, $periodoId);
         
         // Calcular percepciones
         $percepciones = [
             'sueldo_base' => $salarioBase,
-            'horas_extra' => $incidencias['horas_extra'] ?? 0,
+            'horas_extra' => $pagoHorasExtras,
             'bonos' => $incidencias['bonos'] ?? 0
         ];
         
@@ -297,6 +305,9 @@ class NominaService {
             $stmt = $this->db->prepare("
                 UPDATE nomina_detalle SET
                     dias_trabajados = ?,
+                    horas_trabajadas = ?,
+                    horas_extras = ?,
+                    pago_horas_extras = ?,
                     salario_base = ?,
                     total_percepciones = ?,
                     total_deducciones = ?,
@@ -309,6 +320,9 @@ class NominaService {
             ");
             $stmt->execute([
                 $diasTrabajados,
+                $horasTrabajadas,
+                $horasExtras,
+                $pagoHorasExtras,
                 $salarioBase,
                 $totalPercepciones,
                 $totalDeducciones,
@@ -323,15 +337,19 @@ class NominaService {
             // Insertar
             $stmt = $this->db->prepare("
                 INSERT INTO nomina_detalle (
-                    periodo_id, empleado_id, dias_trabajados, salario_base,
-                    total_percepciones, total_deducciones, subtotal,
-                    isr, imss, total_neto, estatus
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Calculado')
+                    periodo_id, empleado_id, dias_trabajados, 
+                    horas_trabajadas, horas_extras, pago_horas_extras,
+                    salario_base, total_percepciones, total_deducciones, 
+                    subtotal, isr, imss, total_neto, estatus
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Calculado')
             ");
             $stmt->execute([
                 $periodoId,
                 $empleadoId,
                 $diasTrabajados,
+                $horasTrabajadas,
+                $horasExtras,
+                $pagoHorasExtras,
                 $salarioBase,
                 $totalPercepciones,
                 $totalDeducciones,
@@ -433,6 +451,89 @@ class NominaService {
         }
         
         return $resultado;
+    }
+    
+    /**
+     * Calcular horas trabajadas y horas extras de un empleado en un período
+     * @param int $empleadoId ID del empleado
+     * @param int $periodoId ID del período
+     * @param float $diasTrabajados Días trabajados en el período
+     * @return array ['horas_trabajadas' => float, 'horas_extras' => float]
+     */
+    private function calcularHorasTrabajadas($empleadoId, $periodoId, $diasTrabajados) {
+        // Obtener fechas del período
+        $stmt = $this->db->prepare("
+            SELECT fecha_inicio, fecha_fin FROM periodos_nomina WHERE id = ?
+        ");
+        $stmt->execute([$periodoId]);
+        $periodo = $stmt->fetch();
+        
+        if (!$periodo) {
+            return ['horas_trabajadas' => $diasTrabajados * 8, 'horas_extras' => 0];
+        }
+        
+        // Calcular horas trabajadas desde asistencias
+        $stmt = $this->db->prepare("
+            SELECT 
+                COALESCE(SUM(
+                    CASE 
+                        WHEN hora_salida IS NOT NULL THEN
+                            TIMESTAMPDIFF(MINUTE, 
+                                CONCAT(fecha, ' ', hora_entrada), 
+                                CONCAT(fecha, ' ', hora_salida)
+                            ) / 60.0
+                        ELSE 8.0
+                    END
+                ), 0) as total_horas
+            FROM asistencias
+            WHERE empleado_id = ?
+              AND fecha BETWEEN ? AND ?
+              AND estatus IN ('Presente', 'Retardo')
+        ");
+        $stmt->execute([$empleadoId, $periodo['fecha_inicio'], $periodo['fecha_fin']]);
+        $result = $stmt->fetch();
+        
+        $horasTrabajadas = $result['total_horas'] ?? 0;
+        
+        // Si no hay registro de asistencias, usar horas estándar
+        if ($horasTrabajadas == 0) {
+            $horasTrabajadas = $diasTrabajados * 8;
+        }
+        
+        // Calcular horas extras (todo lo que exceda las horas estándar)
+        $horasEstandar = $diasTrabajados * 8;
+        $horasExtras = max(0, $horasTrabajadas - $horasEstandar);
+        
+        return [
+            'horas_trabajadas' => round($horasTrabajadas, 2),
+            'horas_extras' => round($horasExtras, 2)
+        ];
+    }
+    
+    /**
+     * Calcular pago de horas extras
+     * @param float $horasExtras Número de horas extras
+     * @param float $salarioDiario Salario diario del empleado
+     * @return float Monto a pagar por horas extras
+     */
+    private function calcularPagoHorasExtras($horasExtras, $salarioDiario) {
+        if ($horasExtras <= 0) {
+            return 0;
+        }
+        
+        // Salario por hora = salario diario / 8 horas
+        $salarioHora = $salarioDiario / 8;
+        
+        // Primeras 9 horas extras se pagan al doble
+        $horasDobles = min($horasExtras, 9);
+        
+        // Horas adicionales se pagan al triple
+        $horasTriples = max(0, $horasExtras - 9);
+        
+        // Calcular pago total
+        $pagoTotal = ($horasDobles * $salarioHora * 2) + ($horasTriples * $salarioHora * 3);
+        
+        return round($pagoTotal, 2);
     }
     
     /**
