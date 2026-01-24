@@ -110,6 +110,10 @@ if ($request === '' || $request === 'login') {
         $controller->descargarDocumento();
     } elseif ($parts[1] === 'calculo-rapido-nomina') {
         $controller->calculoRapidoNomina();
+    } elseif ($parts[1] === 'descargar-plantilla' || $parts[1] === 'descargarPlantilla') {
+        $controller->descargarPlantilla();
+    } elseif ($parts[1] === 'importar') {
+        $controller->importar();
     } else {
         http_response_code(404);
         die('Página no encontrada');
