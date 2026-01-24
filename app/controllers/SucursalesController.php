@@ -158,7 +158,7 @@ class SucursalesController {
         
         // Obtener lista de empleados disponibles para ser gerentes
         // Incluye empleados con rol gerente/admin/rrhh O con flag puede_ser_gerente
-        $stmt = $db->query("
+        $stmt = $db->prepare("
             SELECT e.id, e.numero_empleado, e.codigo_empleado,
             CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', IFNULL(e.apellido_materno, '')) as nombre_completo,
             e.puesto, u.rol,
