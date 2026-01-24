@@ -834,6 +834,7 @@ class EmpleadosController {
             while (($datos = fgetcsv($handle)) !== false) {
                 $linea++;
                 
+                $lockAcquired = false;
                 try {
                     // Validar que tenga suficientes columnas
                     if (count($datos) < 15) {
@@ -868,6 +869,8 @@ class EmpleadosController {
                     
                     // Generar número de empleado con lock para evitar race conditions
                     $db->exec("LOCK TABLES empleados WRITE");
+                    $lockAcquired = true;
+                    
                     $stmt = $db->query("SELECT MAX(CAST(SUBSTRING(numero_empleado, 4) AS UNSIGNED)) as max_num FROM empleados");
                     $result = $stmt->fetch();
                     $nextNum = ($result['max_num'] ?? 0) + 1;
@@ -879,7 +882,7 @@ class EmpleadosController {
                     $nextCodigo = ($resultCodigo['max_codigo'] ?? 183000) + 1;
                     $datosEmpleado['codigo_empleado'] = str_pad($nextCodigo, 6, '0', STR_PAD_LEFT);
                     
-                    // Calcular salario diario
+                    // Calcular salario diario (30 días estándar para cálculos laborales en México)
                     $datosEmpleado['salario_diario'] = $datosEmpleado['salario_mensual'] / 30;
                     
                     // Crear empleado
@@ -889,14 +892,18 @@ class EmpleadosController {
                         throw new Exception("Error al guardar en base de datos");
                     }
                     
-                    // Liberar lock
-                    $db->exec("UNLOCK TABLES");
-                    
                 } catch (Exception $e) {
-                    // Asegurar que el lock se libere incluso si hay error
-                    $db->exec("UNLOCK TABLES");
                     $registrosErrores++;
                     $erroresDetalle[] = "Línea $linea: " . $e->getMessage();
+                } finally {
+                    // Asegurar que el lock se libere siempre
+                    if ($lockAcquired) {
+                        try {
+                            $db->exec("UNLOCK TABLES");
+                        } catch (Exception $e) {
+                            // Log error but continue processing
+                        }
+                    }
                 }
             }
             
