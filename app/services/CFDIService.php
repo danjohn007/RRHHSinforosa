@@ -244,14 +244,19 @@ class CFDIService {
     
     /**
      * Enviar solicitud de timbrado a FacturaloPlus API
+     * 
+     * NOTA: Esta implementación incluye modo de pruebas para desarrollo.
+     * Para usar en producción:
+     * 1. Configure 'cfdi_ambiente' a 'produccion' en configuraciones_sistema
+     * 2. Configure 'cfdi_api_key' con su clave de API real
+     * 3. Configure 'cfdi_rfc_emisor', 'cfdi_razon_social', etc.
+     * 4. Pruebe primero con un recibo para verificar la integración
+     * 
      * @param array $cfdiData Datos del CFDI
      * @return array Respuesta de la API
      */
     private function enviarSolicitudTimbrado($cfdiData) {
-        // NOTA: Esta es una implementación simulada
-        // En producción, deberá implementarse la llamada real a la API
-        
-        // Simular respuesta exitosa para desarrollo
+        // Modo de pruebas para desarrollo
         if ($this->obtenerConfiguracion('cfdi_ambiente') === 'pruebas') {
             return [
                 'success' => true,
@@ -271,6 +276,10 @@ class CFDIService {
         $url = $this->apiUrl . '/cfdi/timbrar';
         
         $ch = curl_init($url);
+        if ($ch === false) {
+            throw new Exception('Error al inicializar cURL');
+        }
+        
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($cfdiData));
@@ -278,8 +287,15 @@ class CFDIService {
             'Content-Type: application/json',
             'Authorization: Bearer ' . $this->apiKey
         ]);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         
         $response = curl_exec($ch);
+        if ($response === false) {
+            $error = curl_error($ch);
+            curl_close($ch);
+            throw new Exception('Error en petición cURL: ' . $error);
+        }
+        
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         
@@ -294,7 +310,7 @@ class CFDIService {
             return [
                 'success' => false,
                 'codigo' => $error['codigo'] ?? '99',
-                'message' => $error['message'] ?? 'Error al timbrar CFDI'
+                'message' => $error['message'] ?? 'Error al timbrar CFDI (HTTP ' . $httpCode . ')'
             ];
         }
     }

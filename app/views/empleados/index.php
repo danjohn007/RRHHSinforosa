@@ -399,7 +399,7 @@
                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
                 <p class="text-xs text-gray-500 mt-1">
                     <i class="fas fa-info-circle"></i>
-                    Formato: CSV (separado por comas). Máximo 5MB.
+                    Formato: CSV separado por comas con codificación UTF-8. Máximo 5MB.
                 </p>
             </div>
             

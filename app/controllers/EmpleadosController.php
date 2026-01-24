@@ -866,13 +866,14 @@ class EmpleadosController {
                         throw new Exception("Campos requeridos faltantes");
                     }
                     
-                    // Generar número de empleado
+                    // Generar número de empleado con lock para evitar race conditions
+                    $db->exec("LOCK TABLES empleados WRITE");
                     $stmt = $db->query("SELECT MAX(CAST(SUBSTRING(numero_empleado, 4) AS UNSIGNED)) as max_num FROM empleados");
                     $result = $stmt->fetch();
                     $nextNum = ($result['max_num'] ?? 0) + 1;
                     $datosEmpleado['numero_empleado'] = 'EMP' . str_pad($nextNum, 3, '0', STR_PAD_LEFT);
                     
-                    // Generar código de empleado
+                    // Generar código de empleado con el mismo lock
                     $stmtCodigo = $db->query("SELECT MAX(CAST(codigo_empleado AS UNSIGNED)) as max_codigo FROM empleados WHERE codigo_empleado LIKE '183%'");
                     $resultCodigo = $stmtCodigo->fetch();
                     $nextCodigo = ($resultCodigo['max_codigo'] ?? 183000) + 1;
@@ -888,7 +889,12 @@ class EmpleadosController {
                         throw new Exception("Error al guardar en base de datos");
                     }
                     
+                    // Liberar lock
+                    $db->exec("UNLOCK TABLES");
+                    
                 } catch (Exception $e) {
+                    // Asegurar que el lock se libere incluso si hay error
+                    $db->exec("UNLOCK TABLES");
                     $registrosErrores++;
                     $erroresDetalle[] = "Línea $linea: " . $e->getMessage();
                 }

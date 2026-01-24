@@ -268,7 +268,7 @@ CREATE TABLE IF NOT EXISTS configuraciones_sistema (
 
 -- Insertar configuraciones predeterminadas para CFDI
 INSERT INTO configuraciones_sistema (clave, valor, descripcion, tipo, categoria) VALUES
-('cfdi_api_url', 'https://api.facturalop plus.com/v1', 'URL base de la API de FacturaloPlus', 'Texto', 'CFDI'),
+('cfdi_api_url', 'https://api.facturaplus.com/v1', 'URL base de la API de FacturaloPlus', 'Texto', 'CFDI'),
 ('cfdi_api_key', '', 'API Key de FacturaloPlus', 'Secreto', 'CFDI'),
 ('cfdi_rfc_emisor', '', 'RFC del emisor (empresa)', 'Texto', 'CFDI'),
 ('cfdi_razon_social', '', 'Razón social del emisor', 'Texto', 'CFDI'),
