@@ -416,7 +416,7 @@ class PublicoController {
             $canalActivo = ($canal !== null) ? $canal : ($dispositivo['canal_entrada'] ?? 0);
             
             // Validar canal
-            if ($canal < 0 || $canal > 3) {
+            if ($canalActivo < 0 || $canalActivo > 3) {
                 return ['activado' => false, 'mensaje' => 'Canal inválido (debe ser 0-3)'];
             }
             
