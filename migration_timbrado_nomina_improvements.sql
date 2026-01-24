@@ -281,7 +281,7 @@ INSERT INTO configuraciones_sistema (clave, valor, descripcion, tipo, categoria)
 ON DUPLICATE KEY UPDATE fecha_actualizacion = CURRENT_TIMESTAMP;
 
 -- ============================================================
--- 8. TRIGGER: Calcular horas trabajadas y extras en nómina
+-- 8. TRIGGER: Calcular horas trabajadas y extras en nómina (SOLUCIÓN DEFINITIVA)
 -- ============================================================
 
 DELIMITER $$
@@ -295,16 +295,37 @@ BEGIN
     DECLARE horas_estandar DECIMAL(10,2);
     DECLARE horas_extras_calculadas DECIMAL(10,2);
     DECLARE dias_periodo INT;
+    DECLARE v_periodo_id INT;
+    DECLARE v_empleado_id INT;
+    DECLARE v_dias_trabajados INT;
+    DECLARE v_horas_trabajadas DECIMAL(10,2);
+    DECLARE v_horas_extras DECIMAL(10,2);
+    DECLARE fecha_inicio_periodo DATE;
+    DECLARE fecha_fin_periodo DATE;
+    
+    -- Guardar valores en variables locales
+    SET v_periodo_id = NEW.periodo_id;
+    SET v_empleado_id = NEW.empleado_id;
+    SET v_dias_trabajados = NEW.dias_trabajados;
+    SET v_horas_trabajadas = COALESCE(NEW.horas_trabajadas, 0);
+    SET v_horas_extras = COALESCE(NEW.horas_extras, 0);
     
     -- Si no se proporcionan las horas, calcularlas desde asistencias
-    IF NEW.horas_trabajadas IS NULL OR NEW.horas_trabajadas = 0 THEN
+    IF v_horas_trabajadas = 0 THEN
         -- Obtener fechas del período
-        SELECT DATEDIFF(fecha_fin, fecha_inicio) + 1 INTO dias_periodo
+        SELECT 
+            DATEDIFF(fecha_fin, fecha_inicio) + 1,
+            fecha_inicio,
+            fecha_fin
+        INTO 
+            dias_periodo,
+            fecha_inicio_periodo,
+            fecha_fin_periodo
         FROM periodos_nomina 
-        WHERE id = NEW.periodo_id;
+        WHERE id = v_periodo_id;
         
         -- Calcular horas estándar (8 horas por día trabajado)
-        SET horas_estandar = NEW.dias_trabajados * 8;
+        SET horas_estandar = v_dias_trabajados * 8;
         
         -- Calcular horas trabajadas desde asistencias
         SELECT COALESCE(SUM(
@@ -312,22 +333,24 @@ BEGIN
                 CONCAT(a.fecha, ' ', a.hora_entrada), 
                 CONCAT(a.fecha, ' ', COALESCE(a.hora_salida, a.hora_entrada))
             ) / 60.0
-        ), 0) INTO NEW.horas_trabajadas
+        ), 0) INTO v_horas_trabajadas
         FROM asistencias a
-        INNER JOIN periodos_nomina p ON NEW.periodo_id = p.id
-        WHERE a.empleado_id = NEW.empleado_id
-          AND a.fecha BETWEEN p.fecha_inicio AND p.fecha_fin
+        WHERE a.empleado_id = v_empleado_id
+          AND a.fecha BETWEEN fecha_inicio_periodo AND fecha_fin_periodo
           AND a.estatus = 'Presente';
         
         -- Si no hay registro de asistencias, usar horas estándar
-        IF NEW.horas_trabajadas = 0 THEN
-            SET NEW.horas_trabajadas = horas_estandar;
+        IF v_horas_trabajadas = 0 THEN
+            SET v_horas_trabajadas = horas_estandar;
         END IF;
         
         -- Calcular horas extras (todo lo que exceda las horas estándar)
-        SET horas_extras_calculadas = GREATEST(0, NEW.horas_trabajadas - horas_estandar);
+        SET horas_extras_calculadas = GREATEST(0, v_horas_trabajadas - horas_estandar);
         
-        IF NEW.horas_extras IS NULL OR NEW.horas_extras = 0 THEN
+        -- Asignar valores calculados
+        SET NEW.horas_trabajadas = v_horas_trabajadas;
+        
+        IF v_horas_extras = 0 THEN
             SET NEW.horas_extras = horas_extras_calculadas;
         END IF;
     END IF;
@@ -517,12 +540,18 @@ WHERE TABLE_SCHEMA = DATABASE()
 SELECT '=====================================' as separador;
 SELECT 'RESUMEN DE LA MIGRACIÓN' as resumen;
 SELECT '=====================================' as separador;
-SELECT 'Nuevas columnas agregadas a nomina_detalle: 13' as detalle;
-SELECT 'Nuevas tablas creadas: 3 (nomina_timbrado_log, nomina_importaciones, configuraciones_sistema)' as detalle;
-SELECT 'Vistas creadas/actualizadas: 2 (vista_empleados_busqueda, vista_empleados_gerentes)' as detalle;
-SELECT 'Triggers creados: 2 (before_nomina_detalle_insert, before_nomina_detalle_update)' as detalle;
-SELECT 'Funciones creadas: 1 (calcular_pago_horas_extras)' as detalle;
+SELECT 'Nuevas columnas agregadas a nomina_detalle: 13' as detalle
+UNION ALL
+SELECT 'Nuevas tablas creadas: 3 (nomina_timbrado_log, nomina_importaciones, configuraciones_sistema)' as detalle
+UNION ALL
+SELECT 'Vistas creadas/actualizadas: 2 (vista_empleados_busqueda, vista_empleados_gerentes)' as detalle
+UNION ALL
+SELECT 'Triggers creados: 2 (before_nomina_detalle_insert, before_nomina_detalle_update)' as detalle
+UNION ALL
+SELECT 'Funciones creadas: 1 (calcular_pago_horas_extras)' as detalle
+UNION ALL
 SELECT 'Procedimientos creados: 1 (obtener_empleados_gerentes)' as detalle;
+
 SELECT '=====================================' as separador;
 
 -- FIN DE LA MIGRACIÓN
