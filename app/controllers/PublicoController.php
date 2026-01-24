@@ -416,13 +416,13 @@ class PublicoController {
             $canalActivo = ($canal !== null) ? $canal : ($dispositivo['canal_entrada'] ?? 0);
             
             // Validar canal
-            if ($canal < 0 || $canal > 3) {
+            if ($canalActivo < 0 || $canalActivo > 3) {
                 return ['activado' => false, 'mensaje' => 'Canal inválido (debe ser 0-3)'];
             }
             
             $data = [
-                'id' => $dispositivo['device_id'],
-                'auth_key' => $dispositivo['token_autenticacion'],
+                'id' => trim($dispositivo['device_id']),
+                'auth_key' => trim($dispositivo['token_autenticacion']),
                 'channel' => (int)$canalActivo,
                 'turn' => 'on'
             ];

@@ -106,6 +106,7 @@ class SucursalesController {
             redirect('sucursales');
         }
         
+        $db = Database::getInstance()->getConnection();
         $error = null;
         $success = null;
         
@@ -156,7 +157,6 @@ class SucursalesController {
         $empleados = $sucursalModel->getEmpleados($sucursalId);
         
         // Obtener lista de empleados disponibles para ser gerentes
-        $db = Database::getInstance()->getConnection();
         $stmt = $db->query("
             SELECT e.id, e.numero_empleado, e.codigo_empleado,
             CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', IFNULL(e.apellido_materno, '')) as nombre_completo,

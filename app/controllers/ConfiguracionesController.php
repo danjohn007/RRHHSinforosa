@@ -174,11 +174,11 @@ class ConfiguracionesController {
             if ($tipo === 'shelly') {
                 $id = $_POST['id'] ?? null;
                 $data = [
-                    'nombre' => $_POST['nombre'],
-                    'device_id' => $_POST['device_id'],
-                    'token_autenticacion' => $_POST['token_autenticacion'],
-                    'servidor_cloud' => $_POST['servidor_cloud'],
-                    'area' => $_POST['area'],
+                    'nombre' => trim($_POST['nombre']),
+                    'device_id' => trim($_POST['device_id']),
+                    'token_autenticacion' => trim($_POST['token_autenticacion']),
+                    'servidor_cloud' => trim($_POST['servidor_cloud']),
+                    'area' => trim($_POST['area']),
                     'canal_entrada' => $_POST['canal_entrada'] ?? 1,
                     'canal_salida' => $_POST['canal_salida'] ?? 0,
                     'duracion_pulso' => $_POST['duracion_pulso'] ?? 600,
@@ -384,8 +384,8 @@ class ConfiguracionesController {
             $url = rtrim($dispositivo['servidor_cloud'], '/') . '/device/relay/control';
             
             $data = [
-                'id' => $dispositivo['device_id'],
-                'auth_key' => $dispositivo['token_autenticacion'],
+                'id' => trim($dispositivo['device_id']),
+                'auth_key' => trim($dispositivo['token_autenticacion']),
                 'channel' => (int)$canal,
                 'turn' => 'on'
             ];
