@@ -723,4 +723,74 @@ class NominaController {
             exit;
         }
     }
+    
+    /**
+     * Timbrar CFDI de un período completo
+     */
+    public function timbrarPeriodo() {
+        AuthController::checkRole(['admin', 'rrhh']);
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+        
+        $periodoId = $_GET['id'] ?? null;
+        
+        if (!$periodoId) {
+            echo json_encode(['success' => false, 'message' => 'ID de período no proporcionado']);
+            exit;
+        }
+        
+        try {
+            require_once BASE_PATH . 'app/services/CFDIService.php';
+            $cfdiService = new CFDIService();
+            
+            $resultado = $cfdiService->timbrarPeriodo($periodoId);
+            
+            echo json_encode($resultado);
+            exit;
+            
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+            exit;
+        }
+    }
+    
+    /**
+     * Cancelar CFDI de un recibo de nómina
+     */
+    public function cancelarCFDI() {
+        AuthController::checkRole(['admin', 'rrhh']);
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+        
+        $data = json_decode(file_get_contents('php://input'), true);
+        $nominaDetalleId = $data['nomina_detalle_id'] ?? null;
+        $motivo = $data['motivo'] ?? '';
+        
+        if (!$nominaDetalleId) {
+            echo json_encode(['success' => false, 'message' => 'ID de nómina no proporcionado']);
+            exit;
+        }
+        
+        try {
+            require_once BASE_PATH . 'app/services/CFDIService.php';
+            $cfdiService = new CFDIService();
+            
+            $resultado = $cfdiService->cancelarCFDI($nominaDetalleId, $motivo);
+            
+            echo json_encode($resultado);
+            exit;
+            
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+            exit;
+        }
+    }
 }
