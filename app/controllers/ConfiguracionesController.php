@@ -167,7 +167,7 @@ class ConfiguracionesController {
             }
             
             // Generar nombre único
-            $filename = 'efirma_' . $tipo . '_' . time() . '.' . $extension;
+            $filename = 'efirma_' . $tipo . '_' . uniqid(time() . '_', true) . '.' . $extension;
             $filepath = $uploadDir . '/' . $filename;
             
             // Mover archivo

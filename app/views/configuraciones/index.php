@@ -395,7 +395,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">RFC del Emisor *</label>
                             <input type="text" name="configuraciones[timbrado_rfc_emisor]" 
-                                value="<?php echo htmlspecialchars($configs['timbrado'][0]['valor'] ?? ''); ?>"
+                                value="<?php echo htmlspecialchars($configs['timbrado'][10]['valor'] ?? ''); ?>"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                 placeholder="ABC123456XYZ"
                                 maxlength="13">
@@ -404,7 +404,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nombre/Razón Social *</label>
                             <input type="text" name="configuraciones[timbrado_razon_social]" 
-                                value="<?php echo htmlspecialchars($configs['timbrado'][1]['valor'] ?? ''); ?>"
+                                value="<?php echo htmlspecialchars($configs['timbrado'][9]['valor'] ?? ''); ?>"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                 placeholder="Empresa S.A. de C.V.">
                         </div>
@@ -421,11 +421,11 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Certificado (.cer) *</label>
                             
-                            <?php if (!empty($configs['timbrado'][2]['valor'])): ?>
+                            <?php if (!empty($configs['timbrado'][5]['valor'])): ?>
                                 <div class="mb-3 p-3 bg-green-50 border border-green-200 rounded">
                                     <p class="text-sm text-green-700">
                                         <i class="fas fa-check-circle mr-2"></i>Archivo actual: 
-                                        <span class="font-medium"><?php echo basename($configs['timbrado'][2]['valor']); ?></span>
+                                        <span class="font-medium"><?php echo basename($configs['timbrado'][5]['valor']); ?></span>
                                     </p>
                                 </div>
                             <?php endif; ?>
@@ -440,17 +440,17 @@
                             
                             <input type="hidden" 
                                 name="configuraciones[timbrado_certificado]" 
-                                value="<?php echo htmlspecialchars($configs['timbrado'][2]['valor'] ?? ''); ?>">
+                                value="<?php echo htmlspecialchars($configs['timbrado'][5]['valor'] ?? ''); ?>">
                         </div>
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Llave Privada (.key) *</label>
                             
-                            <?php if (!empty($configs['timbrado'][3]['valor'])): ?>
+                            <?php if (!empty($configs['timbrado'][6]['valor'])): ?>
                                 <div class="mb-3 p-3 bg-green-50 border border-green-200 rounded">
                                     <p class="text-sm text-green-700">
                                         <i class="fas fa-check-circle mr-2"></i>Archivo actual: 
-                                        <span class="font-medium"><?php echo basename($configs['timbrado'][3]['valor']); ?></span>
+                                        <span class="font-medium"><?php echo basename($configs['timbrado'][6]['valor']); ?></span>
                                     </p>
                                 </div>
                             <?php endif; ?>
@@ -465,13 +465,13 @@
                             
                             <input type="hidden" 
                                 name="configuraciones[timbrado_llave_privada]" 
-                                value="<?php echo htmlspecialchars($configs['timbrado'][3]['valor'] ?? ''); ?>">
+                                value="<?php echo htmlspecialchars($configs['timbrado'][6]['valor'] ?? ''); ?>">
                         </div>
                         
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña de Llave Privada *</label>
                             <input type="password" name="configuraciones[timbrado_password_llave]" 
-                                value="<?php echo htmlspecialchars($configs['timbrado'][4]['valor'] ?? ''); ?>"
+                                value="<?php echo htmlspecialchars($configs['timbrado'][8]['valor'] ?? ''); ?>"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                 placeholder="••••••••">
                             <p class="text-sm text-gray-500 mt-1">Contraseña para desencriptar la llave privada</p>
@@ -489,7 +489,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">URL de API de Timbrado *</label>
                             <input type="text" name="configuraciones[timbrado_api_url]" 
-                                value="<?php echo htmlspecialchars($configs['timbrado'][5]['valor'] ?? ''); ?>"
+                                value="<?php echo htmlspecialchars($configs['timbrado'][3]['valor'] ?? ''); ?>"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                 placeholder="https://api.facturación.com/timbrar">
                             <p class="text-sm text-gray-500 mt-1">Endpoint de la API para timbrado de CFDI</p>
@@ -499,7 +499,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Usuario API</label>
                                 <input type="text" name="configuraciones[timbrado_api_usuario]" 
-                                    value="<?php echo htmlspecialchars($configs['timbrado'][6]['valor'] ?? ''); ?>"
+                                    value="<?php echo htmlspecialchars($configs['timbrado'][4]['valor'] ?? ''); ?>"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                     placeholder="usuario_api">
                             </div>
@@ -507,7 +507,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Contraseña API</label>
                                 <input type="password" name="configuraciones[timbrado_api_password]" 
-                                    value="<?php echo htmlspecialchars($configs['timbrado'][7]['valor'] ?? ''); ?>"
+                                    value="<?php echo htmlspecialchars($configs['timbrado'][1]['valor'] ?? ''); ?>"
                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                     placeholder="••••••••">
                             </div>
@@ -516,7 +516,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Token de Autenticación</label>
                             <input type="text" name="configuraciones[timbrado_api_token]" 
-                                value="<?php echo htmlspecialchars($configs['timbrado'][8]['valor'] ?? ''); ?>"
+                                value="<?php echo htmlspecialchars($configs['timbrado'][2]['valor'] ?? ''); ?>"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                 placeholder="Bearer token123456789">
                             <p class="text-sm text-gray-500 mt-1">Token de autenticación si lo requiere la API</p>
@@ -534,7 +534,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">URL de API de Cancelación</label>
                             <input type="text" name="configuraciones[timbrado_api_cancelacion_url]" 
-                                value="<?php echo htmlspecialchars($configs['timbrado'][9]['valor'] ?? ''); ?>"
+                                value="<?php echo htmlspecialchars($configs['timbrado'][0]['valor'] ?? ''); ?>"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                 placeholder="https://api.facturación.com/cancelar">
                             <p class="text-sm text-gray-500 mt-1">Endpoint de la API para cancelación de CFDI</p>
@@ -552,8 +552,8 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Ambiente</label>
                         <select name="configuraciones[timbrado_modo]" 
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                            <option value="pruebas" <?php echo ($configs['timbrado'][10]['valor'] ?? '') === 'pruebas' ? 'selected' : ''; ?>>Pruebas (Sandbox)</option>
-                            <option value="produccion" <?php echo ($configs['timbrado'][10]['valor'] ?? '') === 'produccion' ? 'selected' : ''; ?>>Producción</option>
+                            <option value="pruebas" <?php echo ($configs['timbrado'][7]['valor'] ?? '') === 'pruebas' ? 'selected' : ''; ?>>Pruebas (Sandbox)</option>
+                            <option value="produccion" <?php echo ($configs['timbrado'][7]['valor'] ?? '') === 'produccion' ? 'selected' : ''; ?>>Producción</option>
                         </select>
                         <p class="text-sm text-gray-500 mt-1">
                             Usa "Pruebas" para realizar timbrados de prueba y "Producción" para timbrados reales
