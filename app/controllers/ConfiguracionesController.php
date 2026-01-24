@@ -67,6 +67,22 @@ class ConfiguracionesController {
                 }
             }
             
+            // Manejar upload de certificado e.firma si existe
+            if (isset($_FILES['timbrado_certificado']) && $_FILES['timbrado_certificado']['error'] === UPLOAD_ERR_OK) {
+                $certPath = $this->subirEfirma($_FILES['timbrado_certificado'], 'certificado');
+                if ($certPath) {
+                    $configuraciones['timbrado_certificado'] = $certPath;
+                }
+            }
+            
+            // Manejar upload de llave privada e.firma si existe
+            if (isset($_FILES['timbrado_llave_privada']) && $_FILES['timbrado_llave_privada']['error'] === UPLOAD_ERR_OK) {
+                $llavePath = $this->subirEfirma($_FILES['timbrado_llave_privada'], 'llave');
+                if ($llavePath) {
+                    $configuraciones['timbrado_llave_privada'] = $llavePath;
+                }
+            }
+            
             // Asegurar que sitio_nombre no se sobrescriba con la ruta del logo
             if ($sitioNombre !== null) {
                 $configuraciones['sitio_nombre'] = $sitioNombre;
@@ -119,6 +135,50 @@ class ConfiguracionesController {
             return false;
         } catch (Exception $e) {
             error_log('Error al subir logo: ' . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Subir archivos de e.firma (certificado y llave)
+     */
+    private function subirEfirma($archivo, $tipo) {
+        try {
+            // Validar extensión según tipo
+            $extension = strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION));
+            
+            if ($tipo === 'certificado' && !in_array($extension, ['cer'])) {
+                throw new Exception('Tipo de archivo no permitido para certificado. Use archivo .cer');
+            }
+            
+            if ($tipo === 'llave' && !in_array($extension, ['key'])) {
+                throw new Exception('Tipo de archivo no permitido para llave privada. Use archivo .key');
+            }
+            
+            // Validar tamaño (máximo 5MB)
+            if ($archivo['size'] > 5 * 1024 * 1024) {
+                throw new Exception('El archivo es muy grande (máximo 5MB)');
+            }
+            
+            // Crear directorio si no existe
+            $uploadDir = BASE_PATH . 'uploads/efirma';
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            
+            // Generar nombre único con alta entropía para evitar colisiones y ataques de enumeración
+            $filename = 'efirma_' . $tipo . '_' . uniqid('', true) . '.' . $extension;
+            $filepath = $uploadDir . '/' . $filename;
+            
+            // Mover archivo
+            if (move_uploaded_file($archivo['tmp_name'], $filepath)) {
+                // Retornar ruta relativa
+                return 'uploads/efirma/' . $filename;
+            }
+            
+            return false;
+        } catch (Exception $e) {
+            error_log('Error al subir e.firma: ' . $e->getMessage());
             return false;
         }
     }

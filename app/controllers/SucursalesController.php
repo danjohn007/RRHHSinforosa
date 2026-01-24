@@ -157,7 +157,7 @@ class SucursalesController {
         $empleados = $sucursalModel->getEmpleados($sucursalId);
         
         // Obtener lista de empleados disponibles para ser gerentes
-        // Incluye empleados con rol gerente/admin/rrhh O con flag puede_ser_gerente
+        // Solo incluye empleados con puesto 'Gerente General'
         $stmt = $db->prepare("
             SELECT e.id, e.numero_empleado, e.codigo_empleado,
             CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', IFNULL(e.apellido_materno, '')) as nombre_completo,
@@ -170,10 +170,7 @@ class SucursalesController {
             LEFT JOIN usuarios u ON e.usuario_id = u.id
             LEFT JOIN sucursal_gerentes sg ON sg.empleado_id = e.id AND sg.sucursal_id = ? AND sg.activo = 1
             WHERE e.estatus = 'Activo'
-            AND (
-                u.rol IN ('gerente', 'admin', 'rrhh')
-                OR e.puede_ser_gerente = 1
-            )
+            AND e.puesto = 'Gerente General'
             ORDER BY ya_asignado ASC, e.nombres, e.apellido_paterno
         ");
         $stmt->execute([$sucursalId]);
