@@ -421,8 +421,8 @@ class PublicoController {
             }
             
             $data = [
-                'id' => $dispositivo['device_id'],
-                'auth_key' => $dispositivo['token_autenticacion'],
+                'id' => trim($dispositivo['device_id']),
+                'auth_key' => trim($dispositivo['token_autenticacion']),
                 'channel' => (int)$canalActivo,
                 'turn' => 'on'
             ];
