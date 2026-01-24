@@ -446,13 +446,15 @@ class NominaController {
             // BOM para UTF-8
             fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
             
-            // Encabezados
+            // Encabezados - Agregar Horas Trabajadas y Horas Extras
             fputcsv($output, [
                 'No. Empleado',
                 'Nombre',
                 'RFC',
                 'CURP',
                 'Días Trabajados',
+                'Horas Trabajadas',
+                'Horas Extras',
                 'Salario Base',
                 'Total Percepciones',
                 'ISR',
@@ -469,6 +471,8 @@ class NominaController {
                     $emp['rfc'] ?? '',
                     $emp['curp'] ?? '',
                     $emp['dias_trabajados'],
+                    number_format($emp['horas_trabajadas'] ?? 0, 2),
+                    number_format($emp['horas_extras'] ?? 0, 2),
                     number_format($emp['salario_base'], 2),
                     number_format($emp['total_percepciones'], 2),
                     number_format($emp['isr'], 2),
@@ -716,6 +720,76 @@ class NominaController {
             
         } catch (Exception $e) {
             echo "Error al generar recibos: " . $e->getMessage();
+            exit;
+        }
+    }
+    
+    /**
+     * Timbrar CFDI de un período completo
+     */
+    public function timbrarPeriodo() {
+        AuthController::checkRole(['admin', 'rrhh']);
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+        
+        $periodoId = $_GET['id'] ?? null;
+        
+        if (!$periodoId) {
+            echo json_encode(['success' => false, 'message' => 'ID de período no proporcionado']);
+            exit;
+        }
+        
+        try {
+            require_once BASE_PATH . 'app/services/CFDIService.php';
+            $cfdiService = new CFDIService();
+            
+            $resultado = $cfdiService->timbrarPeriodo($periodoId);
+            
+            echo json_encode($resultado);
+            exit;
+            
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+            exit;
+        }
+    }
+    
+    /**
+     * Cancelar CFDI de un recibo de nómina
+     */
+    public function cancelarCFDI() {
+        AuthController::checkRole(['admin', 'rrhh']);
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+        
+        $data = json_decode(file_get_contents('php://input'), true);
+        $nominaDetalleId = $data['nomina_detalle_id'] ?? null;
+        $motivo = $data['motivo'] ?? '';
+        
+        if (!$nominaDetalleId) {
+            echo json_encode(['success' => false, 'message' => 'ID de nómina no proporcionado']);
+            exit;
+        }
+        
+        try {
+            require_once BASE_PATH . 'app/services/CFDIService.php';
+            $cfdiService = new CFDIService();
+            
+            $resultado = $cfdiService->cancelarCFDI($nominaDetalleId, $motivo);
+            
+            echo json_encode($resultado);
+            exit;
+            
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
             exit;
         }
     }

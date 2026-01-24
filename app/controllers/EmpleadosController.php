@@ -691,4 +691,258 @@ class EmpleadosController {
         }
         exit;
     }
+    
+    /**
+     * Descargar plantilla CSV para importación de empleados
+     */
+    public function descargarPlantilla() {
+        AuthController::checkRole(['admin', 'rrhh']);
+        
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="plantilla_importacion_empleados.csv"');
+        
+        $output = fopen('php://output', 'w');
+        
+        // BOM para UTF-8
+        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+        
+        // Encabezados
+        fputcsv($output, [
+            'nombres',
+            'apellido_paterno',
+            'apellido_materno',
+            'curp',
+            'rfc',
+            'nss',
+            'fecha_nacimiento',
+            'genero',
+            'email_personal',
+            'celular',
+            'fecha_ingreso',
+            'tipo_contrato',
+            'departamento',
+            'puesto',
+            'salario_mensual'
+        ]);
+        
+        // Datos de ejemplo
+        fputcsv($output, [
+            'Juan',
+            'Pérez',
+            'García',
+            'PEGJ850101HQRRRN01',
+            'PEGJ850101ABC',
+            '12345678901',
+            '1985-01-01',
+            'M',
+            'juan.perez@example.com',
+            '4421234567',
+            '2024-01-01',
+            'Planta',
+            'Ventas',
+            'Vendedor',
+            '10000'
+        ]);
+        
+        fputcsv($output, [
+            'María',
+            'López',
+            'Hernández',
+            'LOHM900215MQRRRS02',
+            'LOHM900215XYZ',
+            '98765432109',
+            '1990-02-15',
+            'F',
+            'maria.lopez@example.com',
+            '4429876543',
+            '2024-02-01',
+            'Planta',
+            'Administración',
+            'Asistente',
+            '8000'
+        ]);
+        
+        fclose($output);
+        exit;
+    }
+    
+    /**
+     * Importar empleados desde archivo CSV
+     */
+    public function importar() {
+        AuthController::checkRole(['admin', 'rrhh']);
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+        
+        // Validar que se subió un archivo
+        if (!isset($_FILES['archivo']) || $_FILES['archivo']['error'] !== UPLOAD_ERR_OK) {
+            echo json_encode(['success' => false, 'message' => 'No se recibió el archivo o hubo un error en la carga']);
+            exit;
+        }
+        
+        $archivo = $_FILES['archivo'];
+        
+        // Validar extensión
+        $extension = strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION));
+        if ($extension !== 'csv') {
+            echo json_encode(['success' => false, 'message' => 'El archivo debe ser formato CSV']);
+            exit;
+        }
+        
+        // Validar tamaño (máximo 5MB)
+        if ($archivo['size'] > 5 * 1024 * 1024) {
+            echo json_encode(['success' => false, 'message' => 'El archivo no debe exceder 5MB']);
+            exit;
+        }
+        
+        try {
+            $db = Database::getInstance()->getConnection();
+            $db->beginTransaction();
+            
+            // Registrar importación
+            $stmt = $db->prepare("
+                INSERT INTO nomina_importaciones 
+                (tipo, archivo_nombre, usuario_id, estatus)
+                VALUES ('Empleados', ?, ?, 'Procesando')
+            ");
+            $stmt->execute([$archivo['name'], $_SESSION['user_id'] ?? 1]);
+            $importacionId = $db->lastInsertId();
+            
+            // Procesar archivo CSV
+            $handle = fopen($archivo['tmp_name'], 'r');
+            
+            // Saltar BOM si existe
+            $bom = fread($handle, 3);
+            if ($bom !== chr(0xEF).chr(0xBB).chr(0xBF)) {
+                rewind($handle);
+            }
+            
+            // Leer encabezados
+            $encabezados = fgetcsv($handle);
+            
+            $registrosExitosos = 0;
+            $registrosErrores = 0;
+            $erroresDetalle = [];
+            $linea = 1;
+            
+            $empleadoModel = new Empleado();
+            
+            while (($datos = fgetcsv($handle)) !== false) {
+                $linea++;
+                
+                $lockAcquired = false;
+                try {
+                    // Validar que tenga suficientes columnas
+                    if (count($datos) < 15) {
+                        throw new Exception("Faltan columnas requeridas");
+                    }
+                    
+                    // Mapear datos
+                    $datosEmpleado = [
+                        'nombres' => trim($datos[0]),
+                        'apellido_paterno' => trim($datos[1]),
+                        'apellido_materno' => trim($datos[2] ?? ''),
+                        'curp' => trim($datos[3] ?? ''),
+                        'rfc' => trim($datos[4] ?? ''),
+                        'nss' => trim($datos[5] ?? ''),
+                        'fecha_nacimiento' => trim($datos[6] ?? ''),
+                        'genero' => trim($datos[7] ?? ''),
+                        'email_personal' => trim($datos[8] ?? ''),
+                        'celular' => trim($datos[9] ?? ''),
+                        'fecha_ingreso' => trim($datos[10]),
+                        'tipo_contrato' => trim($datos[11]),
+                        'departamento' => trim($datos[12]),
+                        'puesto' => trim($datos[13]),
+                        'salario_mensual' => floatval($datos[14])
+                    ];
+                    
+                    // Validar campos requeridos
+                    if (empty($datosEmpleado['nombres']) || empty($datosEmpleado['apellido_paterno']) ||
+                        empty($datosEmpleado['fecha_ingreso']) || empty($datosEmpleado['departamento']) ||
+                        empty($datosEmpleado['puesto']) || $datosEmpleado['salario_mensual'] <= 0) {
+                        throw new Exception("Campos requeridos faltantes");
+                    }
+                    
+                    // Generar número de empleado con lock para evitar race conditions
+                    $db->exec("LOCK TABLES empleados WRITE");
+                    $lockAcquired = true;
+                    
+                    $stmt = $db->query("SELECT MAX(CAST(SUBSTRING(numero_empleado, 4) AS UNSIGNED)) as max_num FROM empleados");
+                    $result = $stmt->fetch();
+                    $nextNum = ($result['max_num'] ?? 0) + 1;
+                    $datosEmpleado['numero_empleado'] = 'EMP' . str_pad($nextNum, 3, '0', STR_PAD_LEFT);
+                    
+                    // Generar código de empleado con el mismo lock
+                    $stmtCodigo = $db->query("SELECT MAX(CAST(codigo_empleado AS UNSIGNED)) as max_codigo FROM empleados WHERE codigo_empleado LIKE '183%'");
+                    $resultCodigo = $stmtCodigo->fetch();
+                    $nextCodigo = ($resultCodigo['max_codigo'] ?? 183000) + 1;
+                    $datosEmpleado['codigo_empleado'] = str_pad($nextCodigo, 6, '0', STR_PAD_LEFT);
+                    
+                    // Calcular salario diario (30 días estándar para cálculos laborales en México)
+                    $datosEmpleado['salario_diario'] = $datosEmpleado['salario_mensual'] / 30;
+                    
+                    // Crear empleado
+                    if ($empleadoModel->create($datosEmpleado)) {
+                        $registrosExitosos++;
+                    } else {
+                        throw new Exception("Error al guardar en base de datos");
+                    }
+                    
+                } catch (Exception $e) {
+                    $registrosErrores++;
+                    $erroresDetalle[] = "Línea $linea: " . $e->getMessage();
+                } finally {
+                    // Asegurar que el lock se libere siempre
+                    if ($lockAcquired) {
+                        try {
+                            $db->exec("UNLOCK TABLES");
+                        } catch (Exception $e) {
+                            // Log error but continue processing
+                        }
+                    }
+                }
+            }
+            
+            fclose($handle);
+            
+            // Actualizar registro de importación
+            $estatus = $registrosErrores === 0 ? 'Completado' : ($registrosExitosos === 0 ? 'Error' : 'Parcial');
+            $stmt = $db->prepare("
+                UPDATE nomina_importaciones 
+                SET total_registros = ?,
+                    registros_exitosos = ?,
+                    registros_errores = ?,
+                    estatus = ?,
+                    errores_detalle = ?
+                WHERE id = ?
+            ");
+            $stmt->execute([
+                $registrosExitosos + $registrosErrores,
+                $registrosExitosos,
+                $registrosErrores,
+                $estatus,
+                json_encode($erroresDetalle),
+                $importacionId
+            ]);
+            
+            $db->commit();
+            
+            echo json_encode([
+                'success' => true,
+                'registros_exitosos' => $registrosExitosos,
+                'registros_errores' => $registrosErrores,
+                'errores_detalle' => $erroresDetalle
+            ]);
+            
+        } catch (Exception $e) {
+            $db->rollBack();
+            echo json_encode(['success' => false, 'message' => 'Error al procesar importación: ' . $e->getMessage()]);
+        }
+        
+        exit;
+    }
 }

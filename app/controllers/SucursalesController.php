@@ -157,16 +157,26 @@ class SucursalesController {
         $empleados = $sucursalModel->getEmpleados($sucursalId);
         
         // Obtener lista de empleados disponibles para ser gerentes
-        $stmt = $db->query("
+        // Incluye empleados con rol gerente/admin/rrhh O con flag puede_ser_gerente
+        $stmt = $db->prepare("
             SELECT e.id, e.numero_empleado, e.codigo_empleado,
             CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', IFNULL(e.apellido_materno, '')) as nombre_completo,
-            e.puesto, u.rol
+            e.puesto, u.rol,
+            CASE 
+                WHEN sg.empleado_id IS NOT NULL THEN 1
+                ELSE 0
+            END as ya_asignado
             FROM empleados e
             LEFT JOIN usuarios u ON e.usuario_id = u.id
+            LEFT JOIN sucursal_gerentes sg ON sg.empleado_id = e.id AND sg.sucursal_id = ? AND sg.activo = 1
             WHERE e.estatus = 'Activo'
-            AND u.rol = 'gerente'
-            ORDER BY e.nombres
+            AND (
+                u.rol IN ('gerente', 'admin', 'rrhh')
+                OR e.puede_ser_gerente = 1
+            )
+            ORDER BY ya_asignado ASC, e.nombres, e.apellido_paterno
         ");
+        $stmt->execute([$sucursalId]);
         $empleadosDisponibles = $stmt->fetchAll();
         
         // Obtener dispositivos Shelly disponibles

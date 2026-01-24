@@ -6,9 +6,14 @@
             <h1 class="text-2xl font-bold text-gray-800">Gestión de Empleados</h1>
             <p class="text-gray-600 mt-1">Administra la información de los colaboradores</p>
         </div>
-        <a href="<?php echo BASE_URL; ?>empleados/crear" class="bg-gradient-sinforosa text-white px-6 py-3 rounded-lg hover:opacity-90 transition flex items-center">
-            <i class="fas fa-plus mr-2"></i> Nuevo Empleado
-        </a>
+        <div class="flex gap-3">
+            <button onclick="mostrarModalImportar()" class="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition flex items-center">
+                <i class="fas fa-file-import mr-2"></i> Importar Colaboradores
+            </button>
+            <a href="<?php echo BASE_URL; ?>empleados/crear" class="bg-gradient-sinforosa text-white px-6 py-3 rounded-lg hover:opacity-90 transition flex items-center">
+                <i class="fas fa-plus mr-2"></i> Nuevo Empleado
+            </a>
+        </div>
     </div>
 </div>
 
@@ -333,6 +338,100 @@
     </div>
 </div>
 
+<!-- Modal de Importación de Empleados -->
+<div id="modalImportarEmpleados" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg max-w-3xl w-full p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">
+                <i class="fas fa-file-import text-teal-600 mr-2"></i>
+                Importar Listado de Colaboradores
+            </h2>
+            <button onclick="cerrarModalImportar()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+        
+        <!-- Instrucciones -->
+        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 rounded">
+            <div class="flex items-start">
+                <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
+                <div>
+                    <h3 class="font-semibold text-blue-800 mb-2">Instrucciones de Importación</h3>
+                    <p class="text-sm text-blue-700 mb-2">El archivo CSV debe tener las siguientes columnas (en este orden):</p>
+                    <ul class="list-disc list-inside text-sm text-blue-700 space-y-1">
+                        <li><strong>nombres</strong> (requerido): Nombre(s) del empleado</li>
+                        <li><strong>apellido_paterno</strong> (requerido): Apellido paterno</li>
+                        <li><strong>apellido_materno</strong>: Apellido materno</li>
+                        <li><strong>curp</strong>: CURP del empleado</li>
+                        <li><strong>rfc</strong>: RFC del empleado</li>
+                        <li><strong>nss</strong>: Número de Seguro Social</li>
+                        <li><strong>fecha_nacimiento</strong>: Fecha (formato: YYYY-MM-DD)</li>
+                        <li><strong>genero</strong>: M, F u Otro</li>
+                        <li><strong>email_personal</strong>: Correo electrónico</li>
+                        <li><strong>celular</strong>: Número de celular (10 dígitos)</li>
+                        <li><strong>fecha_ingreso</strong> (requerido): Fecha (formato: YYYY-MM-DD)</li>
+                        <li><strong>tipo_contrato</strong>: Planta, Eventual, Honorarios, Practicante</li>
+                        <li><strong>departamento</strong> (requerido): Departamento</li>
+                        <li><strong>puesto</strong> (requerido): Puesto</li>
+                        <li><strong>salario_mensual</strong> (requerido): Salario mensual (número)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Botón de descarga de plantilla -->
+        <div class="mb-6 text-center">
+            <button onclick="descargarPlantilla()" class="text-sm bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition">
+                <i class="fas fa-download mr-2"></i>
+                Descargar plantilla de ejemplo
+            </button>
+        </div>
+        
+        <!-- Formulario de importación -->
+        <form id="formImportar" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Archivo CSV *</label>
+                <input type="file" 
+                       id="archivoImportar" 
+                       name="archivo" 
+                       accept=".csv" 
+                       required
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
+                <p class="text-xs text-gray-500 mt-1">
+                    <i class="fas fa-info-circle"></i>
+                    Formato: CSV separado por comas con codificación UTF-8. Máximo 5MB.
+                </p>
+            </div>
+            
+            <!-- Advertencia -->
+            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 mt-1 mr-3"></i>
+                    <div>
+                        <p class="text-sm text-yellow-700">
+                            <strong>Advertencia:</strong> La importación creará nuevos empleados. Los empleados existentes no serán modificados. 
+                            Asegúrese de revisar el archivo antes de importar.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3 pt-4">
+                <button type="button" onclick="cerrarModalImportar()" 
+                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                    Cancelar
+                </button>
+                <button type="button" onclick="importarEmpleados()" 
+                        id="btnImportar"
+                        class="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition">
+                    <i class="fas fa-upload mr-2"></i>
+                    Importar Empleados
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 async function abrirCalculoRapido(empleadoId) {
     const modal = document.getElementById('calculoModal');
@@ -417,5 +516,74 @@ async function abrirCalculoRapido(empleadoId) {
 
 function cerrarCalculoModal() {
     document.getElementById('calculoModal').classList.add('hidden');
+}
+
+// Funciones para importar empleados
+function mostrarModalImportar() {
+    document.getElementById('modalImportarEmpleados').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarModalImportar() {
+    document.getElementById('modalImportarEmpleados').classList.add('hidden');
+    document.body.style.overflow = '';
+    document.getElementById('formImportar').reset();
+}
+
+function descargarPlantilla() {
+    window.location.href = '<?php echo BASE_URL; ?>empleados/descargar-plantilla';
+}
+
+function importarEmpleados() {
+    const form = document.getElementById('formImportar');
+    const fileInput = document.getElementById('archivoImportar');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Por favor seleccione un archivo CSV');
+        return;
+    }
+    
+    // Validar extensión
+    if (!file.name.endsWith('.csv')) {
+        alert('El archivo debe ser formato CSV');
+        return;
+    }
+    
+    // Validar tamaño (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('El archivo no debe exceder 5MB');
+        return;
+    }
+    
+    // Mostrar loading
+    document.getElementById('btnImportar').disabled = true;
+    document.getElementById('btnImportar').innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Procesando...';
+    
+    // Enviar archivo
+    const formData = new FormData(form);
+    
+    fetch('<?php echo BASE_URL; ?>empleados/importar', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`✓ Importación completada\n\n${data.registros_exitosos} empleados importados\n${data.registros_errores} errores`);
+            cerrarModalImportar();
+            location.reload();
+        } else {
+            alert('✗ Error en la importación: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al procesar la importación');
+    })
+    .finally(() => {
+        document.getElementById('btnImportar').disabled = false;
+        document.getElementById('btnImportar').innerHTML = '<i class="fas fa-upload mr-2"></i> Importar Empleados';
+    });
 }
 </script>

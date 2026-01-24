@@ -131,9 +131,14 @@
                         <button onclick="verDetallePeriodo(<?php echo $periodo['id']; ?>)" class="text-blue-600 hover:text-blue-900 mr-3" title="Ver detalle">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <a href="<?php echo BASE_URL; ?>nomina/descargar?id=<?php echo $periodo['id']; ?>" class="text-green-600 hover:text-green-900" title="Descargar reporte" target="_blank">
+                        <a href="<?php echo BASE_URL; ?>nomina/descargar?id=<?php echo $periodo['id']; ?>" class="text-green-600 hover:text-green-900 mr-3" title="Descargar reporte" target="_blank">
                             <i class="fas fa-download"></i>
                         </a>
+                        <?php if ($periodo['estatus'] === 'Procesado' || $periodo['estatus'] === 'Pagado'): ?>
+                        <button onclick="timbrarNomina(<?php echo $periodo['id']; ?>)" class="text-purple-600 hover:text-purple-900" title="Timbrar CFDI">
+                            <i class="fas fa-file-invoice"></i>
+                        </button>
+                        <?php endif; ?>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -303,4 +308,47 @@ document.addEventListener('keydown', function(e) {
         cerrarModal();
     }
 });
+
+// Función para timbrar nómina
+function timbrarNomina(periodoId) {
+    if (!confirm('¿Está seguro de timbrar los recibos de nómina de este período? Esta acción no se puede deshacer fácilmente.')) {
+        return;
+    }
+    
+    // Mostrar indicador de carga
+    const loadingHtml = `
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+            <div class="bg-white rounded-lg p-8 max-w-md text-center">
+                <i class="fas fa-spinner fa-spin text-4xl text-purple-600 mb-4"></i>
+                <h3 class="text-lg font-semibold mb-2">Timbrando CFDI...</h3>
+                <p class="text-gray-600">Por favor espere mientras se procesan los timbrados</p>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', loadingHtml);
+    
+    fetch(`<?php echo BASE_URL; ?>nomina/timbrar-periodo?id=${periodoId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Remover indicador de carga
+        document.querySelector('.fixed.inset-0').remove();
+        
+        if (data.success) {
+            alert(`✓ Timbrado completado\n\n${data.procesados} recibos timbrados exitosamente\n${data.errores} errores`);
+            location.reload();
+        } else {
+            alert('✗ Error al timbrar: ' + data.message);
+        }
+    })
+    .catch(error => {
+        document.querySelector('.fixed.inset-0').remove();
+        console.error('Error:', error);
+        alert('Error al procesar la solicitud de timbrado');
+    });
+}
 </script>
