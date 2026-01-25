@@ -78,8 +78,13 @@ try {
     echo "Proceso completado exitosamente\n";
     echo "========================================\n";
     
+} catch (PDOException $e) {
+    echo "\n✗ ERROR DE BASE DE DATOS: {$e->getMessage()}\n";
+    echo "Código de error: {$e->getCode()}\n";
+    echo "Traza:\n{$e->getTraceAsString()}\n";
+    exit(1);
 } catch (Exception $e) {
     echo "\n✗ ERROR FATAL: {$e->getMessage()}\n";
-    echo $e->getTraceAsString() . "\n";
+    echo "Traza:\n{$e->getTraceAsString()}\n";
     exit(1);
 }
