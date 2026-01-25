@@ -118,6 +118,27 @@ class SucursalesController {
             $urlPublica = $_POST['url_publica'] ?? '';
             $activo = isset($_POST['activo']) ? 1 : 0;
             
+            // Horarios
+            $horarioTodaSemana = isset($_POST['horario_toda_semana']) ? 1 : 0;
+            $horaEntradaGeneral = $_POST['hora_entrada_general'] ?? '08:00';
+            $horaSalidaGeneral = $_POST['hora_salida_general'] ?? '18:00';
+            
+            // Horarios por día
+            $horaEntradaLunes = $_POST['hora_entrada_lunes'] ?? '08:00';
+            $horaSalidaLunes = $_POST['hora_salida_lunes'] ?? '18:00';
+            $horaEntradaMartes = $_POST['hora_entrada_martes'] ?? '08:00';
+            $horaSalidaMartes = $_POST['hora_salida_martes'] ?? '18:00';
+            $horaEntradaMiercoles = $_POST['hora_entrada_miercoles'] ?? '08:00';
+            $horaSalidaMiercoles = $_POST['hora_salida_miercoles'] ?? '18:00';
+            $horaEntradaJueves = $_POST['hora_entrada_jueves'] ?? '08:00';
+            $horaSalidaJueves = $_POST['hora_salida_jueves'] ?? '18:00';
+            $horaEntradaViernes = $_POST['hora_entrada_viernes'] ?? '08:00';
+            $horaSalidaViernes = $_POST['hora_salida_viernes'] ?? '18:00';
+            $horaEntradaSabado = $_POST['hora_entrada_sabado'] ?? '09:00';
+            $horaSalidaSabado = $_POST['hora_salida_sabado'] ?? '14:00';
+            $horaEntradaDomingo = $_POST['hora_entrada_domingo'] ?? null;
+            $horaSalidaDomingo = $_POST['hora_salida_domingo'] ?? null;
+            
             if (empty($nombre) || empty($codigo)) {
                 $error = 'El nombre y código son obligatorios';
             } else {
@@ -137,7 +158,24 @@ class SucursalesController {
                         'direccion' => $direccion,
                         'telefono' => $telefono,
                         'url_publica' => $urlPublica,
-                        'activo' => $activo
+                        'activo' => $activo,
+                        'horario_toda_semana' => $horarioTodaSemana,
+                        'hora_entrada_general' => $horaEntradaGeneral,
+                        'hora_salida_general' => $horaSalidaGeneral,
+                        'hora_entrada_lunes' => $horaEntradaLunes,
+                        'hora_salida_lunes' => $horaSalidaLunes,
+                        'hora_entrada_martes' => $horaEntradaMartes,
+                        'hora_salida_martes' => $horaSalidaMartes,
+                        'hora_entrada_miercoles' => $horaEntradaMiercoles,
+                        'hora_salida_miercoles' => $horaSalidaMiercoles,
+                        'hora_entrada_jueves' => $horaEntradaJueves,
+                        'hora_salida_jueves' => $horaSalidaJueves,
+                        'hora_entrada_viernes' => $horaEntradaViernes,
+                        'hora_salida_viernes' => $horaSalidaViernes,
+                        'hora_entrada_sabado' => $horaEntradaSabado,
+                        'hora_salida_sabado' => $horaSalidaSabado,
+                        'hora_entrada_domingo' => $horaEntradaDomingo,
+                        'hora_salida_domingo' => $horaSalidaDomingo
                     ]);
                     
                     if ($result) {
