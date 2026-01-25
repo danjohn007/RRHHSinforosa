@@ -118,6 +118,27 @@ class SucursalesController {
             $urlPublica = $_POST['url_publica'] ?? '';
             $activo = isset($_POST['activo']) ? 1 : 0;
             
+            // Horarios
+            $horarioTodaSemana = isset($_POST['horario_toda_semana']) ? 1 : 0;
+            $horaEntradaGeneral = $_POST['hora_entrada_general'] ?? '08:00';
+            $horaSalidaGeneral = $_POST['hora_salida_general'] ?? '18:00';
+            
+            // Horarios por día - convertir cadenas vacías a NULL para días cerrados
+            $horaEntradaLunes = !empty($_POST['hora_entrada_lunes']) ? $_POST['hora_entrada_lunes'] : null;
+            $horaSalidaLunes = !empty($_POST['hora_salida_lunes']) ? $_POST['hora_salida_lunes'] : null;
+            $horaEntradaMartes = !empty($_POST['hora_entrada_martes']) ? $_POST['hora_entrada_martes'] : null;
+            $horaSalidaMartes = !empty($_POST['hora_salida_martes']) ? $_POST['hora_salida_martes'] : null;
+            $horaEntradaMiercoles = !empty($_POST['hora_entrada_miercoles']) ? $_POST['hora_entrada_miercoles'] : null;
+            $horaSalidaMiercoles = !empty($_POST['hora_salida_miercoles']) ? $_POST['hora_salida_miercoles'] : null;
+            $horaEntradaJueves = !empty($_POST['hora_entrada_jueves']) ? $_POST['hora_entrada_jueves'] : null;
+            $horaSalidaJueves = !empty($_POST['hora_salida_jueves']) ? $_POST['hora_salida_jueves'] : null;
+            $horaEntradaViernes = !empty($_POST['hora_entrada_viernes']) ? $_POST['hora_entrada_viernes'] : null;
+            $horaSalidaViernes = !empty($_POST['hora_salida_viernes']) ? $_POST['hora_salida_viernes'] : null;
+            $horaEntradaSabado = !empty($_POST['hora_entrada_sabado']) ? $_POST['hora_entrada_sabado'] : null;
+            $horaSalidaSabado = !empty($_POST['hora_salida_sabado']) ? $_POST['hora_salida_sabado'] : null;
+            $horaEntradaDomingo = !empty($_POST['hora_entrada_domingo']) ? $_POST['hora_entrada_domingo'] : null;
+            $horaSalidaDomingo = !empty($_POST['hora_salida_domingo']) ? $_POST['hora_salida_domingo'] : null;
+            
             if (empty($nombre) || empty($codigo)) {
                 $error = 'El nombre y código son obligatorios';
             } else {
@@ -137,7 +158,24 @@ class SucursalesController {
                         'direccion' => $direccion,
                         'telefono' => $telefono,
                         'url_publica' => $urlPublica,
-                        'activo' => $activo
+                        'activo' => $activo,
+                        'horario_toda_semana' => $horarioTodaSemana,
+                        'hora_entrada_general' => $horaEntradaGeneral,
+                        'hora_salida_general' => $horaSalidaGeneral,
+                        'hora_entrada_lunes' => $horaEntradaLunes,
+                        'hora_salida_lunes' => $horaSalidaLunes,
+                        'hora_entrada_martes' => $horaEntradaMartes,
+                        'hora_salida_martes' => $horaSalidaMartes,
+                        'hora_entrada_miercoles' => $horaEntradaMiercoles,
+                        'hora_salida_miercoles' => $horaSalidaMiercoles,
+                        'hora_entrada_jueves' => $horaEntradaJueves,
+                        'hora_salida_jueves' => $horaSalidaJueves,
+                        'hora_entrada_viernes' => $horaEntradaViernes,
+                        'hora_salida_viernes' => $horaSalidaViernes,
+                        'hora_entrada_sabado' => $horaEntradaSabado,
+                        'hora_salida_sabado' => $horaSalidaSabado,
+                        'hora_entrada_domingo' => $horaEntradaDomingo,
+                        'hora_salida_domingo' => $horaSalidaDomingo
                     ]);
                     
                     if ($result) {

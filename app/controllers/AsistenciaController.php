@@ -14,18 +14,12 @@ class AsistenciaController {
         $fechaInicio = $_GET['fecha_inicio'] ?? date('Y-m-d');
         $fechaFin = $_GET['fecha_fin'] ?? date('Y-m-d');
         $busqueda = $_GET['busqueda'] ?? '';
+        $estatusFiltro = $_GET['estatus'] ?? ''; // Nuevo filtro de estatus
         
-        // Construir query con filtros
+        // Construir query con filtros usando la vista completa
         $query = "
-            SELECT a.*, 
-                   e.numero_empleado,
-                   CONCAT(e.nombres, ' ', e.apellido_paterno, ' ', COALESCE(e.apellido_materno, '')) as nombre_empleado,
-                   e.email_personal,
-                   e.telefono,
-                   e.departamento
-            FROM asistencias a
-            INNER JOIN empleados e ON a.empleado_id = e.id
-            WHERE a.fecha BETWEEN ? AND ?
+            SELECT * FROM vista_asistencias_completa
+            WHERE fecha BETWEEN ? AND ?
         ";
         
         $params = [$fechaInicio, $fechaFin];
@@ -33,23 +27,25 @@ class AsistenciaController {
         // Aplicar búsqueda si existe
         if ($busqueda) {
             $query .= " AND (
-                e.nombres LIKE ? OR 
-                e.apellido_paterno LIKE ? OR 
-                e.apellido_materno LIKE ? OR
-                e.numero_empleado LIKE ? OR 
-                e.email_personal LIKE ? OR 
-                e.telefono LIKE ?
+                empleado_nombre LIKE ? OR 
+                numero_empleado LIKE ? OR 
+                codigo_empleado LIKE ? OR
+                departamento LIKE ?
             )";
             $busquedaParam = "%$busqueda%";
             $params[] = $busquedaParam;
             $params[] = $busquedaParam;
             $params[] = $busquedaParam;
             $params[] = $busquedaParam;
-            $params[] = $busquedaParam;
-            $params[] = $busquedaParam;
         }
         
-        $query .= " ORDER BY a.fecha DESC, a.hora_entrada DESC LIMIT 500";
+        // Aplicar filtro de estatus si existe
+        if ($estatusFiltro) {
+            $query .= " AND estatus = ?";
+            $params[] = $estatusFiltro;
+        }
+        
+        $query .= " ORDER BY fecha DESC, hora_entrada DESC LIMIT 500";
         
         $stmt = $db->prepare($query);
         $stmt->execute($params);
@@ -61,7 +57,8 @@ class AsistenciaController {
             'filtros' => [
                 'fecha_inicio' => $fechaInicio,
                 'fecha_fin' => $fechaFin,
-                'busqueda' => $busqueda
+                'busqueda' => $busqueda,
+                'estatus' => $estatusFiltro
             ]
         ];
         
@@ -744,6 +741,85 @@ class AsistenciaController {
         }
         
         fclose($output);
+        exit;
+    }
+    
+    /**
+     * Validar una asistencia (cambiar de "Por Validar" a "Validado")
+     */
+    public function validar() {
+        AuthController::check();
+        header('Content-Type: application/json');
+        
+        $db = Database::getInstance()->getConnection();
+        
+        // Solo permitir POST
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método no permitido']);
+            exit;
+        }
+        
+        $asistenciaId = $_POST['asistencia_id'] ?? null;
+        $horaSalidaReal = $_POST['hora_salida_real'] ?? null;
+        
+        if (!$asistenciaId || !$horaSalidaReal) {
+            echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
+            exit;
+        }
+        
+        try {
+            // Obtener la asistencia
+            $stmt = $db->prepare("SELECT * FROM asistencias WHERE id = ?");
+            $stmt->execute([$asistenciaId]);
+            $asistencia = $stmt->fetch();
+            
+            if (!$asistencia) {
+                echo json_encode(['success' => false, 'message' => 'Asistencia no encontrada']);
+                exit;
+            }
+            
+            // Calcular horas trabajadas con la hora real
+            $horaEntrada = strtotime($asistencia['hora_entrada']);
+            $horaSalidaRealTimestamp = strtotime($asistencia['fecha'] . ' ' . $horaSalidaReal);
+            $horasTrabajadas = ($horaSalidaRealTimestamp - $horaEntrada) / 3600;
+            $horasExtra = max(0, $horasTrabajadas - 8);
+            
+            // Actualizar asistencia
+            $stmt = $db->prepare("
+                UPDATE asistencias 
+                SET hora_salida_real = ?,
+                    hora_salida = ?,
+                    horas_trabajadas = ?,
+                    horas_extra = ?,
+                    estatus = 'Validado',
+                    validado_por_id = ?,
+                    fecha_validacion = NOW()
+                WHERE id = ?
+            ");
+            
+            $horaSalidaRealCompleta = $asistencia['fecha'] . ' ' . $horaSalidaReal;
+            $result = $stmt->execute([
+                $horaSalidaRealCompleta,
+                $horaSalidaRealCompleta,
+                $horasTrabajadas,
+                $horasExtra,
+                $_SESSION['user_id'] ?? null,
+                $asistenciaId
+            ]);
+            
+            if ($result) {
+                echo json_encode([
+                    'success' => true, 
+                    'message' => 'Asistencia validada correctamente',
+                    'horas_trabajadas' => round($horasTrabajadas, 2),
+                    'horas_extra' => round($horasExtra, 2)
+                ]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Error al validar asistencia']);
+            }
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
         exit;
     }
 }

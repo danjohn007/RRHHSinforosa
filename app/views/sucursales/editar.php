@@ -110,6 +110,210 @@
         </div>
     </div>
     
+    <!-- Horarios de la Sucursal -->
+    <div class="mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+            <i class="fas fa-clock text-purple-600 mr-2"></i>
+            Horarios de la Sucursal
+        </h3>
+        
+        <p class="text-sm text-gray-600 mb-4">
+            Configura los horarios de operación para el cálculo automático de horas extras.
+        </p>
+        
+        <!-- Opción: Aplicar horario a toda la semana -->
+        <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+            <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="checkbox" 
+                       id="horario_toda_semana" 
+                       name="horario_toda_semana" 
+                       value="1" 
+                       <?php echo (!empty($sucursal['horario_toda_semana'])) ? 'checked' : ''; ?>
+                       onchange="toggleHorarioSemanal()"
+                       class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                <span class="text-sm font-medium text-gray-700">
+                    <i class="fas fa-calendar-week mr-1"></i>
+                    Aplicar el mismo horario a toda la semana
+                </span>
+            </label>
+        </div>
+        
+        <!-- Horario General (cuando se aplica a toda la semana) -->
+        <div id="horario-general-section" class="mb-4 p-4 bg-blue-50 rounded-lg" style="display: <?php echo (!empty($sucursal['horario_toda_semana'])) ? 'block' : 'none'; ?>;">
+            <h4 class="font-medium text-gray-800 mb-3">Horario General</h4>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Hora de Entrada</label>
+                    <input type="time" 
+                           name="hora_entrada_general" 
+                           value="<?php echo htmlspecialchars($sucursal['hora_entrada_general'] ?? '08:00'); ?>"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Hora de Salida</label>
+                    <input type="time" 
+                           name="hora_salida_general" 
+                           value="<?php echo htmlspecialchars($sucursal['hora_salida_general'] ?? '18:00'); ?>"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Horarios por Día (cuando NO se aplica a toda la semana) -->
+        <div id="horario-dias-section" style="display: <?php echo (empty($sucursal['horario_toda_semana'])) ? 'block' : 'none'; ?>;">
+            <h4 class="font-medium text-gray-800 mb-3">Horarios por Día de la Semana</h4>
+            
+            <!-- Lunes -->
+            <div class="mb-3 p-3 bg-gray-50 rounded-lg">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                    <div class="font-medium text-gray-700">
+                        <i class="fas fa-circle text-blue-500 text-xs mr-2"></i>Lunes
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Entrada</label>
+                        <input type="time" name="hora_entrada_lunes" 
+                               value="<?php echo htmlspecialchars($sucursal['hora_entrada_lunes'] ?? '08:00'); ?>"
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Salida</label>
+                        <input type="time" name="hora_salida_lunes" 
+                               value="<?php echo htmlspecialchars($sucursal['hora_salida_lunes'] ?? '18:00'); ?>"
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Martes -->
+            <div class="mb-3 p-3 bg-gray-50 rounded-lg">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                    <div class="font-medium text-gray-700">
+                        <i class="fas fa-circle text-blue-500 text-xs mr-2"></i>Martes
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Entrada</label>
+                        <input type="time" name="hora_entrada_martes" 
+                               value="<?php echo htmlspecialchars($sucursal['hora_entrada_martes'] ?? '08:00'); ?>"
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Salida</label>
+                        <input type="time" name="hora_salida_martes" 
+                               value="<?php echo htmlspecialchars($sucursal['hora_salida_martes'] ?? '18:00'); ?>"
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Miércoles -->
+            <div class="mb-3 p-3 bg-gray-50 rounded-lg">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                    <div class="font-medium text-gray-700">
+                        <i class="fas fa-circle text-blue-500 text-xs mr-2"></i>Miércoles
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Entrada</label>
+                        <input type="time" name="hora_entrada_miercoles" 
+                               value="<?php echo htmlspecialchars($sucursal['hora_entrada_miercoles'] ?? '08:00'); ?>"
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Salida</label>
+                        <input type="time" name="hora_salida_miercoles" 
+                               value="<?php echo htmlspecialchars($sucursal['hora_salida_miercoles'] ?? '18:00'); ?>"
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Jueves -->
+            <div class="mb-3 p-3 bg-gray-50 rounded-lg">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                    <div class="font-medium text-gray-700">
+                        <i class="fas fa-circle text-blue-500 text-xs mr-2"></i>Jueves
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Entrada</label>
+                        <input type="time" name="hora_entrada_jueves" 
+                               value="<?php echo htmlspecialchars($sucursal['hora_entrada_jueves'] ?? '08:00'); ?>"
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Salida</label>
+                        <input type="time" name="hora_salida_jueves" 
+                               value="<?php echo htmlspecialchars($sucursal['hora_salida_jueves'] ?? '18:00'); ?>"
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Viernes -->
+            <div class="mb-3 p-3 bg-gray-50 rounded-lg">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                    <div class="font-medium text-gray-700">
+                        <i class="fas fa-circle text-blue-500 text-xs mr-2"></i>Viernes
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Entrada</label>
+                        <input type="time" name="hora_entrada_viernes" 
+                               value="<?php echo htmlspecialchars($sucursal['hora_entrada_viernes'] ?? '08:00'); ?>"
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Salida</label>
+                        <input type="time" name="hora_salida_viernes" 
+                               value="<?php echo htmlspecialchars($sucursal['hora_salida_viernes'] ?? '18:00'); ?>"
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sábado -->
+            <div class="mb-3 p-3 bg-gray-50 rounded-lg">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                    <div class="font-medium text-gray-700">
+                        <i class="fas fa-circle text-green-500 text-xs mr-2"></i>Sábado
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Entrada</label>
+                        <input type="time" name="hora_entrada_sabado" 
+                               value="<?php echo htmlspecialchars($sucursal['hora_entrada_sabado'] ?? '09:00'); ?>"
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Salida</label>
+                        <input type="time" name="hora_salida_sabado" 
+                               value="<?php echo htmlspecialchars($sucursal['hora_salida_sabado'] ?? '14:00'); ?>"
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Domingo -->
+            <div class="mb-3 p-3 bg-gray-50 rounded-lg">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                    <div class="font-medium text-gray-700">
+                        <i class="fas fa-circle text-red-500 text-xs mr-2"></i>Domingo
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Entrada</label>
+                        <input type="time" name="hora_entrada_domingo" 
+                               value="<?php echo htmlspecialchars($sucursal['hora_entrada_domingo'] ?? ''); ?>"
+                               placeholder="Cerrado"
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Salida</label>
+                        <input type="time" name="hora_salida_domingo" 
+                               value="<?php echo htmlspecialchars($sucursal['hora_salida_domingo'] ?? ''); ?>"
+                               placeholder="Cerrado"
+                               class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Botones -->
     <div class="flex justify-end space-x-4">
         <a href="<?php echo BASE_URL; ?>sucursales" 
@@ -500,6 +704,21 @@
 <script>
 const sucursalId = <?php echo $sucursal['id']; ?>;
 const baseUrl = '<?php echo BASE_URL; ?>';
+
+// Toggle horario semanal
+function toggleHorarioSemanal() {
+    const checkbox = document.getElementById('horario_toda_semana');
+    const horarioGeneral = document.getElementById('horario-general-section');
+    const horarioDias = document.getElementById('horario-dias-section');
+    
+    if (checkbox.checked) {
+        horarioGeneral.style.display = 'block';
+        horarioDias.style.display = 'none';
+    } else {
+        horarioGeneral.style.display = 'none';
+        horarioDias.style.display = 'block';
+    }
+}
 
 // Modal Gerente
 function mostrarModalAgregarGerente() {

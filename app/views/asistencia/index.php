@@ -13,7 +13,7 @@
     </h3>
     
     <form method="GET" action="<?php echo BASE_URL; ?>asistencia" class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Inicio</label>
                 <input type="date" name="fecha_inicio" 
@@ -26,6 +26,22 @@
                 <input type="date" name="fecha_fin" 
                        value="<?php echo htmlspecialchars($filtros['fecha_fin']); ?>"
                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Estatus</label>
+                <select name="estatus" 
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
+                    <option value="">Todos</option>
+                    <option value="Presente" <?php echo ($filtros['estatus'] === 'Presente') ? 'selected' : ''; ?>>Presente</option>
+                    <option value="Por Validar" <?php echo ($filtros['estatus'] === 'Por Validar') ? 'selected' : ''; ?>>Por Validar</option>
+                    <option value="Validado" <?php echo ($filtros['estatus'] === 'Validado') ? 'selected' : ''; ?>>Validado</option>
+                    <option value="Retardo" <?php echo ($filtros['estatus'] === 'Retardo') ? 'selected' : ''; ?>>Retardo</option>
+                    <option value="Falta" <?php echo ($filtros['estatus'] === 'Falta') ? 'selected' : ''; ?>>Falta</option>
+                    <option value="Permiso" <?php echo ($filtros['estatus'] === 'Permiso') ? 'selected' : ''; ?>>Permiso</option>
+                    <option value="Vacaciones" <?php echo ($filtros['estatus'] === 'Vacaciones') ? 'selected' : ''; ?>>Vacaciones</option>
+                    <option value="Incapacidad" <?php echo ($filtros['estatus'] === 'Incapacidad') ? 'selected' : ''; ?>>Incapacidad</option>
+                </select>
             </div>
             
             <div class="md:col-span-2">
@@ -159,13 +175,14 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entrada</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Salida</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Horas</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fotos</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estatus</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 <?php if (empty($asistencias)): ?>
                 <tr>
-                    <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                    <td colspan="9" class="px-6 py-8 text-center text-gray-500">
                         No hay registros de asistencia para los filtros seleccionados
                     </td>
                 </tr>
@@ -179,38 +196,112 @@
                         <?php echo htmlspecialchars($asistencia['numero_empleado'] ?? ''); ?>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($asistencia['nombre_empleado']); ?></div>
-                        <?php if (!empty($asistencia['email'])): ?>
-                        <div class="text-xs text-gray-500"><?php echo htmlspecialchars($asistencia['email']); ?></div>
-                        <?php endif; ?>
+                        <a href="<?php echo BASE_URL; ?>empleados/ver?id=<?php echo $asistencia['empleado_id']; ?>" 
+                           class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">
+                            <?php echo htmlspecialchars($asistencia['empleado_nombre']); ?>
+                        </a>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <?php echo htmlspecialchars($asistencia['departamento'] ?? ''); ?>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <?php echo $asistencia['hora_entrada'] ? date('H:i', strtotime($asistencia['hora_entrada'])) : '-'; ?>
+                        <?php if ($asistencia['hora_entrada']): ?>
+                            <div><?php echo date('H:i', strtotime($asistencia['hora_entrada'])); ?></div>
+                            <?php if ($asistencia['sucursal_nombre']): ?>
+                                <div class="text-xs text-gray-500">
+                                    <i class="fas fa-building text-xs"></i>
+                                    <?php echo htmlspecialchars($asistencia['sucursal_nombre']); ?>
+                                </div>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            -
+                        <?php endif; ?>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <?php echo $asistencia['hora_salida'] ? date('H:i', strtotime($asistencia['hora_salida'])) : '-'; ?>
+                        <?php if ($asistencia['hora_salida']): ?>
+                            <div><?php echo date('H:i', strtotime($asistencia['hora_salida'])); ?></div>
+                            <?php if ($asistencia['auto_cortado']): ?>
+                                <div class="text-xs text-orange-500">
+                                    <i class="fas fa-clock text-xs"></i> Auto-cortado
+                                </div>
+                            <?php endif; ?>
+                            <?php if ($asistencia['sucursal_nombre']): ?>
+                                <div class="text-xs text-gray-500">
+                                    <i class="fas fa-building text-xs"></i>
+                                    <?php echo htmlspecialchars($asistencia['sucursal_nombre']); ?>
+                                </div>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            -
+                        <?php endif; ?>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <?php echo $asistencia['horas_trabajadas'] ? number_format($asistencia['horas_trabajadas'], 2) : '-'; ?>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <?php if ($asistencia['horas_trabajadas']): ?>
+                            <?php
+                            $horasTrabajadas = (float)$asistencia['horas_trabajadas'];
+                            $horasExtra = (float)($asistencia['horas_extra'] ?? 0);
+                            $colorHoras = ($horasTrabajadas > 8) ? 'text-orange-600 font-bold' : 'text-gray-900';
+                            ?>
+                            <div class="<?php echo $colorHoras; ?>">
+                                <?php echo number_format($horasTrabajadas, 2); ?> hrs
+                            </div>
+                            <?php if ($horasExtra > 0): ?>
+                                <div class="text-xs text-orange-600 font-semibold">
+                                    <i class="fas fa-plus-circle"></i> +<?php echo number_format($horasExtra, 2); ?> hrs extra
+                                </div>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            -
+                        <?php endif; ?>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                        <div class="flex space-x-2 justify-center">
+                            <?php if (!empty($asistencia['foto_entrada'])): ?>
+                                <a href="<?php echo BASE_URL . $asistencia['foto_entrada']; ?>" 
+                                   target="_blank"
+                                   class="text-blue-600 hover:text-blue-800" 
+                                   title="Ver foto de entrada">
+                                    <i class="fas fa-camera"></i> Entrada
+                                </a>
+                            <?php endif; ?>
+                            <?php if (!empty($asistencia['foto_salida'])): ?>
+                                <a href="<?php echo BASE_URL . $asistencia['foto_salida']; ?>" 
+                                   target="_blank"
+                                   class="text-green-600 hover:text-green-800" 
+                                   title="Ver foto de salida">
+                                    <i class="fas fa-camera"></i> Salida
+                                </a>
+                            <?php endif; ?>
+                            <?php if (empty($asistencia['foto_entrada']) && empty($asistencia['foto_salida'])): ?>
+                                <span class="text-gray-400">-</span>
+                            <?php endif; ?>
+                        </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <?php
                         $colors = [
                             'Presente' => 'bg-green-100 text-green-800',
+                            'Por Validar' => 'bg-orange-100 text-orange-800',
+                            'Validado' => 'bg-blue-100 text-blue-800',
                             'Retardo' => 'bg-yellow-100 text-yellow-800',
                             'Falta' => 'bg-red-100 text-red-800',
-                            'Permiso' => 'bg-blue-100 text-blue-800',
+                            'Permiso' => 'bg-indigo-100 text-indigo-800',
                             'Vacaciones' => 'bg-purple-100 text-purple-800',
-                            'Incapacidad' => 'bg-orange-100 text-orange-800'
+                            'Incapacidad' => 'bg-pink-100 text-pink-800'
                         ];
                         $color = $colors[$asistencia['estatus']] ?? 'bg-gray-100 text-gray-800';
                         ?>
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $color; ?>">
-                            <?php echo htmlspecialchars($asistencia['estatus']); ?>
-                        </span>
+                        <div class="flex flex-col space-y-1">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full <?php echo $color; ?>">
+                                <?php echo htmlspecialchars($asistencia['estatus']); ?>
+                            </span>
+                            <?php if ($asistencia['estatus'] === 'Por Validar'): ?>
+                                <button onclick="mostrarModalValidar(<?php echo $asistencia['id']; ?>, '<?php echo $asistencia['empleado_nombre']; ?>', '<?php echo $asistencia['fecha']; ?>')"
+                                        class="text-xs text-blue-600 hover:text-blue-800 hover:underline">
+                                    <i class="fas fa-check"></i> Validar
+                                </button>
+                            <?php endif; ?>
+                        </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -220,18 +311,126 @@
     </div>
 </div>
 
+<!-- Modal de Validación -->
+<div id="modal-validar" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-check-circle text-blue-600 mr-2"></i>
+                Validar Asistencia
+            </h3>
+            
+            <div id="validar-info" class="mb-4 p-3 bg-gray-50 rounded">
+                <p class="text-sm text-gray-700"><strong>Empleado:</strong> <span id="validar-empleado"></span></p>
+                <p class="text-sm text-gray-700"><strong>Fecha:</strong> <span id="validar-fecha"></span></p>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Hora de Salida Real *
+                </label>
+                <input type="time" 
+                       id="hora-salida-real" 
+                       required
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500">
+                <p class="text-xs text-gray-500 mt-1">
+                    Ingrese la hora de salida real del empleado
+                </p>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <button type="button" 
+                        onclick="cerrarModalValidar()"
+                        class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                    Cancelar
+                </button>
+                <button type="button" 
+                        onclick="validarAsistencia()"
+                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    <i class="fas fa-check mr-1"></i>
+                    Validar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+let asistenciaIdParaValidar = null;
+
+function mostrarModalValidar(asistenciaId, empleadoNombre, fecha) {
+    asistenciaIdParaValidar = asistenciaId;
+    document.getElementById('validar-empleado').textContent = empleadoNombre;
+    document.getElementById('validar-fecha').textContent = formatearFecha(fecha);
+    document.getElementById('modal-validar').classList.remove('hidden');
+}
+
+function cerrarModalValidar() {
+    document.getElementById('modal-validar').classList.add('hidden');
+    document.getElementById('hora-salida-real').value = '';
+    asistenciaIdParaValidar = null;
+}
+
+function formatearFecha(fecha) {
+    const partes = fecha.split('-');
+    return partes[2] + '/' + partes[1] + '/' + partes[0];
+}
+
+function validarAsistencia() {
+    const horaSalidaReal = document.getElementById('hora-salida-real').value;
+    
+    if (!horaSalidaReal) {
+        alert('Por favor ingrese la hora de salida real');
+        return;
+    }
+    
+    if (!asistenciaIdParaValidar) {
+        alert('Error: No se ha seleccionado ninguna asistencia');
+        return;
+    }
+    
+    // Enviar solicitud al servidor
+    const formData = new FormData();
+    formData.append('asistencia_id', asistenciaIdParaValidar);
+    formData.append('hora_salida_real', horaSalidaReal);
+    
+    fetch('<?php echo BASE_URL; ?>asistencia/validar', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Asistencia validada correctamente\n' +
+                  'Horas trabajadas: ' + data.horas_trabajadas + ' hrs\n' +
+                  (data.horas_extra > 0 ? 'Horas extra: ' + data.horas_extra + ' hrs' : ''));
+            cerrarModalValidar();
+            location.reload();
+        } else {
+            alert('Error al validar: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al validar la asistencia');
+    });
+}
+
 function exportarReporte() {
     // Obtener los parámetros de filtro actuales
     const urlParams = new URLSearchParams(window.location.search);
     const fechaInicio = urlParams.get('fecha_inicio') || '<?php echo $filtros['fecha_inicio']; ?>';
     const fechaFin = urlParams.get('fecha_fin') || '<?php echo $filtros['fecha_fin']; ?>';
     const busqueda = urlParams.get('busqueda') || '<?php echo $filtros['busqueda']; ?>';
+    const estatus = urlParams.get('estatus') || '<?php echo $filtros['estatus'] ?? ''; ?>';
     
     // Construir URL con parámetros
     let exportUrl = '<?php echo BASE_URL; ?>asistencia/exportar?fecha_inicio=' + fechaInicio + '&fecha_fin=' + fechaFin;
     if (busqueda) {
         exportUrl += '&busqueda=' + encodeURIComponent(busqueda);
+    }
+    if (estatus) {
+        exportUrl += '&estatus=' + encodeURIComponent(estatus);
     }
     
     // Descargar el archivo
