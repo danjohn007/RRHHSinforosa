@@ -11,7 +11,28 @@
 USE recursos_humanos;
 
 -- ============================================================
--- PROCEDIMIENTO ACTUALIZADO: Auto-cortar asistencias sin salida
+-- PASO 1: Agregar columna sucursal_salida_id si no existe
+-- ============================================================
+SET @dbname = DATABASE();
+SET @tablename = 'asistencias';
+SET @columnname = 'sucursal_salida_id';
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE
+      (table_name = @tablename)
+      AND (table_schema = @dbname)
+      AND (column_name = @columnname)
+  ) > 0,
+  'SELECT 1',
+  CONCAT('ALTER TABLE ', @tablename, ' ADD COLUMN ', @columnname, ' INT NULL AFTER sucursal_id, ADD CONSTRAINT fk_asistencias_sucursal_salida FOREIGN KEY (sucursal_salida_id) REFERENCES sucursales(id)')
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
+
+-- ============================================================
+-- PASO 2: PROCEDIMIENTO ACTUALIZADO: Auto-cortar asistencias sin salida
 -- Ahora incluye sucursal_salida_id
 -- ============================================================
 DELIMITER $$
@@ -82,6 +103,9 @@ END$$
 
 DELIMITER ;
 
+-- ============================================================
+-- PASO 3: Actualizar registros históricos
+-- ============================================================
 -- Ejecutar el procedimiento una vez para actualizar registros históricos
 -- que ya tienen hora_salida pero no tienen sucursal_salida_id
 UPDATE asistencias
