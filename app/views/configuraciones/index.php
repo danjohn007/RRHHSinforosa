@@ -73,7 +73,7 @@
                                  src="<?php echo htmlspecialchars($logoUrl); ?>" 
                                  alt="Logo actual" 
                                  class="h-16 object-contain border border-gray-200 rounded p-2 bg-white"
-                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                 onerror="handleLogoError(this)">
                             <p class="text-xs text-red-500 mt-1 hidden">No se pudo cargar la imagen del logo</p>
                         </div>
                     <?php endif; ?>
@@ -605,6 +605,15 @@
 </form>
 
 <script>
+// Función para manejar error de carga de logo
+function handleLogoError(imgElement) {
+    imgElement.style.display = 'none';
+    const errorMessage = imgElement.nextElementSibling;
+    if (errorMessage && errorMessage.tagName === 'P' && errorMessage.classList.contains('hidden')) {
+        errorMessage.style.display = 'block';
+    }
+}
+
 function showConfigTab(tab) {
     // Ocultar todos los contenidos
     document.querySelectorAll('.config-content').forEach(content => {
