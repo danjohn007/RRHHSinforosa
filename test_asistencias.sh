@@ -16,6 +16,20 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+# Configuración de base de datos (ajustar según entorno)
+# IMPORTANTE: En producción, usar variables de entorno o archivos de configuración seguros
+DB_HOST="${DB_HOST:-localhost}"
+DB_USER="${DB_USER:-root}"
+DB_NAME="${DB_NAME:-recursos_humanos}"
+DB_PASS="${DB_PASS:-}"
+
+# Construir comando mysql con credenciales
+if [ -n "$DB_PASS" ]; then
+    MYSQL_CMD="mysql -h $DB_HOST -u $DB_USER -p$DB_PASS"
+else
+    MYSQL_CMD="mysql -h $DB_HOST -u $DB_USER"
+fi
+
 # Función para mostrar resultados
 check_result() {
     if [ $1 -eq 0 ]; then
@@ -32,15 +46,15 @@ check_result() {
 echo "1. Verificando estructura de base de datos..."
 
 # Verificar campo sucursal_salida_id
-mysql -u root -e "USE recursos_humanos; SHOW COLUMNS FROM asistencias LIKE 'sucursal_salida_id';" > /dev/null 2>&1
+$MYSQL_CMD -e "USE $DB_NAME; SHOW COLUMNS FROM asistencias LIKE 'sucursal_salida_id';" > /dev/null 2>&1
 check_result $? "Campo sucursal_salida_id existe"
 
 # Verificar vista actualizada
-mysql -u root -e "USE recursos_humanos; DESC vista_asistencias_completa;" | grep -q "sucursal_salida_nombre"
+$MYSQL_CMD -e "USE $DB_NAME; DESC vista_asistencias_completa;" | grep -q "sucursal_salida_nombre"
 check_result $? "Vista vista_asistencias_completa actualizada"
 
 # Verificar procedimiento almacenado
-mysql -u root -e "USE recursos_humanos; SHOW PROCEDURE STATUS WHERE Name = 'auto_cortar_asistencias';" > /dev/null 2>&1
+$MYSQL_CMD -e "USE $DB_NAME; SHOW PROCEDURE STATUS WHERE Name = 'auto_cortar_asistencias';" > /dev/null 2>&1
 check_result $? "Procedimiento auto_cortar_asistencias existe"
 
 echo ""
@@ -107,7 +121,7 @@ echo ""
 echo "5. Probando procedimiento auto_cortar_asistencias..."
 
 # Ejecutar el procedimiento (no afecta datos reales si no hay registros pendientes)
-RESULT=$(mysql -u root -e "USE recursos_humanos; CALL auto_cortar_asistencias();" 2>&1)
+RESULT=$($MYSQL_CMD -e "USE $DB_NAME; CALL auto_cortar_asistencias();" 2>&1)
 if [ $? -eq 0 ]; then
     check_result 0 "Procedimiento auto_cortar_asistencias ejecutable"
     echo "   Resultado: $RESULT"

@@ -2,6 +2,10 @@
 -- MIGRACIÓN: Actualizar Procedimiento Auto-Cortar Asistencias
 -- Fecha: 2026-01-25
 -- Descripción: Actualiza el procedimiento para incluir sucursal_salida_id
+-- 
+-- DEPENDENCIA: Requiere que migration_validacion_horas_extras.sql
+--              haya sido ejecutado previamente (define función
+--              obtener_hora_salida_sucursal)
 -- ============================================================
 
 USE recursos_humanos;
