@@ -400,6 +400,10 @@
         });
         
         confirmBtn.addEventListener('click', function() {
+            if (!photoData) {
+                alert('Por favor capture una foto antes de confirmar');
+                return;
+            }
             cameraModal.classList.add('hidden');
             submitRegistration();
         });

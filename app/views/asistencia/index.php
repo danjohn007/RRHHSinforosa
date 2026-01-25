@@ -225,10 +225,14 @@
                                     <i class="fas fa-clock text-xs"></i> Auto-cortado
                                 </div>
                             <?php endif; ?>
-                            <?php if ($asistencia['sucursal_nombre']): ?>
+                            <?php 
+                            // Mostrar sucursal de salida si existe, sino mostrar sucursal de entrada
+                            $nombreSucursalSalida = $asistencia['sucursal_salida_nombre'] ?? $asistencia['sucursal_nombre'];
+                            if ($nombreSucursalSalida): 
+                            ?>
                                 <div class="text-xs text-gray-500">
                                     <i class="fas fa-building text-xs"></i>
-                                    <?php echo htmlspecialchars($asistencia['sucursal_nombre']); ?>
+                                    <?php echo htmlspecialchars($nombreSucursalSalida); ?>
                                 </div>
                             <?php endif; ?>
                         <?php else: ?>
