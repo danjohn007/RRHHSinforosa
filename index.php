@@ -174,6 +174,10 @@ if ($request === '' || $request === 'login') {
         $controller->guardarConcepto();
     } elseif ($parts[1] === 'eliminar-concepto') {
         $controller->eliminarConcepto();
+    } elseif ($parts[1] === 'timbrar-periodo') {
+        $controller->timbrarPeriodo();
+    } elseif ($parts[1] === 'cancelar-cfdi') {
+        $controller->cancelarCFDI();
     } else {
         http_response_code(404);
         die('Página no encontrada');
