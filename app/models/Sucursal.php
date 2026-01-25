@@ -135,7 +135,16 @@ class Sucursal {
     public function update($id, $data) {
         $sql = "UPDATE sucursales SET 
                 nombre = ?, codigo = ?, direccion = ?, telefono = ?, 
-                url_publica = ?, activo = ?
+                url_publica = ?, activo = ?,
+                horario_toda_semana = ?,
+                hora_entrada_general = ?, hora_salida_general = ?,
+                hora_entrada_lunes = ?, hora_salida_lunes = ?,
+                hora_entrada_martes = ?, hora_salida_martes = ?,
+                hora_entrada_miercoles = ?, hora_salida_miercoles = ?,
+                hora_entrada_jueves = ?, hora_salida_jueves = ?,
+                hora_entrada_viernes = ?, hora_salida_viernes = ?,
+                hora_entrada_sabado = ?, hora_salida_sabado = ?,
+                hora_entrada_domingo = ?, hora_salida_domingo = ?
                 WHERE id = ?";
         
         $stmt = $this->db->prepare($sql);
@@ -146,6 +155,23 @@ class Sucursal {
             $data['telefono'] ?? null,
             $data['url_publica'] ?? null,
             $data['activo'] ?? 1,
+            $data['horario_toda_semana'] ?? 0,
+            $data['hora_entrada_general'] ?? '08:00',
+            $data['hora_salida_general'] ?? '18:00',
+            $data['hora_entrada_lunes'] ?? null,
+            $data['hora_salida_lunes'] ?? null,
+            $data['hora_entrada_martes'] ?? null,
+            $data['hora_salida_martes'] ?? null,
+            $data['hora_entrada_miercoles'] ?? null,
+            $data['hora_salida_miercoles'] ?? null,
+            $data['hora_entrada_jueves'] ?? null,
+            $data['hora_salida_jueves'] ?? null,
+            $data['hora_entrada_viernes'] ?? null,
+            $data['hora_salida_viernes'] ?? null,
+            $data['hora_entrada_sabado'] ?? null,
+            $data['hora_salida_sabado'] ?? null,
+            $data['hora_entrada_domingo'] ?? null,
+            $data['hora_salida_domingo'] ?? null,
             $id
         ]);
     }
