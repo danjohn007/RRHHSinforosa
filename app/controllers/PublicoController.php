@@ -225,7 +225,8 @@ class PublicoController {
                         horas_trabajadas = ?, 
                         horas_extra = ?,
                         dispositivo_salida = ?,
-                        foto_salida = ?
+                        foto_salida = ?,
+                        sucursal_salida_id = ?
                     WHERE id = ?
                 ");
                 $stmtUpdate->execute([
@@ -234,6 +235,7 @@ class PublicoController {
                     $horasExtras,
                     'Web-' . $sucursalActual['codigo'],
                     $fotoPath,
+                    $sucursalActual['id'],
                     $asistencia['id']
                 ]);
                 
@@ -273,6 +275,12 @@ class PublicoController {
      */
     private function guardarFoto($fotoBase64, $empleadoId, $tipo) {
         try {
+            // Validar que se recibió una foto
+            if (empty($fotoBase64)) {
+                error_log("Error: No se recibió foto para empleado $empleadoId, tipo $tipo");
+                return null;
+            }
+            
             // Crear directorio si no existe
             $uploadDir = BASE_PATH . 'uploads/asistencias/' . date('Y-m');
             if (!file_exists($uploadDir)) {
@@ -283,12 +291,23 @@ class PublicoController {
             $fotoBase64 = preg_replace('/^data:image\/\w+;base64,/', '', $fotoBase64);
             $fotoData = base64_decode($fotoBase64);
             
+            // Validar que la decodificación fue exitosa
+            if ($fotoData === false || strlen($fotoData) < 100) {
+                error_log("Error: Foto inválida o vacía para empleado $empleadoId, tipo $tipo");
+                return null;
+            }
+            
             // Generar nombre de archivo único
             $filename = $empleadoId . '_' . $tipo . '_' . date('Ymd_His') . '.jpg';
             $filepath = $uploadDir . '/' . $filename;
             
             // Guardar archivo
-            file_put_contents($filepath, $fotoData);
+            $bytesWritten = file_put_contents($filepath, $fotoData);
+            
+            if ($bytesWritten === false) {
+                error_log("Error: No se pudo escribir el archivo $filepath");
+                return null;
+            }
             
             // Retornar ruta relativa
             return 'uploads/asistencias/' . date('Y-m') . '/' . $filename;
