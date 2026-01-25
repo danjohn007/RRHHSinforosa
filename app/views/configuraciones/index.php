@@ -609,7 +609,7 @@
 function handleLogoError(imgElement) {
     imgElement.style.display = 'none';
     const errorMessage = imgElement.nextElementSibling;
-    if (errorMessage && errorMessage.classList.contains('hidden')) {
+    if (errorMessage && errorMessage.tagName === 'P' && errorMessage.classList.contains('hidden')) {
         errorMessage.classList.remove('hidden');
     }
 }
