@@ -35,7 +35,7 @@ class SucursalesController {
             $codigo = $_POST['codigo'] ?? '';
             $direccion = $_POST['direccion'] ?? '';
             $telefono = $_POST['telefono'] ?? '';
-            $urlPublica = $_POST['url_publica'] ?? '';
+            $urlPublica = !empty($_POST['url_publica']) ? trim($_POST['url_publica']) : null;
             $activo = isset($_POST['activo']) ? 1 : 0;
             
             if (empty($nombre) || empty($codigo)) {
@@ -115,7 +115,7 @@ class SucursalesController {
             $codigo = $_POST['codigo'] ?? '';
             $direccion = $_POST['direccion'] ?? '';
             $telefono = $_POST['telefono'] ?? '';
-            $urlPublica = $_POST['url_publica'] ?? '';
+            $urlPublica = !empty($_POST['url_publica']) ? trim($_POST['url_publica']) : null;
             $activo = isset($_POST['activo']) ? 1 : 0;
             
             // Horarios
