@@ -124,8 +124,8 @@ class EmpleadosController {
                     'puesto' => $data['puesto'],
                     'salario_diario' => $data['salario_diario'] ?? 0,
                     'salario_mensual' => $data['salario_mensual'] ?? 0,
-                    'sucursal_id' => $data['sucursal_id'] ?? null,
-                    'turno_id' => $data['turno_id'] ?? null,
+                    'sucursal_id' => !empty($data['sucursal_id']) ? (int)$data['sucursal_id'] : null,
+                    'turno_id' => !empty($data['turno_id']) ? (int)$data['turno_id'] : null,
                     'estatus' => 'Activo'
                 ];
                 
@@ -270,8 +270,8 @@ class EmpleadosController {
                 'puesto' => $_POST['puesto'],
                 'salario_diario' => $_POST['salario_diario'] ?? null,
                 'salario_mensual' => $_POST['salario_mensual'],
-                'sucursal_id' => $_POST['sucursal_id'] ?? null,
-                'turno_id' => $_POST['turno_id'] ?? null,
+                'sucursal_id' => !empty($_POST['sucursal_id']) ? (int)$_POST['sucursal_id'] : null,
+                'turno_id' => !empty($_POST['turno_id']) ? (int)$_POST['turno_id'] : null,
                 'banco' => $_POST['banco'] ?? null,
                 'numero_cuenta' => $_POST['numero_cuenta'] ?? null,
                 'clabe_interbancaria' => $_POST['clabe_interbancaria'] ?? null,

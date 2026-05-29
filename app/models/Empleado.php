@@ -9,6 +9,26 @@ class Empleado {
     public function __construct() {
         $this->db = Database::getInstance()->getConnection();
     }
+
+    /**
+     * Normaliza IDs foráneos opcionales para evitar errores de integridad.
+     * Si viene vacío o no existe en la tabla relacionada, se guarda como NULL.
+     */
+    private function normalizeOptionalForeignKey($table, $value) {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (!is_numeric($value) || (int)$value <= 0) {
+            return null;
+        }
+
+        $id = (int)$value;
+        $stmt = $this->db->prepare("SELECT id FROM {$table} WHERE id = ? LIMIT 1");
+        $stmt->execute([$id]);
+
+        return $stmt->fetchColumn() ? $id : null;
+    }
     
     /**
      * Obtener todos los empleados
@@ -125,6 +145,9 @@ class Empleado {
      * Crear nuevo empleado
      */
     public function create($data) {
+        $sucursalId = $this->normalizeOptionalForeignKey('sucursales', $data['sucursal_id'] ?? null);
+        $turnoId = $this->normalizeOptionalForeignKey('turnos', $data['turno_id'] ?? null);
+
         $sql = "INSERT INTO empleados (
                     numero_empleado, codigo_empleado, nombres, apellido_paterno, apellido_materno,
                     curp, rfc, nss, fecha_nacimiento, genero, estado_civil,
@@ -144,7 +167,7 @@ class Empleado {
             $data['colonia'] ?? null, $data['codigo_postal'] ?? null, $data['municipio'] ?? 'Querétaro', $data['estado'] ?? 'Querétaro',
             $data['fecha_ingreso'], $data['tipo_contrato'], $data['departamento'], $data['puesto'],
             $data['salario_diario'] ?? 0, $data['salario_mensual'] ?? 0, 
-            $data['sucursal_id'] ?? null, $data['turno_id'] ?? null, $data['estatus'] ?? 'Activo'
+            $sucursalId, $turnoId, $data['estatus'] ?? 'Activo'
         ]);
     }
     
@@ -152,6 +175,9 @@ class Empleado {
      * Actualizar empleado
      */
     public function update($id, $data) {
+        $sucursalId = $this->normalizeOptionalForeignKey('sucursales', $data['sucursal_id'] ?? null);
+        $turnoId = $this->normalizeOptionalForeignKey('turnos', $data['turno_id'] ?? null);
+
         $sql = "UPDATE empleados SET 
                 nombres = ?, apellido_paterno = ?, apellido_materno = ?,
                 curp = ?, rfc = ?, nss = ?, fecha_nacimiento = ?, genero = ?, estado_civil = ?,
@@ -173,7 +199,7 @@ class Empleado {
             $data['colonia'] ?? null, $data['codigo_postal'] ?? null, $data['municipio'] ?? null, $data['estado'] ?? null,
             $data['fecha_ingreso'] ?? null, $data['tipo_contrato'] ?? null, $data['departamento'], $data['puesto'], 
             $data['salario_diario'] ?? null, $data['salario_mensual'],
-            $data['sucursal_id'] ?? null, $data['turno_id'] ?? null,
+            $sucursalId, $turnoId,
             $data['banco'] ?? null, $data['numero_cuenta'] ?? null, $data['clabe_interbancaria'] ?? null,
             $data['estatus'], $id
         ]);
